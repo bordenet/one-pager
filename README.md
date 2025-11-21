@@ -120,6 +120,44 @@ npm run test:coverage
 npm run lint
 ```
 
+### Deploy to GitHub Pages
+
+The project includes a deployment script that copies required files to the `docs/` directory for GitHub Pages hosting.
+
+```bash
+# Preview deployment (dry-run)
+./scripts/deploy-web.sh --dry-run
+
+# Deploy to docs/ directory
+./scripts/deploy-web.sh
+
+# Deploy with verbose output
+./scripts/deploy-web.sh -v
+
+# Show help
+./scripts/deploy-web.sh --help
+```
+
+**After deployment:**
+
+1. Review changes: `git status`
+2. Commit: `git add docs/ && git commit -m 'Deploy to GitHub Pages'`
+3. Push: `git push origin main`
+4. Wait 2-5 minutes for GitHub Pages to deploy
+5. Visit: https://bordenet.github.io/one-pager/
+
+**What gets deployed:**
+- `index.html` - Main application
+- `css/styles.css` - Styles
+- `js/*.js` - All JavaScript modules
+- `prompts/*.md` - Prompt templates
+- `templates/*.md` - Document templates
+
+**What's excluded:**
+- Development files (`node_modules/`, `tests/`, `coverage/`)
+- Configuration files (`package.json`, `jest.config.js`, etc.)
+- Documentation (`README.md`, `CLAUDE.md`, etc.)
+
 ### Project Structure
 
 ```
