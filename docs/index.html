@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>One-Pager Assistant</title>
     <meta name="description" content="AI-assisted workflow helper for generating crisp and high-quality one-pager documents">
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -67,7 +67,7 @@
         <div id="projectListView" class="space-y-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Projects</h2>
-                <button id="newProjectBtn" 
+                <button id="newProjectBtn"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     New Project
                 </button>
@@ -80,16 +80,16 @@
         <!-- Workflow View -->
         <div id="workflowView" class="hidden space-y-6">
             <div class="flex justify-between items-center">
-                <button id="backToListBtn" 
+                <button id="backToListBtn"
                         class="text-blue-600 dark:text-blue-400 hover:underline">
                     ← Back to Projects
                 </button>
                 <div class="flex gap-2">
-                    <button id="exportBtn" 
+                    <button id="exportBtn"
                             class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
                         Export
                     </button>
-                    <button id="deleteBtn" 
+                    <button id="deleteBtn"
                             class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">
                         Delete
                     </button>
@@ -121,11 +121,11 @@
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Import Project</h3>
             <input type="file" id="importFileInput" accept=".json" class="w-full mb-4">
             <div class="flex justify-end gap-2">
-                <button id="cancelImportBtn" 
+                <button id="cancelImportBtn"
                         class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
                     Cancel
                 </button>
-                <button id="confirmImportBtn" 
+                <button id="confirmImportBtn"
                         class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                     Import
                 </button>
@@ -168,4 +168,3 @@
     <script type="module" src="js/app.js"></script>
 </body>
 </html>
-

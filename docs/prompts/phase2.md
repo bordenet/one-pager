@@ -78,4 +78,3 @@ When ready, provide your improved version in this format:
 ## Original One-Pager Document
 
 {phase1Output}
-

@@ -54,7 +54,7 @@ https://github.com/bordenet/one-pager/blob/main/js/app.js (lines 91-115, 599-607
 
 ### Step 4: Test Genesis by Creating New Project
 **Status**: ⏳ Pending (after Step 3 complete)
-**Action**: 
+**Action**:
 1. Use Genesis to create a test project
 2. Deploy the test project
 3. Verify dark mode works out of the box
@@ -85,4 +85,3 @@ https://github.com/bordenet/one-pager/blob/main/js/app.js (lines 91-115, 599-607
 **NEXT ACTION**: User needs to fix product-requirements-assistant first using the instructions in `FIX-PRD-ASSISTANT-INSTRUCTIONS.md`
 
 Once that's working, come back here and we'll update Genesis together.
-

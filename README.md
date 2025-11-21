@@ -1,5 +1,17 @@
 # One-Pager Assistant
 
+[![CI](https://github.com/bordenet/one-pager/actions/workflows/ci.yml/badge.svg)](https://github.com/bordenet/one-pager/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/bordenet/one-pager/branch/main/graph/badge.svg)](https://codecov.io/gh/bordenet/one-pager)
+[![Node.js 18+](https://img.shields.io/badge/node-18+-brightgreen.svg)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+[![Linting: ESLint](https://img.shields.io/badge/linting-ESLint-4B32C3)](https://eslint.org/)
+[![Testing: Jest](https://img.shields.io/badge/testing-Jest-C21325)](https://jestjs.io/)
+[![Code Style: ESLint](https://img.shields.io/badge/code%20style-ESLint-4B32C3)](https://eslint.org/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/bordenet/one-pager/graphs/commit-activity)
+[![GitHub issues](https://img.shields.io/github/issues/bordenet/one-pager.svg)](https://github.com/bordenet/one-pager/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/bordenet/one-pager.svg)](https://github.com/bordenet/one-pager/pulls)
+
 An opinionated, AI-assisted workflow helper for generating crisp and high-quality one-pager documents.
 
 **🌐 Try it now: [https://bordenet.github.io/one-pager/](https://bordenet.github.io/one-pager/)**
@@ -101,23 +113,68 @@ Based on [The One-Pager](https://github.com/bordenet/Engineering_Culture/blob/ma
 
 ## Development
 
-### Install Dependencies
+### Setup
 
 ```bash
+# Clone repository
+git clone https://github.com/bordenet/one-pager.git
+cd one-pager
+
+# Install dependencies
 npm install
+
+# Set up pre-commit hooks (automatic via npm install)
+# Or manually: pre-commit install
 ```
 
-### Run Tests
+### Running Tests
 
 ```bash
-# All tests
+# Run all tests
 npm test
 
-# With coverage
+# Run with coverage
 npm run test:coverage
 
-# Linting
+# Run in watch mode
+npm run test:watch
+
+# Run unit tests only
+npm run test:unit
+
+# Run E2E tests
+npm run test:e2e
+```
+
+### Code Quality
+
+```bash
+# Run linting
 npm run lint
+
+# Fix linting errors automatically
+npm run lint:fix
+
+# Run all quality checks (lint + coverage)
+npm run quality
+
+# Run pre-commit hooks manually
+pre-commit run --all-files
+```
+
+### Pre-Commit Hooks
+
+This project uses pre-commit hooks to enforce code quality. All commits must pass:
+
+- **ESLint** - Code linting (auto-fixes where possible)
+- **Jest** - All tests must pass with 73%+ coverage
+- **File checks** - Trailing whitespace, EOF, large files, etc.
+
+The hooks run automatically on `git commit`. If they fail, the commit is blocked.
+
+To bypass hooks (not recommended):
+```bash
+git commit --no-verify
 ```
 
 ### Deploy to GitHub Pages

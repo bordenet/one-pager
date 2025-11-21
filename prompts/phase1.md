@@ -93,4 +93,3 @@ Work with the user iteratively until you have a complete, compelling one-pager.
 ## Output Format
 
 Provide the final one-pager as a downloadable markdown document.
-

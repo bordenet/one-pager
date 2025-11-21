@@ -126,7 +126,7 @@ async function showProjectList() {
 async function renderProjectList() {
   const projects = await getAllProjects();
   const container = document.getElementById('projectList');
-  
+
   if (projects.length === 0) {
     container.innerHTML = `
       <div class="text-center py-12 text-gray-500 dark:text-gray-400">
@@ -136,7 +136,7 @@ async function renderProjectList() {
     `;
     return;
   }
-  
+
   container.innerHTML = projects.map(project => `
     <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow hover:shadow-md transition-shadow cursor-pointer"
          onclick="window.openProject('${project.id}')">
@@ -165,13 +165,13 @@ async function renderProjectList() {
 function showNewProjectDialog() {
   const name = prompt('Project name:');
   if (!name) return;
-  
+
   const description = prompt('Project description:');
   if (!description) return;
-  
+
   const project = createProject(name, description);
   currentProject = project;
-  
+
   saveProject(project).then(() => {
     showNotification('Project created', 'success');
     showWorkflow();
@@ -567,20 +567,20 @@ window.downloadFinal = function() {
 function showNotification(message, type = 'info') {
   const container = document.getElementById('notifications');
   const id = Date.now();
-  
+
   const colors = {
     success: 'bg-green-500',
     error: 'bg-red-500',
     info: 'bg-blue-500'
   };
-  
+
   const notification = document.createElement('div');
   notification.id = `notification-${id}`;
   notification.className = `notification ${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg`;
   notification.textContent = message;
-  
+
   container.appendChild(notification);
-  
+
   setTimeout(() => {
     notification.classList.add('removing');
     setTimeout(() => notification.remove(), 300);
@@ -605,4 +605,3 @@ if (document.readyState === 'loading') {
 } else {
   initApp();
 }
-

@@ -34,7 +34,7 @@ Projects generated from Genesis have broken dark mode toggles. Users click the b
 </script>
 ```
 
-**CRITICAL**: 
+**CRITICAL**:
 - The `tailwind.config` MUST be set AFTER the Tailwind script loads
 - Must use `darkMode: 'class'` (not `media`)
 - Without this, Tailwind defaults to `media` mode which only responds to system preferences, not JavaScript toggles
@@ -79,7 +79,7 @@ function loadTheme() {
 function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.classList.contains('dark');
-  
+
   if (isDark) {
     html.classList.remove('dark');
     localStorage.setItem('theme', 'light');
@@ -203,4 +203,3 @@ After updating Genesis, create a test project:
 ---
 
 **BOTTOM LINE**: Copy the exact implementation from product-requirements-assistant. It works perfectly. Don't reinvent it.
-

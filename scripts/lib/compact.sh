@@ -99,7 +99,7 @@ task_skip() {
 task_start() {
     CURRENT_TASK="$1"
     update_status "${SYM_RUN}" "${CURRENT_TASK}..."
-    
+
     if [[ $VERBOSE -eq 1 ]]; then
         finalize_status
     fi
@@ -160,4 +160,3 @@ trap cleanup_display EXIT
 
 # Hide cursor for cleaner updates
 printf "%s" "${ANSI_HIDE_CURSOR}"
-

@@ -48,7 +48,7 @@ function loadTheme() {
 function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.classList.contains('dark');
-  
+
   if (isDark) {
     html.classList.remove('dark');
     localStorage.setItem('theme', 'light');
@@ -77,7 +77,7 @@ if (document.readyState === 'loading') {
 function setupGlobalEventListeners() {
   // Theme toggle
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
-  
+
   // ... other listeners
 }
 ```
@@ -146,4 +146,3 @@ Check that:
 ---
 
 **KEY INSIGHT**: The missing piece is the Tailwind config. Without `tailwind.config = { darkMode: 'class' }`, Tailwind defaults to `media` mode which only responds to system preferences, not the JavaScript toggle.
-

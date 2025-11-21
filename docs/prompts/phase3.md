@@ -76,4 +76,3 @@ Provide the final synthesized one-pager in this format:
 ## Your Synthesis
 
 {Work with the user to create the final version}
-
