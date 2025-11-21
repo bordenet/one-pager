@@ -28,9 +28,11 @@ I'm ready to execute rigorous evolutionary prompt optimization for product-requi
 
 ### CRITICAL: Same-LLM Configuration Handling
 
+**CRITICAL DISCOVERY**: The Phase 2 prompt contains "Forget all previous sessions and context" which nullifies prepended instructions.
+
 **If this project uses the SAME LLM for both phases** (e.g., corporate LibreChat with single model):
 
-**Phase 2 Adversarial Augmentation Required**:
+**Phase 2 Adversarial Replacement Required** (NOT prepending):
 ```
 ## ADVERSARIAL REVIEWER ROLE (GEMINI-STYLE SIMULATION)
 
