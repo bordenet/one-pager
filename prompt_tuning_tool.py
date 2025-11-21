@@ -8,16 +8,20 @@ with mutation-based keep/discard logic.
 
 Usage:
     python prompt_tuning_tool.py init <project_name>
-    python prompt_tuning_tool.py simulate <project_name>
-    python prompt_tuning_tool.py evolve <project_name>
+    python prompt_tuning_tool.py simulate <project_name> [--mock]
+    python prompt_tuning_tool.py evolve <project_name> [--mock]
+    python prompt_tuning_tool.py ai-agent-optimize <project_name>
     python prompt_tuning_tool.py status <project_name>
 
 Example:
     # Initialize new project
     python prompt_tuning_tool.py init product-requirements-assistant
 
-    # Run evolutionary tuning
+    # Run evolutionary tuning (with API keys)
     python prompt_tuning_tool.py evolve product-requirements-assistant
+
+    # AI Agent autonomous optimization (no API keys required)
+    python prompt_tuning_tool.py ai-agent-optimize product-requirements-assistant
 """
 
 import sys

@@ -60,6 +60,10 @@ class ProjectConfig:
     save_intermediate: bool = True
     verbose: bool = False
 
+    # Attribution settings
+    attribution_url: str = "{GENESIS_TOOL_URL}"
+    add_attribution: bool = True
+
 
 # Default configurations
 DEFAULT_PHASE_CONFIGS = {
@@ -112,6 +116,9 @@ def load_project_config(project_name: str, base_dir: Optional[Path] = None) -> P
     results_dir = base_dir / f"prompt_tuning_results_{project_name}"
     test_cases_file = results_dir / f"test_cases_{project_name}.json"
 
+    # Get attribution URL from environment or use default
+    attribution_url = os.getenv("GENESIS_TOOL_URL", "{GENESIS_TOOL_URL}")
+
     return ProjectConfig(
         project_name=project_name,
         prompts_dir=prompts_dir,
@@ -119,7 +126,8 @@ def load_project_config(project_name: str, base_dir: Optional[Path] = None) -> P
         test_cases_file=test_cases_file,
         phase_configs=DEFAULT_PHASE_CONFIGS,
         scoring=DEFAULT_SCORING,
-        evolution=DEFAULT_EVOLUTION
+        evolution=DEFAULT_EVOLUTION,
+        attribution_url=attribution_url
     )
 
 
@@ -152,4 +160,7 @@ OPENAI_API_KEY=your_openai_api_key_here
 # Configuration
 PROMPT_TUNING_VERBOSE=false
 PROMPT_TUNING_SAVE_INTERMEDIATE=true
+
+# Attribution (will be replaced during Genesis bootstrapping)
+GENESIS_TOOL_URL=https://github.com/bordenet/genesis/tree/main/prompt-tuning-tool
 """
