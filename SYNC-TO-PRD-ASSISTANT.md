@@ -2,49 +2,34 @@
 
 **AUDIENCE**: This document is for the AI assistant working on the `product-requirements-assistant` repository.
 
-**PURPOSE**: Sync the header navigation and footer improvements from `one-pager` to `product-requirements-assistant`.
+**PURPOSE**: Document that one-pager has been synced TO MATCH product-requirements-assistant.
 
 ---
 
-## 🎯 What to Sync
+## 🎯 What Was Synced
 
-The `one-pager` project has been updated with:
+The `one-pager` project has been updated to MATCH `product-requirements-assistant`:
 1. ✅ Sophisticated header with icon, tagline, and dropdown navigation
-2. ✅ Dark mode toggle (SVG icon)
+2. ✅ Dark mode toggle (SVG icon) using `theme-toggle` ID
 3. ✅ Footer with links to related projects
-4. ✅ Tailwind dark mode configuration (CRITICAL BUG FIX)
+4. ✅ Dark mode implementation using `loadTheme()` before init
+5. ✅ Tailwind config set AFTER loading (like PRD Assistant)
 
-The `product-requirements-assistant` already has most of these, but needs to:
-1. **Add link to One-Pager** in the Related Projects dropdown
-2. **Fix Tailwind dark mode configuration** (CRITICAL)
+**NO CHANGES NEEDED** to product-requirements-assistant - it's the reference implementation!
 
 ---
 
-## 🚨 CRITICAL: Fix Tailwind Dark Mode Configuration
+## ✅ Dark Mode Already Works in PRD Assistant
 
-**CURRENT STATE** (BROKEN):
-```html
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-```
+**GOOD NEWS**: The dark mode implementation in PRD Assistant is correct and doesn't need changes.
 
-**REQUIRED FIX**:
-```html
-<!-- Tailwind CSS with dark mode configuration -->
-<script>
-    // Configure Tailwind BEFORE it loads
-    window.tailwindConfig = {
-        darkMode: 'class'
-    }
-</script>
-<script src="https://cdn.tailwindcss.com"></script>
-```
+**How it works**:
+- Uses `loadTheme()` function that runs BEFORE app initialization
+- Uses `theme-toggle` as the button ID
+- Stores preference in localStorage as 'theme' (not 'darkMode')
+- Tailwind config is set AFTER loading: `tailwind.config = { darkMode: 'class' }`
 
-**WHY**: Without this, the dark mode toggle button doesn't work. Tailwind CDN defaults to `media` mode (system preference) instead of `class` mode (JavaScript toggle).
-
-**FILE TO UPDATE**: `docs/index.html` (or root `index.html` if it exists)
-
-**LOCATION**: In the `<head>` section, BEFORE the Tailwind CSS script tag
+**No changes needed** - this is the reference implementation that one-pager now matches.
 
 ---
 
