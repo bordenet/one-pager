@@ -39,16 +39,27 @@ async function initApp() {
 function setupEventListeners() {
   // Dark mode toggle
   document.getElementById('darkModeToggle')?.addEventListener('click', toggleDarkMode);
-  
+
+  // Related projects dropdown
+  const relatedBtn = document.getElementById('relatedProjectsBtn');
+  const relatedMenu = document.getElementById('relatedProjectsMenu');
+  relatedBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    relatedMenu?.classList.toggle('hidden');
+  });
+  document.addEventListener('click', () => {
+    relatedMenu?.classList.add('hidden');
+  });
+
   // New project button
   document.getElementById('newProjectBtn')?.addEventListener('click', showNewProjectDialog);
-  
+
   // Back to list button
   document.getElementById('backToListBtn')?.addEventListener('click', () => {
     currentProject = null;
     showProjectList();
   });
-  
+
   // Export button
   document.getElementById('exportBtn')?.addEventListener('click', () => {
     if (currentProject) {
@@ -56,7 +67,7 @@ function setupEventListeners() {
       showNotification('Project exported', 'success');
     }
   });
-  
+
   // Delete button
   document.getElementById('deleteBtn')?.addEventListener('click', async () => {
     if (currentProject && confirm('Delete this project?')) {
@@ -66,7 +77,7 @@ function setupEventListeners() {
       showProjectList();
     }
   });
-  
+
   // AI Mock mode toggle
   document.getElementById('mockModeCheckbox')?.addEventListener('change', (e) => {
     setMockMode(e.target.checked);
