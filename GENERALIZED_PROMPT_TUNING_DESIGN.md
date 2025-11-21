@@ -1,57 +1,72 @@
-# Design Specification: Generalized LLM Prompt Tuning System
+# Design Specification: Rigorous Evolutionary LLM Prompt Tuning System
 
-**Version**: 1.0
+**Version**: 2.0 - Evolutionary Methodology
 **Date**: 2025-11-21
 **Related**: GENERALIZED_PROMPT_TUNING_PRD.md
 
 ---
 
-## 1. System Architecture
+## 🔬 **CORE EVOLUTIONARY PRINCIPLES**
+
+### Critical "Ah-Ha!" Moments Driving Design:
+
+1. **Adversarial Tension Creates Value**: Phase 2 must generate DELIBERATELY DIFFERENT approaches, not incremental improvements
+2. **Evolutionary Keep/Discard Logic**: Treat each change as a mutation - keep only if scores improve objectively
+3. **Multi-Round Evolution**: 20-40 rounds of small mutations outperform single large changes
+4. **Incremental Scoring**: Track every iteration to prevent regression and identify diminishing returns
+
+---
+
+## 1. Evolutionary System Architecture
 
 ### 1.1 High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                 Generalized Prompt Tuner                   │
+│            Rigorous Evolutionary Prompt Tuner              │
 │                                                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   Project   │  │    Test     │  │  Quality    │        │
-│  │  Detector   │  │ Generator   │  │ Evaluator   │        │
+│  │   Project   │  │  Baseline   │  │  Mutation   │        │
+│  │  Detector   │  │ Establisher │  │  Generator  │        │
 │  └─────────────┘  └─────────────┘  └─────────────┘        │
 │                                                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │ Simulation  │  │ Evolution   │  │   Report    │        │
-│  │   Engine    │  │   Engine    │  │ Generator   │        │
+│  │ Simulation  │  │ Evolutionary│  │ Keep/Discard│        │
+│  │   Engine    │  │  Scorer     │  │   Logic     │        │
 │  └─────────────┘  └─────────────┘  └─────────────┘        │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    AI Agent Interface                      │
-│  - Single command execution                                │
-│  - Progress tracking                                       │
-│  - Autonomous decision making                              │
-│  - Result reporting                                        │
+│              Multi-Round Evolution Controller               │
+│  - 20-round vs 40-round comparison                         │
+│  - Mutation tracking and scoring                           │
+│  - Diminishing returns detection                           │
+│  - Optimal iteration count determination                   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 Core Components
+### 1.2 Evolutionary Components
 
-1. **Project Detector**: Identifies project type and prompt structure
-2. **Test Generator**: Creates realistic test cases based on project context
-3. **Simulation Engine**: Executes prompts with mock LLM responses
-4. **Quality Evaluator**: Scores outputs against standardized rubrics
-5. **Evolution Engine**: Applies improvements using keep/discard logic
-6. **Report Generator**: Creates comprehensive analysis and comparison reports
+1. **Baseline Establisher**: Creates unassailable baseline measurements with 8 diverse test cases
+2. **Mutation Generator**: Designs specific, testable prompt changes targeting lowest-scoring criteria
+3. **Evolutionary Scorer**: Applies standardized rubrics with objective evidence citation
+4. **Keep/Discard Logic**: Makes binary decisions based on score improvements (no subjective judgment)
+5. **Multi-Round Controller**: Manages 20-round and 40-round optimization cycles
+6. **Diminishing Returns Detector**: Identifies when additional rounds stop adding value
 
-### 1.3 Data Flow
+### 1.3 Evolutionary Data Flow
 
 ```
-Project Path → Project Detection → Prompt Analysis → Test Generation
+Project Detection → Baseline Establishment (8 test cases) → Initial Scoring
      ↓
-Baseline Simulation → Quality Evaluation → Improvement Identification
+Round 1-20: Mutation → Simulation → Scoring → Keep/Discard → Documentation
      ↓
-Prompt Optimization → Validation Simulation → Final Report
+20-Round Analysis → Diminishing Returns Assessment
+     ↓
+Round 21-40: Advanced Mutations → Scoring → Keep/Discard → Documentation
+     ↓
+Comparative Analysis: 20-Round vs 40-Round Results → Optimal Count Determination
 ```
 
 ## 2. Project Detection System
@@ -309,65 +324,232 @@ class ClarityEvaluator:
         )
 ```
 
-## 6. Evolution Engine
+## 6. Rigorous Evolutionary Engine
 
-### 6.1 Improvement Identification
+### 6.1 Multi-Round Evolution Controller
 
 ```python
-def identify_improvements(evaluation_results):
-    """Analyze evaluation results to identify improvement opportunities"""
+class EvolutionaryOptimizer:
+    """Controls multi-round evolutionary optimization with objective scoring"""
 
-    improvements = []
+    def __init__(self, project_type, baseline_results):
+        self.project_type = project_type
+        self.baseline_results = baseline_results
+        self.baseline_score = calculate_average_score(baseline_results)
+        self.current_prompts = load_current_prompts()
+        self.current_score = self.baseline_score
+        self.mutation_log = []
+        self.round_number = 0
 
-    # Pattern 1: Consistent low scores across test cases
-    for criterion in ["clarity", "conciseness", "completeness"]:
-        avg_score = calculate_average_score(evaluation_results, criterion)
-        if avg_score < 3.5:
-            improvements.append(create_improvement_recommendation(criterion, avg_score))
+    def execute_20_round_optimization(self):
+        """Execute 20 rounds of evolutionary optimization"""
 
-    # Pattern 2: Specific failure modes
-    common_issues = extract_common_issues(evaluation_results)
-    for issue in common_issues:
-        improvements.append(create_issue_based_recommendation(issue))
+        for round_num in range(1, 21):
+            self.round_number = round_num
 
-    return prioritize_improvements(improvements)
+            # Identify target for mutation
+            target_criterion = self._identify_lowest_scoring_criterion()
+
+            # Generate specific mutation
+            mutation = self._generate_mutation(target_criterion)
+
+            # Apply mutation and test
+            result = self._execute_mutation_round(mutation)
+
+            # Log results
+            self.mutation_log.append(result)
+
+            # Check for diminishing returns
+            if self._detect_diminishing_returns():
+                break
+
+        return self._generate_20_round_report()
+
+    def execute_40_round_optimization(self):
+        """Continue optimization for additional 20 rounds (total 40)"""
+
+        for round_num in range(21, 41):
+            self.round_number = round_num
+
+            # Advanced mutation strategies for later rounds
+            mutation = self._generate_advanced_mutation()
+            result = self._execute_mutation_round(mutation)
+            self.mutation_log.append(result)
+
+        return self._generate_40_round_report()
 ```
 
-### 6.2 Prompt Mutation System
+### 6.2 Mutation Generation System
 
 ```python
-def apply_improvements(prompts, improvements):
-    """Apply specific improvements to prompt files"""
+def _generate_mutation(self, target_criterion):
+    """Generate specific, testable mutation targeting lowest-scoring criterion"""
 
-    updated_prompts = copy.deepcopy(prompts)
+    mutation_strategies = {
+        "clarity": [
+            "add_explicit_examples",
+            "strengthen_instruction_language",
+            "add_definition_requirements"
+        ],
+        "conciseness": [
+            "add_word_count_limits",
+            "add_brevity_constraints",
+            "require_bullet_points"
+        ],
+        "completeness": [
+            "add_section_requirements",
+            "mandate_specific_elements",
+            "require_comprehensive_coverage"
+        ],
+        "professionalism": [
+            "strengthen_business_language",
+            "add_tone_requirements",
+            "require_executive_framing"
+        ],
+        "actionability": [
+            "require_specific_metrics",
+            "mandate_next_steps",
+            "add_timeline_requirements"
+        ]
+    }
 
-    for improvement in improvements:
-        if improvement.type == "word_count_enforcement":
-            updated_prompts = add_word_count_constraints(updated_prompts, improvement)
-        elif improvement.type == "business_framing":
-            updated_prompts = add_business_framing_guidance(updated_prompts, improvement)
-        elif improvement.type == "example_addition":
-            updated_prompts = add_concrete_examples(updated_prompts, improvement)
+    # Select specific mutation based on target criterion
+    available_strategies = mutation_strategies[target_criterion]
+    selected_strategy = choose_best_strategy(available_strategies, self.mutation_log)
 
-    return updated_prompts
+    return create_specific_mutation(selected_strategy, target_criterion)
+
+def create_specific_mutation(strategy, criterion):
+    """Create specific, reversible prompt modification"""
+
+    if strategy == "add_word_count_limits":
+        return {
+            "type": "word_count_enforcement",
+            "target_files": ["phase1.md", "phase2.md", "phase3.md"],
+            "modification": "Add explicit word count constraint: 'CRITICAL: Maximum 600 words.'",
+            "expected_impact": f"Improve {criterion} scores by enforcing brevity",
+            "reversible": True
+        }
+
+    elif strategy == "strengthen_business_language":
+        return {
+            "type": "business_framing",
+            "target_files": ["phase1.md"],
+            "modification": "Add requirement: 'Frame all content in business impact terms with quantifiable metrics.'",
+            "expected_impact": f"Improve {criterion} through executive-level language",
+            "reversible": True
+        }
+
+    # Additional mutation types...
 ```
 
-### 6.3 Keep/Discard Logic
+### 6.3 Rigorous Keep/Discard Logic
 
 ```python
-def validate_improvements(original_results, improved_results):
-    """Determine whether to keep or discard improvements"""
+def _execute_mutation_round(self, mutation):
+    """Execute single mutation round with rigorous scoring"""
 
-    original_avg = calculate_average_score(original_results)
-    improved_avg = calculate_average_score(improved_results)
+    # Apply mutation to prompts
+    mutated_prompts = apply_mutation(self.current_prompts, mutation)
 
-    if improved_avg > original_avg + 0.1:  # Minimum improvement threshold
-        # Check for regressions
-        regressions = find_regressions(original_results, improved_results, threshold=0.5)
-        if len(regressions) == 0:
-            return Decision.KEEP
+    # Re-execute ALL test cases with mutated prompts
+    new_results = simulate_all_test_cases(mutated_prompts, self.test_cases)
 
-    return Decision.DISCARD
+    # Score results using SAME rubric
+    new_score = calculate_average_score(new_results)
+
+    # Make objective keep/discard decision
+    decision = self._make_keep_discard_decision(new_score)
+
+    # Update state if keeping mutation
+    if decision == Decision.KEEP:
+        self.current_prompts = mutated_prompts
+        self.current_score = new_score
+
+    # Document round results
+    return {
+        "round": self.round_number,
+        "mutation": mutation,
+        "previous_score": self.current_score,
+        "new_score": new_score,
+        "delta": new_score - self.current_score,
+        "decision": decision,
+        "rationale": self._generate_decision_rationale(new_score),
+        "test_case_impacts": calculate_per_test_case_impact(new_results)
+    }
+
+def _make_keep_discard_decision(self, new_score):
+    """Objective binary decision based solely on score improvement"""
+
+    if new_score > self.current_score:
+        return Decision.KEEP
+    else:
+        return Decision.DISCARD
+
+    # No subjective judgment allowed - purely objective scoring
+
+def _detect_diminishing_returns(self):
+    """Identify when additional rounds stop adding significant value"""
+
+    if len(self.mutation_log) < 5:
+        return False
+
+    # Check last 5 rounds for improvement
+    recent_improvements = [
+        round_result["delta"] for round_result in self.mutation_log[-5:]
+        if round_result["decision"] == Decision.KEEP
+    ]
+
+    # If no improvements in last 5 rounds, diminishing returns detected
+    if len(recent_improvements) == 0:
+        return True
+
+    # If average improvement in last 5 rounds < 0.05, diminishing returns
+    if sum(recent_improvements) / len(recent_improvements) < 0.05:
+        return True
+
+    return False
+```
+
+### 6.4 Comparative Analysis Engine
+
+```python
+def compare_20_vs_40_round_results(results_20, results_40):
+    """Determine which approach produces superior results"""
+
+    analysis = {
+        "baseline_score": results_20["baseline_score"],
+        "20_round_score": results_20["final_score"],
+        "40_round_score": results_40["final_score"],
+        "20_round_improvement": results_20["total_improvement"],
+        "40_round_improvement": results_40["total_improvement"],
+        "20_round_efficiency": results_20["improvement_per_round"],
+        "40_round_efficiency": results_40["improvement_per_round"],
+        "diminishing_returns_point": identify_diminishing_returns_point(results_40),
+        "optimal_iteration_count": determine_optimal_count(results_20, results_40),
+        "winner": determine_winner(results_20, results_40),
+        "recommendation": generate_recommendation(results_20, results_40)
+    }
+
+    return analysis
+
+def determine_winner(results_20, results_40):
+    """Objective determination of which approach is superior"""
+
+    # Primary criterion: Final quality score
+    if results_40["final_score"] > results_20["final_score"] + 0.1:
+        return "40-round (significantly better final quality)"
+
+    elif results_20["final_score"] > results_40["final_score"] + 0.1:
+        return "20-round (better efficiency, similar quality)"
+
+    else:
+        # Secondary criterion: Efficiency (improvement per round)
+        if results_20["improvement_per_round"] > results_40["improvement_per_round"]:
+            return "20-round (better efficiency, equivalent quality)"
+        else:
+            return "40-round (marginal quality advantage)"
+```
 
 ## 7. AI Agent Execution Interface
 
