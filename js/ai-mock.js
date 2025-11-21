@@ -43,7 +43,7 @@ let mockModeEnabled = false;
 export function initMockMode() {
   const saved = localStorage.getItem('aiMockMode');
   mockModeEnabled = saved === 'true';
-  
+
   // Show toggle only on localhost
   if (isLocalhost()) {
     const toggle = document.getElementById('aiMockToggle');
@@ -55,7 +55,7 @@ export function initMockMode() {
       }
     }
   }
-  
+
   return mockModeEnabled;
 }
 
@@ -63,7 +63,7 @@ export function initMockMode() {
  * Check if running on localhost
  */
 function isLocalhost() {
-  return window.location.hostname === 'localhost' || 
+  return window.location.hostname === 'localhost' ||
          window.location.hostname === '127.0.0.1' ||
          window.location.hostname === '';
 }
@@ -74,13 +74,13 @@ function isLocalhost() {
 export function setMockMode(enabled) {
   mockModeEnabled = enabled;
   localStorage.setItem('aiMockMode', enabled.toString());
-  
+
   // Update checkbox
   const checkbox = document.getElementById('mockModeCheckbox');
   if (checkbox) {
     checkbox.checked = enabled;
   }
-  
+
   return mockModeEnabled;
 }
 
@@ -97,7 +97,7 @@ export function isMockMode() {
 export async function getMockResponse(phaseNumber) {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  
+
   return mockResponses[phaseNumber] || 'Mock response not available for this phase.';
 }
 
@@ -107,4 +107,3 @@ export async function getMockResponse(phaseNumber) {
 export function addMockResponse(phaseNumber, response) {
   mockResponses[phaseNumber] = response;
 }
-

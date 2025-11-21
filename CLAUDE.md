@@ -15,7 +15,7 @@ When asked to do a task, you MUST:
 5. ✅ Check coverage if applicable
 6. ✅ **PROACTIVELY tell the user what's left** - don't wait to be asked
 
-**BAD**: "I've created the files."  
+**BAD**: "I've created the files."
 **GOOD**: "I've created the files, linted them (0 errors), ran tests (37/37 passing), and verified coverage (73%). What's left: [specific list]"
 
 ### 2. **NEVER Include Build Artifacts**
@@ -164,4 +164,3 @@ npm run lint:fix
 ---
 
 **Remember**: Match the user's high standards for professionalism and completeness.
-

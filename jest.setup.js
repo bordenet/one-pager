@@ -43,4 +43,3 @@ global.navigator.clipboard = {
 global.alert = () => {};
 global.confirm = () => true;
 global.prompt = () => null;
-

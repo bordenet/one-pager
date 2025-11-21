@@ -75,7 +75,7 @@ describe('AI Mock Module', () => {
       const start = Date.now();
       await getMockResponse(1);
       const elapsed = Date.now() - start;
-      
+
       expect(elapsed).toBeGreaterThanOrEqual(500);
     });
   });
@@ -84,7 +84,7 @@ describe('AI Mock Module', () => {
     test('should add custom mock response', async () => {
       const customResponse = 'Custom test response';
       addMockResponse(3, customResponse);
-      
+
       const response = await getMockResponse(3);
       expect(response).toBe(customResponse);
     });
@@ -92,10 +92,9 @@ describe('AI Mock Module', () => {
     test('should override existing mock response', async () => {
       const customResponse = 'Override response';
       addMockResponse(1, customResponse);
-      
+
       const response = await getMockResponse(1);
       expect(response).toBe(customResponse);
     });
   });
 });
-

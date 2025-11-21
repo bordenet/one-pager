@@ -40,7 +40,7 @@ The dropdown in `product-requirements-assistant` has:
 - One-Pager Generator (already there!)
 - Genesis Templates
 
-**REQUIRED CHANGE**: 
+**REQUIRED CHANGE**:
 Update the link text to match:
 
 ```html
@@ -125,4 +125,3 @@ After making changes:
 ---
 
 **REMEMBER**: The Tailwind config MUST be set on `window.tailwindConfig` BEFORE the Tailwind CDN script loads. This is the most critical fix.
-

@@ -151,10 +151,10 @@ validate_files() {
 # BAD (bloated)
 validate_files() {
     task_start "Validating web app files"
-    
+
     # Create an array to store missing files
     local missing_files=()
-    
+
     # Loop through all required files
     for file in "${REQUIRED_FILES[@]}"; do
         # Check if the file exists
@@ -163,7 +163,7 @@ validate_files() {
             missing_files+=("${file}")
         fi
     done
-    
+
     # Check if we have any missing files
     if [[ ${#missing_files[@]} -gt 0 ]]; then
         task_fail "Missing required files:"
@@ -172,7 +172,7 @@ validate_files() {
         done
         return 1
     fi
-    
+
     task_ok "All required files present"
 }
 ```
@@ -395,4 +395,3 @@ When fixing this bug in the Genesis repository:
 ---
 
 **END OF INSTRUCTIONS FOR GENESIS REPO**
-

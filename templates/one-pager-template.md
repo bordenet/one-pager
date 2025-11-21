@@ -27,19 +27,19 @@ This template is based on [The One-Pager methodology](https://github.com/bordene
 ## Common Mistakes to Avoid
 
 ### Mistake 1: The Wall of Text
-**Problem**: Long, dense paragraphs that are difficult to scan  
+**Problem**: Long, dense paragraphs that are difficult to scan
 **Fix**: Use headings, subheadings, and bullet points
 
 ### Mistake 2: The "Everything but the Kitchen Sink"
-**Problem**: Trying to cram every detail onto one page  
+**Problem**: Trying to cram every detail onto one page
 **Fix**: Be disciplined. If it's not essential, leave it out
 
 ### Mistake 3: Vague Goals
-**Problem**: Using fuzzy terms like "improve user experience"  
+**Problem**: Using fuzzy terms like "improve user experience"
 **Fix**: Define success with specific, measurable, time-bound goals
 
 ### Mistake 4: Confusing Features with Benefits
-**Problem**: Listing what your solution *does* instead of what it *achieves*  
+**Problem**: Listing what your solution *does* instead of what it *achieves*
 **Fix**: For every feature, ask "So what?" to uncover the real benefit
 
 ## Example One-Pager
@@ -96,4 +96,3 @@ This template can be adapted based on your needs:
 - **Scalable**: Use for projects of any size, from small features to major initiatives
 
 The key is maintaining the discipline of one page while ensuring all critical information is present.
-

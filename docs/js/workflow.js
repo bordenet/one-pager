@@ -138,11 +138,11 @@ export function validatePhase(project) {
 export function advancePhase(project) {
   const phase = project.phases[project.currentPhase - 1];
   phase.completed = true;
-  
+
   if (project.currentPhase < PHASES.length) {
     project.currentPhase++;
   }
-  
+
   return project;
 }
 
@@ -176,4 +176,3 @@ export function getProgress(project) {
   const completedPhases = project.phases.filter(p => p.completed).length;
   return Math.round((completedPhases / PHASES.length) * 100);
 }
-

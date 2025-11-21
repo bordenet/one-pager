@@ -21,7 +21,7 @@ export async function initDB() {
 
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      
+
       // Create object store if it doesn't exist
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
@@ -39,7 +39,7 @@ export async function saveProject(project) {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([STORE_NAME], 'readwrite');
     const objectStore = transaction.objectStore(STORE_NAME);
-    
+
     project.modified = Date.now();
     const request = objectStore.put(project);
 
@@ -102,12 +102,12 @@ export function exportProject(project) {
   const json = JSON.stringify(project, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  
+
   const a = document.createElement('a');
   a.href = url;
   a.download = `${project.name.replace(/\s+/g, '-')}.json`;
   a.click();
-  
+
   URL.revokeObjectURL(url);
 }
 
@@ -117,28 +117,28 @@ export function exportProject(project) {
 export async function importProject(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = async (e) => {
       try {
         const project = JSON.parse(e.target.result);
-        
+
         // Validate project structure
         if (!project.id || !project.name || !project.phases) {
           throw new Error('Invalid project file');
         }
-        
+
         // Generate new ID to avoid conflicts
         project.id = generateId();
         project.created = Date.now();
         project.modified = Date.now();
-        
+
         await saveProject(project);
         resolve(project);
       } catch (error) {
         reject(error);
       }
     };
-    
+
     reader.onerror = () => reject(reader.error);
     reader.readAsText(file);
   });
@@ -150,4 +150,3 @@ export async function importProject(file) {
 export function generateId() {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
-

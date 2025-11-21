@@ -42,6 +42,5 @@ Once the following tasks are complete, this entire folder can be deleted:
 
 ---
 
-**Created**: 2024-11-20  
+**Created**: 2024-11-20
 **Can be deleted**: After Genesis is fixed
-
