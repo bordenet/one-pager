@@ -6,14 +6,13 @@
     <title>One-Pager Assistant</title>
     <meta name="description" content="AI-assisted workflow helper for generating crisp and high-quality one-pager documents">
     
-    <!-- Tailwind CSS with dark mode configuration -->
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Configure Tailwind BEFORE it loads
-        window.tailwindConfig = {
+        tailwind.config = {
             darkMode: 'class'
         }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Custom Styles -->
     <link rel="stylesheet" href="css/styles.css">
@@ -37,26 +36,22 @@
                 <div class="flex items-center space-x-4">
                     <!-- Related Projects Dropdown -->
                     <div class="relative">
-                        <button type="button" id="relatedProjectsBtn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Related Projects">
+                        <button type="button" id="related-projects-btn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Related Projects">
                             <svg class="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
                         </button>
-                        <div id="relatedProjectsMenu" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                        <div id="related-projects-menu" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
                             <div class="p-2">
                                 <div class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Related Tools</div>
                                 <a href="https://bordenet.github.io/product-requirements-assistant/" target="_blank" rel="noopener" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                     <div class="font-medium text-gray-900 dark:text-white">PRD Assistant</div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400">Create product requirements documents</div>
                                 </a>
-                                <a href="https://github.com/bordenet/genesis" target="_blank" rel="noopener" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                    <div class="font-medium text-gray-900 dark:text-white">Genesis Templates</div>
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">Project template system</div>
-                                </a>
                             </div>
                         </div>
                     </div>
-                    <button type="button" id="darkModeToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Toggle Dark Mode">
+                    <button type="button" id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Toggle Dark Mode">
                         <svg class="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                         </svg>
@@ -148,16 +143,19 @@
                 <div class="flex gap-4">
                     <a href="https://github.com/bordenet/one-pager"
                        target="_blank"
+                       rel="noopener"
                        class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                         GitHub
                     </a>
                     <a href="https://bordenet.github.io/product-requirements-assistant/"
                        target="_blank"
+                       rel="noopener"
                        class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                         PRD Assistant
                     </a>
                     <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md"
                        target="_blank"
+                       rel="noopener"
                        class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                         About
                     </a>
