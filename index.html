@@ -6,13 +6,14 @@
     <title>One-Pager Assistant</title>
     <meta name="description" content="AI-assisted workflow helper for generating crisp and high-quality one-pager documents">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS with dark mode configuration -->
     <script>
-        tailwind.config = {
+        // Configure Tailwind BEFORE it loads
+        window.tailwindConfig = {
             darkMode: 'class'
         }
     </script>
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Custom Styles -->
     <link rel="stylesheet" href="css/styles.css">
