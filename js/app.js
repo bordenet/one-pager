@@ -13,19 +13,16 @@ async function initApp() {
   try {
     // Initialize database
     await initDB();
-    
-    // Initialize dark mode
-    initDarkMode();
-    
+
     // Initialize AI mock mode
     initMockMode();
-    
+
     // Setup event listeners
     setupEventListeners();
-    
+
     // Render project list
     await renderProjectList();
-    
+
     console.log('App initialized successfully');
   } catch (error) {
     console.error('Failed to initialize app:', error);
@@ -37,12 +34,12 @@ async function initApp() {
  * Setup event listeners
  */
 function setupEventListeners() {
-  // Dark mode toggle
-  document.getElementById('darkModeToggle')?.addEventListener('click', toggleDarkMode);
+  // Theme toggle
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
   // Related projects dropdown
-  const relatedBtn = document.getElementById('relatedProjectsBtn');
-  const relatedMenu = document.getElementById('relatedProjectsMenu');
+  const relatedBtn = document.getElementById('related-projects-btn');
+  const relatedMenu = document.getElementById('related-projects-menu');
   relatedBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     relatedMenu?.classList.toggle('hidden');
@@ -89,18 +86,29 @@ function setupEventListeners() {
 }
 
 /**
- * Dark mode
+ * Load saved theme
  */
-function initDarkMode() {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  if (darkMode) {
+function loadTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     document.documentElement.classList.add('dark');
   }
 }
 
-function toggleDarkMode() {
-  const isDark = document.documentElement.classList.toggle('dark');
-  localStorage.setItem('darkMode', isDark.toString());
+/**
+ * Toggle dark/light theme
+ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.classList.contains('dark');
+
+  if (isDark) {
+    html.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  } else {
+    html.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  }
 }
 
 /**
@@ -587,6 +595,9 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+// Load theme before init
+loadTheme();
 
 // Initialize app when DOM is ready
 if (document.readyState === 'loading') {
