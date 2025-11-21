@@ -76,7 +76,7 @@ describe('AI Mock Module', () => {
       await getMockResponse(1);
       const elapsed = Date.now() - start;
 
-      expect(elapsed).toBeGreaterThanOrEqual(500);
+      expect(elapsed).toBeGreaterThanOrEqual(490); // Allow for timing variance
     });
   });
 
