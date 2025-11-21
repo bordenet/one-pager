@@ -44,6 +44,9 @@ class SameLLMAdversarialSystem {
     async executePhase2(phase1Output, userInput, config) {
         if (config.isSameLLM) {
             // Same LLM detected - apply Gemini personality simulation
+            console.log(`Same LLM detected via ${config.detectionMethod} (${config.deploymentType})`);
+            console.log('Applying Gemini adversarial personality simulation to Phase 2');
+
             const augmentedPrompt = this.promptAugmenter.generateGeminiStylePrompt(
                 this.getOriginalPhase2Prompt()
             );
@@ -51,10 +54,13 @@ class SameLLMAdversarialSystem {
             return await this.callLLM(augmentedPrompt, {
                 phase1Output,
                 userInput,
-                context: "adversarial_gemini_simulation"
+                context: "adversarial_gemini_simulation",
+                detectionMethod: config.detectionMethod,
+                deploymentType: config.deploymentType
             });
         } else {
             // Different LLMs - use standard Phase 2 prompt
+            console.log('Different LLMs detected - using standard adversarial approach');
             return await this.callLLM(this.getOriginalPhase2Prompt(), {
                 phase1Output,
                 userInput,
@@ -62,31 +68,153 @@ class SameLLMAdversarialSystem {
             });
         }
     }
+
+    getOriginalPhase2Prompt() {
+        // This would be loaded from the actual Phase 2 prompt file
+        // For demonstration purposes, returning a placeholder
+        return `You are tasked with providing an alternative perspective on the Phase 1 output.
+
+Analyze the provided document and offer a different approach or identify areas for improvement.
+Focus on being constructively critical and offering genuine alternatives.
+
+Phase 1 Output: {phase1Output}
+User Input: {userInput}
+
+Provide your alternative analysis:`;
+    }
+
+    async callLLM(prompt, context) {
+        // This would integrate with actual LLM API calls
+        // For demonstration purposes, returning a mock response
+        return {
+            prompt: prompt,
+            context: context,
+            response: "Mock LLM response - in production this would call the actual LLM API"
+        };
+    }
+
+    async executePhase1(userInput) {
+        // Mock Phase 1 execution
+        return "Mock Phase 1 output - comprehensive initial analysis";
+    }
+
+    async executePhase3(phase1Output, phase2Output, userInput) {
+        // Mock Phase 3 execution
+        return "Mock Phase 3 output - synthesis of both perspectives";
+    }
 }
 
 class ConfigurationManager {
     detectConfiguration() {
         const phase1Config = this.getPhaseConfig('phase1');
         const phase2Config = this.getPhaseConfig('phase2');
+        const isSameLLM = this.isSameModel(phase1Config, phase2Config);
 
         return {
             phase1: phase1Config,
             phase2: phase2Config,
-            isSameLLM: this.isSameModel(phase1Config, phase2Config),
-            requiresAugmentation: this.isSameModel(phase1Config, phase2Config)
+            isSameLLM,
+            requiresAugmentation: isSameLLM,
+            detectionMethod: this.getDetectionMethod(phase1Config, phase2Config),
+            deploymentType: this.getDeploymentType(phase1Config, phase2Config)
         };
+    }
+
+    getDetectionMethod(config1, config2) {
+        if (config1.provider === config2.provider && config1.model === config2.model) {
+            return 'provider_model_match';
+        }
+        if (config1.url && config2.url && config1.url === config2.url) {
+            return 'url_match';
+        }
+        if (config1.endpoint && config2.endpoint && config1.endpoint === config2.endpoint) {
+            return 'endpoint_match';
+        }
+        return 'different_llms';
+    }
+
+    getDeploymentType(config1, config2) {
+        // LibreChat detection
+        if ((config1.url && config1.url.includes('librechat')) ||
+            (config1.endpoint && config1.endpoint.includes('librechat'))) {
+            return 'librechat';
+        }
+
+        // Local deployment detection
+        if ((config1.endpoint && config1.endpoint.includes('localhost')) ||
+            (config1.url && config1.url.includes('localhost'))) {
+            return 'local_deployment';
+        }
+
+        // Corporate single-endpoint detection
+        if (config1.url === config2.url && config1.url) {
+            return 'corporate_single_endpoint';
+        }
+
+        // Same provider (different models)
+        if (config1.provider === config2.provider) {
+            return 'same_provider';
+        }
+
+        return 'multi_provider';
+    }
+
+    // Helper method to detect common corporate deployment patterns
+    detectCorporateDeployment() {
+        const commonPatterns = [
+            'librechat',
+            'chatgpt-enterprise',
+            'azure-openai',
+            'aws-bedrock',
+            'google-vertex',
+            'internal-llm',
+            'corporate-ai'
+        ];
+
+        const phase1Config = this.getPhaseConfig('phase1');
+        const phase2Config = this.getPhaseConfig('phase2');
+
+        for (const pattern of commonPatterns) {
+            if ((phase1Config.url && phase1Config.url.includes(pattern)) ||
+                (phase1Config.endpoint && phase1Config.endpoint.includes(pattern))) {
+                return {
+                    isCorporate: true,
+                    pattern: pattern,
+                    requiresAugmentation: phase1Config.url === phase2Config.url ||
+                                        phase1Config.endpoint === phase2Config.endpoint
+                };
+            }
+        }
+
+        return { isCorporate: false, pattern: null, requiresAugmentation: false };
     }
 
     getPhaseConfig(phase) {
         return {
             provider: process.env[`${phase.toUpperCase()}_PROVIDER`] || 'anthropic',
             model: process.env[`${phase.toUpperCase()}_MODEL`] || 'claude-3-sonnet',
-            endpoint: process.env[`${phase.toUpperCase()}_ENDPOINT`]
+            endpoint: process.env[`${phase.toUpperCase()}_ENDPOINT`],
+            url: process.env[`${phase.toUpperCase()}_URL`] || process.env[`${phase.toUpperCase()}_ENDPOINT`]
         };
     }
 
     isSameModel(config1, config2) {
-        return config1.provider === config2.provider && config1.model === config2.model;
+        // Check if same provider and model
+        if (config1.provider === config2.provider && config1.model === config2.model) {
+            return true;
+        }
+
+        // Check if same URL/endpoint (for LibreChat and similar deployments)
+        if (config1.url && config2.url && config1.url === config2.url) {
+            return true;
+        }
+
+        // Check if same endpoint
+        if (config1.endpoint && config2.endpoint && config1.endpoint === config2.endpoint) {
+            return true;
+        }
+
+        return false;
     }
 }
 
