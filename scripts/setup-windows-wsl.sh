@@ -30,7 +30,8 @@ while [[ $# -gt 0 ]]; do
             cat << EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Setup script for Windows Subsystem for Linux
+Setup script for Windows WSL (Ubuntu/Debian)
+Fast, resumable setup - only installs what's missing.
 
 OPTIONS:
   -v, --verbose    Show detailed output (default: compact)
@@ -48,9 +49,6 @@ PERFORMANCE:
   First run:  ~2-3 minutes (installs everything)
   Subsequent: ~5-10 seconds (checks only, skips installed)
 
-REQUIREMENTS:
-  - WSL with Ubuntu/Debian distribution
-
 EOF
             exit 0
             ;;
@@ -62,11 +60,24 @@ EOF
     esac
 done
 
+# Detect WSL
+if ! grep -qi microsoft /proc/version 2>/dev/null; then
+    task_warn "Not running on Windows WSL"
+    verbose "Detected: $(uname -a)"
+    if [ "$AUTO_YES" = false ]; then
+        read -r -p "Continue anyway? [y/N]: " response
+        if [[ ! "$response" =~ ^[Yy]$ ]]; then
+            echo "Setup cancelled"
+            exit 0
+        fi
+    fi
+fi
+
 # Navigate to project root
 cd "$SCRIPT_DIR/.."
 PROJECT_ROOT=$(pwd)
 
-print_header "One-Pager - Windows WSL Setup"
+print_header "One-Pager - WSL Setup"
 
 # Cache file for tracking installed packages
 CACHE_DIR="$PROJECT_ROOT/.setup-cache"
