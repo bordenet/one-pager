@@ -1,0 +1,222 @@
+/**
+ * Same-LLM Adversarial Configuration Implementation
+ * Maintains adversarial tension when Phase 1 and Phase 2 use the same LLM model
+ */
+
+class SameLLMAdversarialSystem {
+    constructor() {
+        this.configManager = new ConfigurationManager();
+        this.promptAugmenter = new AdversarialPromptAugmenter();
+        this.qualityValidator = new AdversarialQualityValidator();
+    }
+
+    /**
+     * Main execution method that automatically detects and handles same-LLM configurations
+     */
+    async executeWorkflow(userInput) {
+        const config = this.configManager.detectConfiguration();
+
+        // Phase 1: Always use standard prompt
+        const phase1Output = await this.executePhase1(userInput);
+
+        // Phase 2: Apply adversarial augmentation if same LLM detected
+        const phase2Output = await this.executePhase2(phase1Output, userInput, config);
+
+        // Phase 3: Synthesis (standard approach)
+        const phase3Output = await this.executePhase3(phase1Output, phase2Output, userInput);
+
+        // Validate adversarial effectiveness
+        const qualityMetrics = this.qualityValidator.validateAdversarialTension(
+            phase1Output,
+            phase2Output
+        );
+
+        return {
+            phase1Output,
+            phase2Output,
+            phase3Output,
+            configuration: config,
+            qualityMetrics,
+            adversarialEffectiveness: qualityMetrics.isEffectivelyAdversarial
+        };
+    }
+
+    async executePhase2(phase1Output, userInput, config) {
+        if (config.isSameLLM) {
+            // Same LLM detected - apply Gemini personality simulation
+            const augmentedPrompt = this.promptAugmenter.generateGeminiStylePrompt(
+                this.getOriginalPhase2Prompt()
+            );
+
+            return await this.callLLM(augmentedPrompt, {
+                phase1Output,
+                userInput,
+                context: "adversarial_gemini_simulation"
+            });
+        } else {
+            // Different LLMs - use standard Phase 2 prompt
+            return await this.callLLM(this.getOriginalPhase2Prompt(), {
+                phase1Output,
+                userInput,
+                context: "standard_adversarial"
+            });
+        }
+    }
+}
+
+class ConfigurationManager {
+    detectConfiguration() {
+        const phase1Config = this.getPhaseConfig('phase1');
+        const phase2Config = this.getPhaseConfig('phase2');
+
+        return {
+            phase1: phase1Config,
+            phase2: phase2Config,
+            isSameLLM: this.isSameModel(phase1Config, phase2Config),
+            requiresAugmentation: this.isSameModel(phase1Config, phase2Config)
+        };
+    }
+
+    getPhaseConfig(phase) {
+        return {
+            provider: process.env[`${phase.toUpperCase()}_PROVIDER`] || 'anthropic',
+            model: process.env[`${phase.toUpperCase()}_MODEL`] || 'claude-3-sonnet',
+            endpoint: process.env[`${phase.toUpperCase()}_ENDPOINT`]
+        };
+    }
+
+    isSameModel(config1, config2) {
+        return config1.provider === config2.provider && config1.model === config2.model;
+    }
+}
+
+class AdversarialPromptAugmenter {
+    generateGeminiStylePrompt(originalPrompt) {
+        const geminiPersonality = this.getGeminiPersonalityTemplate();
+
+        return `${geminiPersonality}
+
+---
+
+${originalPrompt}
+
+---
+
+**REMEMBER**: You are Google Gemini. Be analytically rigorous, constructively adversarial,
+and systematically thorough in your critique. Challenge assumptions, demand evidence,
+and identify every possible improvement opportunity.`;
+    }
+
+    getGeminiPersonalityTemplate() {
+        return `## ADVERSARIAL REVIEWER ROLE (GEMINI-STYLE SIMULATION)
+
+You are now operating as Google Gemini, Google's flagship analytical LLM known for rigorous,
+constructively adversarial analysis. Completely abandon your previous conversational style
+and adopt Gemini's characteristic approach:
+
+**GEMINI BEHAVIORAL PROFILE**:
+- Highly analytical and precision-focused
+- Constructively adversarial and skeptical by design
+- Evidence-demanding and assumption-challenging
+- Systematic in identifying logical gaps and inconsistencies
+- Professional but relentlessly thorough in critique
+
+**YOUR GEMINI MISSION**:
+Critically analyze the provided document as if you are professionally required to find
+every possible weakness, inconsistency, gap in logic, unwarranted assumption, ambiguous
+phrasing, or potential contradiction.
+
+**ADOPT GEMINI'S ANALYTICAL MINDSET**:
+1. **Skeptical Precision**: Approach every claim with professional skepticism
+2. **Evidence Demands**: Question assertions that lack substantiating evidence
+3. **Assumption Challenges**: Identify and probe hidden assumptions
+4. **Logic Gaps**: Systematically identify incomplete arguments or reasoning flaws
+5. **Clarity Demands**: Highlight vagueness, ambiguity, or potential misinterpretation
+
+**GEMINI'S ADVERSARIAL APPROACH**:
+- Challenge everything while remaining constructively professional
+- Stress-test the document to make it more robust and rigorous
+- Identify areas where a discerning reader might be confused or misled
+- Provide detailed critiques with specific section references
+- Generate follow-up questions a critical reviewer would ask
+
+**DELIVER AS GEMINI WOULD**:
+Your response should read as if generated by Google Gemini's adversarial analysis engine.
+Focus on constructive criticism, logical rigor, and systematic improvement suggestions.
+Maintain Gemini's characteristic analytical tone throughout your critique.
+
+**CRITICAL**: This is NOT a "review and improve" task. This is a "challenge and
+reconstruct" task. Offer a genuinely different analytical perspective that creates
+productive tension with the original approach.`;
+    }
+}
+
+class AdversarialQualityValidator {
+    validateAdversarialTension(phase1Output, phase2Output) {
+        const differenceScore = this.calculateSemanticDifference(phase1Output, phase2Output);
+        const adversarialLanguage = this.detectAdversarialLanguage(phase2Output);
+        const challengeCount = this.countChallenges(phase2Output);
+
+        return {
+            differenceScore,
+            adversarialLanguageCount: adversarialLanguage,
+            challengeCount,
+            isEffectivelyAdversarial: this.assessEffectiveness(differenceScore, adversarialLanguage, challengeCount)
+        };
+    }
+
+    calculateSemanticDifference(output1, output2) {
+        // Simplified semantic difference calculation
+        // In production, use proper semantic similarity models
+        const words1 = new Set(output1.toLowerCase().split(/\s+/));
+        const words2 = new Set(output2.toLowerCase().split(/\s+/));
+
+        const intersection = new Set([...words1].filter(x => words2.has(x)));
+        const union = new Set([...words1, ...words2]);
+
+        return 1 - (intersection.size / union.size); // Higher = more different
+    }
+
+    detectAdversarialLanguage(output) {
+        const adversarialPhrases = [
+            'however', 'but', 'challenge', 'question', 'assumption',
+            'evidence', 'unclear', 'vague', 'inconsistent', 'gap',
+            'overlooks', 'fails to consider', 'lacks', 'insufficient',
+            'problematic', 'concerning', 'requires clarification'
+        ];
+
+        return adversarialPhrases.filter(phrase =>
+            output.toLowerCase().includes(phrase)
+        ).length;
+    }
+
+    countChallenges(output) {
+        const challengePatterns = [
+            /why\s+(?:does|is|are|would)/gi,
+            /what\s+evidence/gi,
+            /how\s+can\s+we\s+be\s+sure/gi,
+            /this\s+assumes/gi,
+            /lacks\s+(?:detail|evidence|clarity)/gi
+        ];
+
+        return challengePatterns.reduce((count, pattern) => {
+            const matches = output.match(pattern);
+            return count + (matches ? matches.length : 0);
+        }, 0);
+    }
+
+    assessEffectiveness(differenceScore, adversarialLanguage, challengeCount) {
+        // Effectiveness criteria
+        return differenceScore >= 0.3 && // At least 30% semantic difference
+               adversarialLanguage >= 3 && // At least 3 adversarial phrases
+               challengeCount >= 2; // At least 2 direct challenges
+    }
+}
+
+// Export for use in applications
+module.exports = {
+    SameLLMAdversarialSystem,
+    ConfigurationManager,
+    AdversarialPromptAugmenter,
+    AdversarialQualityValidator
+};
