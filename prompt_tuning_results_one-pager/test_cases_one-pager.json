@@ -1,0 +1,208 @@
+{
+  "project": "one-pager",
+  "version": "1.0",
+  "created": "2025-11-21",
+  "description": "Diverse test cases for one-pager prompt tuning across industries, project types, and complexities",
+  "test_cases": [
+    {
+      "id": "test_001",
+      "name": "Customer Portal Redesign",
+      "description": "Mid-size SaaS company redesigning customer portal",
+      "industry": "SaaS",
+      "project_type": "redesign",
+      "scope": "medium",
+      "stakeholder_complexity": "cross-functional",
+      "inputs": {
+        "projectName": "Customer Portal Redesign",
+        "problemStatement": "Current portal has 45% bounce rate, users struggle to find account settings and billing information. Support tickets increased 30% in last quarter due to navigation issues. Customer satisfaction score dropped from 7.8 to 6.2.",
+        "proposedSolution": "Redesign portal with user-centered navigation, prominent search functionality, and contextual help. Implement progressive disclosure for advanced features. Add personalized dashboard showing most-used features.",
+        "keyGoals": "Reduce bounce rate to under 20%, decrease support tickets by 40%, improve customer satisfaction score to 8.5+, increase feature adoption by 25%",
+        "scopeInScope": "Navigation redesign, search implementation, help system, mobile responsiveness, personalized dashboard, account settings UI",
+        "scopeOutOfScope": "Backend API changes, billing system overhaul, third-party integrations, data migration, legacy feature removal",
+        "successMetrics": "Bounce rate <20% (current: 45%), support tickets -40%, NPS >8.5 (current: 6.2), task completion rate >85%, feature adoption +25%",
+        "keyStakeholders": "Product Manager (Sarah Chen), Engineering Lead (Mike Rodriguez), UX Designer (Alex Kim), Customer Success VP (Jennifer Park), 5 beta customers",
+        "timelineEstimate": "12 weeks total: 2 weeks discovery & design, 6 weeks development, 2 weeks beta testing, 2 weeks rollout"
+      }
+    },
+    {
+      "id": "test_002",
+      "name": "Real-Time Inventory Sync",
+      "description": "E-commerce platform adding real-time inventory synchronization",
+      "industry": "e-commerce",
+      "project_type": "new_feature",
+      "scope": "large",
+      "stakeholder_complexity": "executive-level",
+      "inputs": {
+        "projectName": "Real-Time Inventory Sync Across Warehouses",
+        "problemStatement": "Inventory discrepancies cause 15% of orders to be cancelled or delayed. Manual reconciliation takes 40 hours per week. Lost revenue estimated at $2M annually due to overselling and stockouts.",
+        "proposedSolution": "Implement real-time inventory synchronization across 12 warehouses using event-driven architecture. Build conflict resolution engine for concurrent updates. Add predictive analytics for stock allocation.",
+        "keyGoals": "Eliminate inventory discrepancies, reduce order cancellations by 90%, save 35 hours/week in manual work, recover $1.8M in annual revenue",
+        "scopeInScope": "Real-time sync engine, conflict resolution, warehouse API integration, admin dashboard, alerting system, historical reporting",
+        "scopeOutOfScope": "Warehouse management system replacement, supplier integration, demand forecasting, international warehouses, returns processing",
+        "successMetrics": "Inventory accuracy >99.5%, order cancellations <1.5% (current: 15%), sync latency <2 seconds, manual reconciliation time <5 hours/week",
+        "keyStakeholders": "CTO (David Park), VP Operations (Maria Santos), Warehouse Manager (Tom Chen), CFO (Lisa Wong), Engineering Director (James Kim)",
+        "timelineEstimate": "24 weeks: 4 weeks architecture & design, 12 weeks development, 4 weeks warehouse pilots, 4 weeks full rollout"
+      }
+    },
+    {
+      "id": "test_003",
+      "name": "HIPAA Compliance Audit Tool",
+      "description": "Healthcare SaaS building automated compliance auditing",
+      "industry": "healthcare",
+      "project_type": "new_feature",
+      "scope": "medium",
+      "stakeholder_complexity": "cross-functional",
+      "inputs": {
+        "projectName": "Automated HIPAA Compliance Audit Tool",
+        "problemStatement": "Manual HIPAA audits take 80 hours per quarter and miss 20% of violations. Compliance team overwhelmed with 500+ systems to monitor. Recent audit found 47 unreported violations.",
+        "proposedSolution": "Build automated audit tool scanning systems for HIPAA violations. Generate compliance reports with remediation steps. Integrate with existing security tools. Provide real-time alerts for critical issues.",
+        "keyGoals": "Reduce audit time by 75%, achieve 100% violation detection, provide real-time compliance visibility, reduce compliance team workload by 60%",
+        "scopeInScope": "Automated scanning, violation detection, reporting dashboard, alert system, remediation tracking, integration with 5 security tools",
+        "scopeOutOfScope": "Automated remediation, third-party vendor audits, SOC 2 compliance, penetration testing, employee training modules",
+        "successMetrics": "Audit time <20 hours/quarter, violation detection rate 100%, false positive rate <5%, time to detect critical issues <1 hour",
+        "keyStakeholders": "Compliance Officer (Dr. Rachel Green), CISO (Mark Thompson), Engineering Manager (Priya Patel), Legal Counsel (Robert Lee)",
+        "timelineEstimate": "16 weeks: 3 weeks requirements & legal review, 8 weeks development, 3 weeks testing, 2 weeks pilot with compliance team"
+      }
+    },
+    {
+      "id": "test_004",
+      "name": "Mobile Payment Integration",
+      "description": "Fintech startup adding Apple Pay and Google Pay",
+      "industry": "fintech",
+      "project_type": "integration",
+      "scope": "small",
+      "stakeholder_complexity": "single_team",
+      "inputs": {
+        "projectName": "Mobile Wallet Payment Integration",
+        "problemStatement": "60% of mobile users abandon checkout when only card entry is available. Competitors offer mobile wallet payments. Losing $500K monthly revenue to cart abandonment.",
+        "proposedSolution": "Integrate Apple Pay and Google Pay into mobile checkout flow. Add one-tap payment option. Maintain PCI compliance. Support saved payment methods.",
+        "keyGoals": "Reduce mobile cart abandonment by 40%, increase mobile conversion rate by 25%, recover $300K monthly revenue, improve checkout time by 50%",
+        "scopeInScope": "Apple Pay integration, Google Pay integration, mobile checkout UI, payment method storage, transaction logging, error handling",
+        "scopeOutOfScope": "Desktop wallet support, cryptocurrency payments, international payment methods, subscription billing, refund automation",
+        "successMetrics": "Mobile cart abandonment <35% (current: 60%), mobile conversion rate +25%, checkout time <30 seconds (current: 60s), payment success rate >99%",
+        "keyStakeholders": "Product Lead (Emma Wilson), Mobile Engineer (Carlos Ruiz), Payment Ops (Nina Patel)",
+        "timelineEstimate": "6 weeks: 1 week design, 3 weeks development, 1 week testing, 1 week phased rollout"
+      }
+    },
+    {
+      "id": "test_005",
+      "name": "Predictive Maintenance System",
+      "description": "Manufacturing company implementing IoT-based predictive maintenance",
+      "industry": "manufacturing",
+      "project_type": "optimization",
+      "scope": "large",
+      "stakeholder_complexity": "executive-level",
+      "inputs": {
+        "projectName": "IoT-Based Predictive Maintenance System",
+        "problemStatement": "Unplanned equipment downtime costs $3M annually. Preventive maintenance wastes 30% of parts replaced prematurely. Equipment failures cause 12% production loss. Current reactive approach unsustainable.",
+        "proposedSolution": "Deploy IoT sensors on 200 critical machines. Build ML models predicting failures 2-4 weeks in advance. Create maintenance scheduling system optimizing part replacement. Provide real-time equipment health dashboard.",
+        "keyGoals": "Reduce unplanned downtime by 70%, decrease maintenance costs by 25%, extend equipment lifespan by 15%, increase production output by 10%",
+        "scopeInScope": "IoT sensor deployment, ML prediction models, maintenance scheduling, health dashboard, alert system, historical analytics, mobile app for technicians",
+        "scopeOutOfScope": "Equipment replacement, supplier integration, inventory management, warranty tracking, technician training platform, ERP integration",
+        "successMetrics": "Unplanned downtime <10 hours/month (current: 35 hours), maintenance cost reduction 25%, prediction accuracy >85%, false alarm rate <10%",
+        "keyStakeholders": "COO (Michael Chen), Plant Manager (Susan Rodriguez), Maintenance Director (John Davis), CIO (Patricia Lee), CFO (Robert Kim), Board of Directors",
+        "timelineEstimate": "32 weeks: 4 weeks pilot design, 8 weeks sensor deployment, 12 weeks ML model development, 4 weeks pilot testing, 4 weeks full rollout"
+      }
+    },
+    {
+      "id": "test_006",
+      "name": "API Rate Limiting Migration",
+      "description": "SaaS platform migrating to usage-based pricing with rate limits",
+      "industry": "SaaS",
+      "project_type": "migration",
+      "scope": "medium",
+      "stakeholder_complexity": "cross-functional",
+      "inputs": {
+        "projectName": "API Rate Limiting & Usage-Based Pricing Migration",
+        "problemStatement": "Flat pricing model leaves money on table with power users. API abuse by 5% of users impacts performance for all. No visibility into API usage patterns. Revenue growth stagnant at 8% YoY.",
+        "proposedSolution": "Implement tiered rate limiting based on subscription level. Build usage tracking and billing system. Create customer-facing usage dashboard. Provide upgrade prompts when approaching limits.",
+        "keyGoals": "Increase revenue by 30%, eliminate API abuse, improve API performance by 40%, provide usage transparency, enable data-driven pricing decisions",
+        "scopeInScope": "Rate limiting engine, usage tracking, billing integration, customer dashboard, upgrade flow, documentation, migration tooling for existing customers",
+        "scopeOutOfScope": "Complete pricing model overhaul, contract renegotiation, legacy API deprecation, custom enterprise limits, usage analytics ML",
+        "successMetrics": "Revenue increase 30% within 6 months, API p95 latency <200ms (current: 450ms), customer churn <2%, upgrade conversion rate >15%",
+        "keyStakeholders": "VP Product (Amanda Foster), Engineering Director (Kevin Nguyen), Head of Sales (Brian Cooper), Customer Success Lead (Sophia Martinez), Finance Director (Daniel Park)",
+        "timelineEstimate": "14 weeks: 2 weeks pricing analysis, 6 weeks development, 2 weeks beta with 50 customers, 4 weeks phased migration"
+      }
+    },
+    {
+      "id": "test_007",
+      "name": "Telehealth Video Platform",
+      "description": "Healthcare provider building HIPAA-compliant video consultation platform",
+      "industry": "healthcare",
+      "project_type": "new_feature",
+      "scope": "large",
+      "stakeholder_complexity": "executive-level",
+      "inputs": {
+        "projectName": "HIPAA-Compliant Telehealth Video Platform",
+        "problemStatement": "Lost 40% of patients during COVID who prefer virtual visits. Current third-party video solution costs $15K/month and lacks EHR integration. Patient satisfaction with virtual visits only 6.5/10 due to technical issues.",
+        "proposedSolution": "Build custom HIPAA-compliant video platform with EHR integration. Support screen sharing for reviewing test results. Enable prescription sending during calls. Provide waiting room and scheduling features.",
+        "keyGoals": "Recapture 25% of lost patients, save $150K annually on third-party costs, improve virtual visit satisfaction to 8.5/10, enable 500 virtual visits per week",
+        "scopeInScope": "Video conferencing, EHR integration, e-prescribing, scheduling, waiting room, screen sharing, recording (with consent), mobile apps, HIPAA compliance",
+        "scopeOutOfScope": "In-person appointment scheduling, billing integration, insurance verification, lab result integration, patient portal redesign, AI diagnosis",
+        "successMetrics": "Virtual visit volume 500/week, patient satisfaction >8.5/10, video quality >95% HD, connection success rate >98%, cost savings $150K/year",
+        "keyStakeholders": "Chief Medical Officer (Dr. Sarah Johnson), CTO (Mark Anderson), Compliance Officer (Lisa Chen), Patient Experience Director (Emily Rodriguez), CEO (Dr. Robert Williams)",
+        "timelineEstimate": "28 weeks: 4 weeks compliance & design, 16 weeks development, 4 weeks pilot with 10 providers, 4 weeks full rollout to 50 providers"
+      }
+    },
+    {
+      "id": "test_008",
+      "name": "Checkout Optimization",
+      "description": "E-commerce site optimizing checkout flow to reduce abandonment",
+      "industry": "e-commerce",
+      "project_type": "optimization",
+      "scope": "small",
+      "stakeholder_complexity": "single_team",
+      "inputs": {
+        "projectName": "One-Page Checkout Optimization",
+        "problemStatement": "68% cart abandonment rate, industry average is 45%. Checkout takes 7 steps and 4 minutes. Mobile checkout abandonment is 78%. Losing $2M annually to abandoned carts.",
+        "proposedSolution": "Consolidate checkout to single page with progressive disclosure. Add guest checkout option. Implement address autocomplete. Enable saved payment methods. Optimize for mobile-first experience.",
+        "keyGoals": "Reduce cart abandonment to 50%, decrease checkout time to under 90 seconds, increase mobile conversion by 35%, recover $1M in annual revenue",
+        "scopeInScope": "Single-page checkout UI, guest checkout, address autocomplete, payment method storage, mobile optimization, A/B testing framework",
+        "scopeOutOfScope": "Payment gateway changes, shipping carrier integration, tax calculation updates, inventory system, product recommendations, loyalty program",
+        "successMetrics": "Cart abandonment <50% (current: 68%), checkout time <90 seconds (current: 4 minutes), mobile conversion +35%, revenue recovery $1M/year",
+        "keyStakeholders": "E-commerce Manager (Jessica Lee), Frontend Engineer (Alex Thompson), UX Designer (Maria Garcia)",
+        "timelineEstimate": "8 weeks: 1 week user research, 4 weeks development, 2 weeks A/B testing, 1 week full rollout"
+      }
+    },
+    {
+      "id": "test_009",
+      "name": "Fraud Detection ML Model",
+      "description": "Fintech company implementing machine learning fraud detection",
+      "industry": "fintech",
+      "project_type": "new_feature",
+      "scope": "large",
+      "stakeholder_complexity": "executive-level",
+      "inputs": {
+        "projectName": "Real-Time ML Fraud Detection System",
+        "problemStatement": "Fraud losses at $8M annually, up 45% YoY. Rule-based system has 35% false positive rate, blocking legitimate transactions. Manual review team overwhelmed with 2000 cases daily. Customer complaints about blocked cards up 60%.",
+        "proposedSolution": "Deploy ML model analyzing 150+ transaction features in real-time. Implement risk scoring with dynamic thresholds. Build case management system for fraud analysts. Add customer self-service for false positives.",
+        "keyGoals": "Reduce fraud losses by 60%, decrease false positives by 70%, automate 80% of fraud decisions, improve customer satisfaction by 40%",
+        "scopeInScope": "ML model development, real-time scoring engine, case management system, customer self-service portal, model monitoring, A/B testing framework, analyst dashboard",
+        "scopeOutOfScope": "Chargeback automation, identity verification, device fingerprinting, consortium data sharing, cryptocurrency fraud, international expansion",
+        "successMetrics": "Fraud loss rate <0.08% (current: 0.2%), false positive rate <10% (current: 35%), automated decision rate >80%, customer satisfaction +40%",
+        "keyStakeholders": "Chief Risk Officer (Jennifer Martinez), VP Engineering (David Kim), Head of Fraud Operations (Michael Brown), Chief Data Officer (Dr. Lisa Wang), CEO (Robert Chen), Board Risk Committee",
+        "timelineEstimate": "36 weeks: 8 weeks data preparation & model development, 12 weeks system integration, 8 weeks shadow mode testing, 8 weeks phased rollout"
+      }
+    },
+    {
+      "id": "test_010",
+      "name": "Supply Chain Visibility Dashboard",
+      "description": "Manufacturing company building end-to-end supply chain tracking",
+      "industry": "manufacturing",
+      "project_type": "new_feature",
+      "scope": "medium",
+      "stakeholder_complexity": "cross-functional",
+      "inputs": {
+        "projectName": "End-to-End Supply Chain Visibility Dashboard",
+        "problemStatement": "No visibility into supplier delays until parts don't arrive. Production delays cost $500K monthly. Customer delivery promises missed 25% of the time. Manual tracking across 50 suppliers in spreadsheets.",
+        "proposedSolution": "Build centralized dashboard integrating supplier systems, shipping carriers, and production schedule. Provide predictive alerts for delays. Enable scenario planning for supply disruptions. Add customer-facing delivery estimates.",
+        "keyGoals": "Reduce production delays by 60%, improve on-time delivery to 95%, save $300K monthly in delay costs, eliminate manual tracking",
+        "scopeInScope": "Supplier API integrations, carrier tracking, production schedule sync, alert system, scenario planning tools, customer portal, mobile app, historical analytics",
+        "scopeOutOfScope": "Supplier onboarding automation, contract management, quality tracking, inventory optimization, demand forecasting, procurement automation",
+        "successMetrics": "On-time delivery rate >95% (current: 75%), production delay reduction 60%, delay cost savings $300K/month, supplier data coverage >90%",
+        "keyStakeholders": "VP Supply Chain (Thomas Anderson), Production Manager (Maria Lopez), Customer Success Director (James Wilson), IT Director (Sarah Kim), Procurement Lead (David Chen)",
+        "timelineEstimate": "20 weeks: 4 weeks supplier integration design, 10 weeks development, 3 weeks pilot with 10 suppliers, 3 weeks full rollout to 50 suppliers"
+      }
+    }
+  ]
+}
