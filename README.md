@@ -51,10 +51,51 @@ This tool helps you create high-quality one-pager documents using a 3-phase AI w
 
 ### Run Locally
 
+#### Automated Setup (Recommended)
+
+Choose your platform and run the appropriate setup script:
+
+**macOS:**
+
+```bash
+git clone https://github.com/bordenet/one-pager.git
+cd one-pager
+./scripts/setup-macos.sh
+```
+
+**Linux (Ubuntu/Debian):**
+
+```bash
+git clone https://github.com/bordenet/one-pager.git
+cd one-pager
+./scripts/setup-linux.sh
+```
+
+**Windows (WSL):**
+
+```bash
+git clone https://github.com/bordenet/one-pager.git
+cd one-pager
+./scripts/setup-windows-wsl.sh
+```
+
+**Windows (PowerShell):**
+
+```powershell
+git clone https://github.com/bordenet/one-pager.git
+cd one-pager
+.\scripts\setup-windows.ps1
+```
+
+#### Manual Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/bordenet/one-pager.git
 cd one-pager
+
+# Install dependencies
+npm install
 
 # Open index.html in your browser
 open index.html
