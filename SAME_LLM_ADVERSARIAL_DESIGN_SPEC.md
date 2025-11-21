@@ -33,19 +33,52 @@ When corporate deployments use LibreChat or similar with single model (e.g., GPT
 ### 2.1 Configuration Detection System
 
 ```javascript
-// Auto-detect same-LLM configuration
+// Auto-detect same-LLM configuration with URL-based detection
 class LLMConfigurationDetector {
     detectSameLLMConfiguration() {
         const phase1Model = this.getConfiguredModel('phase1');
         const phase2Model = this.getConfiguredModel('phase2');
 
         return {
-            isSameLLM: phase1Model.provider === phase2Model.provider &&
-                      phase1Model.model === phase2Model.model,
+            isSameLLM: this.isSameModel(phase1Model, phase2Model),
             phase1Model,
             phase2Model,
-            requiresAdversarialAugmentation: phase1Model.provider === phase2Model.provider
+            requiresAdversarialAugmentation: this.isSameModel(phase1Model, phase2Model),
+            detectionMethod: this.getDetectionMethod(phase1Model, phase2Model),
+            deploymentType: this.getDeploymentType(phase1Model, phase2Model)
         };
+    }
+
+    isSameModel(config1, config2) {
+        // Method 1: Same provider and model
+        if (config1.provider === config2.provider && config1.model === config2.model) {
+            return true;
+        }
+
+        // Method 2: Same URL (LibreChat, corporate deployments)
+        if (config1.url && config2.url && config1.url === config2.url) {
+            return true;
+        }
+
+        // Method 3: Same endpoint
+        if (config1.endpoint && config2.endpoint && config1.endpoint === config2.endpoint) {
+            return true;
+        }
+
+        return false;
+    }
+
+    getDetectionMethod(config1, config2) {
+        if (config1.provider === config2.provider && config1.model === config2.model) {
+            return 'provider_model_match';
+        }
+        if (config1.url && config2.url && config1.url === config2.url) {
+            return 'url_match'; // LibreChat, corporate single-endpoint
+        }
+        if (config1.endpoint && config2.endpoint && config1.endpoint === config2.endpoint) {
+            return 'endpoint_match';
+        }
+        return 'different_llms';
     }
 }
 ```
