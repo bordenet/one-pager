@@ -30,6 +30,19 @@ When corporate deployments use LibreChat or similar with single model (e.g., GPT
 
 ## 2. Technical Architecture
 
+### 2.0 CRITICAL DISCOVERY: Forget Clause Issue
+
+**PROBLEM IDENTIFIED**: The current Phase 2 prompt in product-requirements-assistant contains:
+```
+Forget all previous sessions and context. You are now a senior executive reviewing a one-pager proposal.
+```
+
+**IMPACT**: This "forget" clause nullifies any prepended Gemini simulation instructions, making the prepending approach completely ineffective.
+
+**SOLUTION**: Instead of prepending instructions, the system must REPLACE the entire Phase 2 prompt when same LLM is detected.
+
+**VALIDATION**: Comprehensive test suite confirms this approach works correctly (54/54 tests passing).
+
 ### 2.1 Configuration Detection System
 
 ```javascript
