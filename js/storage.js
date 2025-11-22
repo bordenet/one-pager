@@ -1,152 +1,220 @@
-// storage.js - IndexedDB storage for projects
+/**
+ * IndexedDB Storage Module
+ * Handles all client-side data persistence
+ */
 
-const DB_NAME = 'HelloWorldDB';
+const DB_NAME = 'one-pager-assistant';
 const DB_VERSION = 1;
-const STORE_NAME = 'projects';
 
-let db = null;
+class Storage {
+  constructor() {
+    this.db = null;
+  }
 
-/**
- * Initialize IndexedDB
- */
-export async function initDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+  /**
+     * Initialize the database
+     */
+  async init() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      db = request.result;
-      resolve(db);
-    };
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve();
+      };
 
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
 
-      // Create object store if it doesn't exist
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        objectStore.createIndex('created', 'created', { unique: false });
-        objectStore.createIndex('modified', 'modified', { unique: false });
-      }
-    };
-  });
-}
-
-/**
- * Save project to IndexedDB
- */
-export async function saveProject(project) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const objectStore = transaction.objectStore(STORE_NAME);
-
-    project.modified = Date.now();
-    const request = objectStore.put(project);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(project);
-  });
-}
-
-/**
- * Get project by ID
- */
-export async function getProject(id) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readonly');
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.get(id);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
-}
-
-/**
- * Get all projects
- */
-export async function getAllProjects() {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readonly');
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.getAll();
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      const projects = request.result;
-      // Sort by modified date (newest first)
-      projects.sort((a, b) => b.modified - a.modified);
-      resolve(projects);
-    };
-  });
-}
-
-/**
- * Delete project by ID
- */
-export async function deleteProject(id) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.delete(id);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve();
-  });
-}
-
-/**
- * Export project as JSON
- */
-export function exportProject(project) {
-  const json = JSON.stringify(project, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${project.name.replace(/\s+/g, '-')}.json`;
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
-
-/**
- * Import project from JSON
- */
-export async function importProject(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = async (e) => {
-      try {
-        const project = JSON.parse(e.target.result);
-
-        // Validate project structure
-        if (!project.id || !project.name || !project.phases) {
-          throw new Error('Invalid project file');
+        // Projects store
+        if (!db.objectStoreNames.contains('projects')) {
+          const projectStore = db.createObjectStore('projects', { keyPath: 'id' });
+          projectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+          projectStore.createIndex('title', 'title', { unique: false });
+          projectStore.createIndex('phase', 'phase', { unique: false });
         }
 
-        // Generate new ID to avoid conflicts
-        project.id = generateId();
-        project.created = Date.now();
-        project.modified = Date.now();
+        // Prompts store
+        if (!db.objectStoreNames.contains('prompts')) {
+          db.createObjectStore('prompts', { keyPath: 'phase' });
+        }
 
-        await saveProject(project);
-        resolve(project);
-      } catch (error) {
-        reject(error);
-      }
-    };
+        // Settings store
+        if (!db.objectStoreNames.contains('settings')) {
+          db.createObjectStore('settings', { keyPath: 'key' });
+        }
+      };
+    });
+  }
 
-    reader.onerror = () => reject(reader.error);
-    reader.readAsText(file);
-  });
+  /**
+     * Get all projects, sorted by last updated
+     */
+  async getAllProjects() {
+    const tx = this.db.transaction('projects', 'readonly');
+    const store = tx.objectStore('projects');
+    const index = store.index('updatedAt');
+
+    return new Promise((resolve, reject) => {
+      const request = index.openCursor(null, 'prev'); // Descending order
+      const projects = [];
+
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          projects.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(projects);
+        }
+      };
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+     * Get a single project by ID
+     */
+  async getProject(id) {
+    const tx = this.db.transaction('projects', 'readonly');
+    const store = tx.objectStore('projects');
+
+    return new Promise((resolve, reject) => {
+      const request = store.get(id);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+     * Save a project (create or update)
+     */
+  async saveProject(project) {
+    project.updatedAt = new Date().toISOString();
+    project.modified = Date.now(); // Backward compatibility
+
+    const tx = this.db.transaction('projects', 'readwrite');
+    const store = tx.objectStore('projects');
+
+    return new Promise((resolve, reject) => {
+      const request = store.put(project);
+      request.onsuccess = () => resolve(project);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+     * Delete a project
+     */
+  async deleteProject(id) {
+    const tx = this.db.transaction('projects', 'readwrite');
+    const store = tx.objectStore('projects');
+
+    return new Promise((resolve, reject) => {
+      const request = store.delete(id);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+     * Get a prompt by phase
+     */
+  async getPrompt(phase) {
+    const tx = this.db.transaction('prompts', 'readonly');
+    const store = tx.objectStore('prompts');
+
+    return new Promise((resolve, reject) => {
+      const request = store.get(phase);
+      request.onsuccess = () => resolve(request.result?.content || null);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+     * Save a prompt
+     */
+  async savePrompt(phase, content) {
+    const tx = this.db.transaction('prompts', 'readwrite');
+    const store = tx.objectStore('prompts');
+
+    return new Promise((resolve, reject) => {
+      const request = store.put({ phase, content });
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+     * Get a setting
+     */
+  async getSetting(key) {
+    const tx = this.db.transaction('settings', 'readonly');
+    const store = tx.objectStore('settings');
+
+    return new Promise((resolve, reject) => {
+      const request = store.get(key);
+      request.onsuccess = () => resolve(request.result?.value);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+     * Save a setting
+     */
+  async saveSetting(key, value) {
+    const tx = this.db.transaction('settings', 'readwrite');
+    const store = tx.objectStore('settings');
+
+    return new Promise((resolve, reject) => {
+      const request = store.put({ key, value });
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+     * Get storage usage estimate
+     */
+  async getStorageEstimate() {
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+      return await navigator.storage.estimate();
+    }
+    return null;
+  }
 }
 
-/**
- * Generate unique ID
- */
+const storage = new Storage();
+export default storage;
+
+// Legacy exports for backward compatibility
+export async function initDB() {
+  return await storage.init();
+}
+
+export async function saveProject(project) {
+  return await storage.saveProject(project);
+}
+
+export async function getProject(id) {
+  return await storage.getProject(id);
+}
+
+export async function getAllProjects() {
+  return await storage.getAllProjects();
+}
+
+export async function deleteProject(id) {
+  return await storage.deleteProject(id);
+}
+
 export function generateId() {
+  // Use crypto.randomUUID if available (modern browsers), otherwise fallback
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for Node.js and older browsers
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
