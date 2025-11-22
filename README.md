@@ -20,7 +20,7 @@ An opinionated, AI-assisted workflow helper for generating crisp and high-qualit
 
 ## What is This?
 
-This tool helps you create high-quality one-pager documents using a 3-phase AI workflow that leverages the different perspectives of Claude and Gemini to produce superior results.
+This tool helps you create high-quality one-pager documents using a 3-phase AI workflow that uses the different perspectives of Claude and Gemini to produce superior results.
 
 **Why two different AI models?** The differences between Claude and Gemini's viewpoints are what make rapid iteration to value possible. Each model brings unique strengths that, when combined, create better documents than either could produce alone.
 
