@@ -176,3 +176,71 @@ export function getProgress(project) {
   const completedPhases = project.phases.filter(p => p.completed).length;
   return Math.round((completedPhases / PHASES.length) * 100);
 }
+
+/**
+ * Get phase metadata for UI display
+ */
+export function getPhaseMetadata(phase) {
+  const phases = {
+    1: {
+      title: 'Initial Draft',
+      description: 'Generate the first draft of your one-pager using Claude',
+      ai: 'Claude',
+      icon: '📝',
+      color: 'blue'
+    },
+    2: {
+      title: 'Alternative Perspective',
+      description: 'Get a different perspective and improvements from Gemini',
+      ai: 'Gemini',
+      icon: '🔄',
+      color: 'green'
+    },
+    3: {
+      title: 'Final Synthesis',
+      description: 'Combine the best elements into a polished final version',
+      ai: 'Claude',
+      icon: '✨',
+      color: 'purple'
+    }
+  };
+
+  return phases[phase] || phases[1];
+}
+
+/**
+ * Generate prompt for a specific phase
+ */
+export async function generatePromptForPhase(project) {
+  return await generatePrompt(project);
+}
+
+/**
+ * Export final one-pager document
+ */
+export function exportFinalOnePager(project) {
+  let content = '';
+
+  if (project.phases && project.phases[3] && project.phases[3].response) {
+    // Use Phase 3 response if available
+    content = project.phases[3].response;
+  } else if (project.phases && project.phases[1] && project.phases[1].response) {
+    // Fallback to Phase 1 response
+    content = project.phases[1].response;
+  } else if (project.phases && project.phases.length > 2 && project.phases[2].response) {
+    // Legacy format - use last completed phase
+    content = project.phases[2].response;
+  } else {
+    content = `# ${project.title || project.name}\n\n${project.problems || project.description}`;
+  }
+
+  const filename = `${(project.title || project.name).replace(/[^a-z0-9]/gi, '-').toLowerCase()}-one-pager.md`;
+
+  const blob = new Blob([content], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
