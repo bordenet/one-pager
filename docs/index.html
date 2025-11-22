@@ -56,6 +56,12 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                         </svg>
                     </button>
+                    <button type="button" id="export-all-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Export All
+                    </button>
+                    <button type="button" id="import-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        Import
+                    </button>
                 </div>
             </div>
         </div>
@@ -63,100 +69,76 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Project List View -->
-        <div id="projectListView" class="space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Projects</h2>
-                <button id="newProjectBtn"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    New Project
+        <!-- Privacy Notice -->
+        <div id="privacy-notice" class="hidden mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div class="flex items-start">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="flex-1">
+                    <h3 class="text-sm font-medium text-blue-900 dark:text-blue-200">
+                        🔐 Your Privacy is Protected
+                    </h3>
+                    <p class="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                        All your projects are stored <strong>locally in your browser</strong> using IndexedDB.
+                        No data is ever sent to any server. You can export your projects as JSON files anytime.
+                    </p>
+                </div>
+                <button type="button" id="close-privacy-notice" class="ml-3 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
                 </button>
-            </div>
-            <div id="projectList" class="space-y-2">
-                <!-- Projects will be rendered here -->
             </div>
         </div>
 
-        <!-- Workflow View -->
-        <div id="workflowView" class="hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <button id="backToListBtn"
-                        class="text-blue-600 dark:text-blue-400 hover:underline">
-                    ← Back to Projects
-                </button>
-                <div class="flex gap-2">
-                    <button id="exportBtn"
-                            class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
-                        Export
-                    </button>
-                    <button id="deleteBtn"
-                            class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">
-                        Delete
-                    </button>
-                </div>
-            </div>
-
-            <div id="workflowContent">
-                <!-- Workflow content will be rendered here -->
-            </div>
+        <!-- View Container -->
+        <div id="app-container">
+            <!-- Views will be dynamically loaded here -->
         </div>
     </main>
 
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl">
+            <div class="flex items-center space-x-3">
+                <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-lg font-medium text-gray-900 dark:text-white" id="loading-text">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2">
+        <!-- Toasts will be dynamically added here -->
+    </div>
+
     <!-- AI Mock Mode Toggle (localhost only) -->
-    <div id="aiMockToggle" class="hidden fixed bottom-4 right-4 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-400 rounded-lg p-3 shadow-lg">
+    <div id="aiMockToggle" class="hidden fixed bottom-4 left-4 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-400 rounded-lg p-3 shadow-lg">
         <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" id="mockModeCheckbox" class="w-4 h-4">
             <span class="text-sm font-medium text-yellow-900 dark:text-yellow-100">AI Mock Mode</span>
         </label>
     </div>
 
-    <!-- Notification Area -->
-    <div id="notifications" class="fixed top-4 right-4 space-y-2 z-50">
-        <!-- Notifications will appear here -->
-    </div>
-
-    <!-- Import Modal -->
-    <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Import Project</h3>
-            <input type="file" id="importFileInput" accept=".json" class="w-full mb-4">
-            <div class="flex justify-end gap-2">
-                <button id="cancelImportBtn"
-                        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
-                    Cancel
-                </button>
-                <button id="confirmImportBtn"
-                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Import
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Footer -->
-    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
+    <footer class="mt-12 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                    One-Pager Assistant • 100% Client-Side • Privacy-First
+                    <span id="storage-info">Loading storage info...</span>
                 </p>
                 <div class="flex gap-4">
-                    <a href="https://github.com/bordenet/one-pager"
-                       target="_blank"
-                       rel="noopener"
-                       class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                    <a href="https://github.com/bordenet/one-pager" target="_blank" rel="noopener" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                         GitHub
                     </a>
-                    <a href="https://bordenet.github.io/product-requirements-assistant/"
-                       target="_blank"
-                       rel="noopener"
-                       class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                    <a href="https://bordenet.github.io/product-requirements-assistant/" target="_blank" rel="noopener" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                         PRD Assistant
                     </a>
-                    <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md"
-                       target="_blank"
-                       rel="noopener"
-                       class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                    <a href="#" id="about-link" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                         About
                     </a>
                 </div>
