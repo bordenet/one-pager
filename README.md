@@ -12,6 +12,8 @@
 [![GitHub issues](https://img.shields.io/github/issues/bordenet/one-pager.svg)](https://github.com/bordenet/one-pager/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/bordenet/one-pager.svg)](https://github.com/bordenet/one-pager/pulls)
 
+> **⚠️ DEVELOPMENT STATUS**: This project is under active development. Current test coverage: 28.82% (target: 70%). Core UI modules are untested due to architectural constraints. See [QUALITY_ASSESSMENT.md](QUALITY_ASSESSMENT.md) for details.
+
 An opinionated, AI-assisted workflow helper for generating crisp and high-quality one-pager documents.
 
 **🌐 Try it now: [https://bordenet.github.io/one-pager/](https://bordenet.github.io/one-pager/)**
@@ -208,7 +210,7 @@ pre-commit run --all-files
 This project uses pre-commit hooks to enforce code quality. All commits must pass:
 
 - **ESLint** - Code linting (auto-fixes where possible)
-- **Jest** - All tests must pass with 73%+ coverage
+- **Jest** - All tests must pass with 25%+ coverage (target: 70%)
 - **File checks** - Trailing whitespace, EOF, large files, etc.
 
 The hooks run automatically on `git commit`. If they fail, the commit is blocked.
