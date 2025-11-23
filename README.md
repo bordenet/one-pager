@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/bordenet/one-pager/actions/workflows/ci.yml/badge.svg)](https://github.com/bordenet/one-pager/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/bordenet/one-pager/branch/main/graph/badge.svg)](https://codecov.io/gh/bordenet/one-pager)
+[![Coverage](https://img.shields.io/badge/coverage-28.82%25-orange.svg)](https://github.com/bordenet/one-pager)
 [![Node.js 18+](https://img.shields.io/badge/node-18+-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
@@ -281,6 +282,22 @@ one-pager/
     ├── workflow.test.js    # Workflow tests
     └── ai-mock.test.js     # Mock tests
 ```
+
+---
+
+## Code Coverage
+
+One-Pager maintains **28.82% test coverage** with active development to improve coverage. The coverage visualization below shows detailed coverage by module:
+
+[![Coverage Grid](https://codecov.io/gh/bordenet/one-pager/graphs/tree.svg)](https://codecov.io/gh/bordenet/one-pager)
+
+**What this means:**
+- **Green**: Well-tested code (>80% coverage)
+- **Yellow**: Moderate coverage (60-80%)
+- **Red**: Needs more tests (<60%)
+- **Size**: Larger boxes = more lines of code
+
+Click the image to explore detailed coverage reports on Codecov, including line-by-line coverage, branch coverage, and historical trends.
 
 ---
 
