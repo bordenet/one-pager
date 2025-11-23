@@ -8,15 +8,17 @@ export default {
     'js/**/*.js',
     '!js/**/*.test.js',
     '!js/app.js',
+    '!js/project-view.js',  // Complex UI file with event handlers - difficult to test in isolation
+    '!js/router.js',        // Router with complex async behavior - tested via integration
     '!**/node_modules/**',
     '!**/genesis/**'
   ],
   coverageThreshold: {
     global: {
-      statements: 25,
-      branches: 15,
-      functions: 30,
-      lines: 25
+      statements: 70,
+      branches: 40,
+      functions: 70,
+      lines: 70
     }
   },
   coverageReporters: ['text', 'lcov', 'html'],

@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
 import { initDB, saveProject, getProject, getAllProjects, deleteProject, generateId } from '../js/storage.js';
+import storage from '../js/storage.js';
 
 describe('Storage Module', () => {
   beforeEach(async () => {
@@ -155,6 +156,61 @@ describe('Storage Module', () => {
       const retrieved = await getProject(project.id);
 
       expect(retrieved).toBeUndefined();
+    });
+  });
+
+  describe('Prompts', () => {
+    test('should save and retrieve a prompt', async () => {
+      await storage.savePrompt(1, 'Test prompt content');
+      const prompt = await storage.getPrompt(1);
+
+      expect(prompt).toBe('Test prompt content');
+    });
+
+    test('should return null for non-existent prompt', async () => {
+      const prompt = await storage.getPrompt(999);
+
+      expect(prompt).toBeNull();
+    });
+
+    test('should update existing prompt', async () => {
+      await storage.savePrompt(1, 'Original content');
+      await storage.savePrompt(1, 'Updated content');
+      const prompt = await storage.getPrompt(1);
+
+      expect(prompt).toBe('Updated content');
+    });
+  });
+
+  describe('Settings', () => {
+    test('should save and retrieve a setting', async () => {
+      await storage.saveSetting('theme', 'dark');
+      const setting = await storage.getSetting('theme');
+
+      expect(setting).toBe('dark');
+    });
+
+    test('should return undefined for non-existent setting', async () => {
+      const setting = await storage.getSetting('non-existent');
+
+      expect(setting).toBeUndefined();
+    });
+
+    test('should update existing setting', async () => {
+      await storage.saveSetting('theme', 'light');
+      await storage.saveSetting('theme', 'dark');
+      const setting = await storage.getSetting('theme');
+
+      expect(setting).toBe('dark');
+    });
+  });
+
+  describe('Storage Estimate', () => {
+    test('should return storage estimate or null', async () => {
+      const estimate = await storage.getStorageEstimate();
+
+      // In test environment, navigator.storage may not be available
+      expect(estimate === null || typeof estimate === 'object').toBe(true);
     });
   });
 });
