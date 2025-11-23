@@ -21,4 +21,3 @@ These documents are preserved for reference but are not part of the current proj
 - **PROMPT_FOR_GENESIS_CLAUDE.md** - Genesis-specific prompts
 
 For current project documentation, see the main [README.md](../README.md).
-
