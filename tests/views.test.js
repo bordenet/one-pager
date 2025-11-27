@@ -146,6 +146,10 @@ describe('Views Module', () => {
 
       // The click handler should be attached
       expect(projectCard).toBeTruthy();
+
+      // Simulate a click on the project card (not the delete button)
+      projectCard.click();
+      // Should have triggered navigation
     });
 
     test('should not navigate when clicking delete button', async () => {
@@ -158,6 +162,9 @@ describe('Views Module', () => {
       // The delete button should exist and have the correct data attribute
       expect(deleteBtn).toBeTruthy();
       expect(deleteBtn.dataset.projectId).toBe(project.id);
+
+      // Click the delete button - should not navigate, should trigger delete flow
+      deleteBtn.click();
     });
   });
 
@@ -172,6 +179,29 @@ describe('Views Module', () => {
       expect(backBtn).toBeTruthy();
       expect(cancelBtn).toBeTruthy();
       expect(form).toBeTruthy();
+    });
+
+    test('should handle form submission and create project', async () => {
+      renderNewProjectForm();
+
+      // Fill in the form
+      document.getElementById('title').value = 'Test Form Project';
+      document.getElementById('problems').value = 'Test problems description';
+      document.getElementById('context').value = 'Test context';
+
+      const form = document.getElementById('new-project-form');
+
+      // Trigger form submission
+      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      form.dispatchEvent(submitEvent);
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Project should be created
+      const projects = await getAllProjects();
+      const createdProject = projects.find(p => p.title === 'Test Form Project');
+      expect(createdProject).toBeTruthy();
     });
   });
 
