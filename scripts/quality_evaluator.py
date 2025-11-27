@@ -2,19 +2,20 @@
 Quality Evaluation Engine for AI Agent Prompt Tuning
 Scores LLM outputs against quality criteria
 """
+
 import json
 import re
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
-from pathlib import Path
+from dataclasses import asdict, dataclass
+from typing import Any, Dict, List
 
-from prompt_tuning_config import ProjectConfig, ScoringConfig
-from prompt_simulator import SimulationResult, PhaseOutput
+from prompt_simulator import PhaseOutput, SimulationResult
+from prompt_tuning_config import ProjectConfig
 
 
 @dataclass
 class QualityScore:
     """Quality score for a single criterion"""
+
     criterion: str
     score: float
     rationale: str
@@ -24,6 +25,7 @@ class QualityScore:
 @dataclass
 class PhaseEvaluation:
     """Evaluation of a single phase output"""
+
     phase: str
     test_case_id: str
     test_case_name: str
@@ -36,6 +38,7 @@ class PhaseEvaluation:
 @dataclass
 class EvaluationReport:
     """Complete evaluation report"""
+
     project: str
     iteration: int
     timestamp: str
@@ -59,14 +62,14 @@ class QualityEvaluator:
         content = output.content
 
         # Check for clear structure
-        has_headers = bool(re.search(r'^#+\s', content, re.MULTILINE))
-        has_bullets = bool(re.search(r'^\s*[-*]\s', content, re.MULTILINE))
+        has_headers = bool(re.search(r"^#+\s", content, re.MULTILINE))
+        has_bullets = bool(re.search(r"^\s*[-*]\s", content, re.MULTILINE))
 
         # Check for specific metrics (numbers, percentages)
-        has_metrics = bool(re.search(r'\d+%|\$\d+|\d+\.\d+', content))
+        has_metrics = bool(re.search(r"\d+%|\$\d+|\d+\.\d+", content))
 
         # Check for jargon/complexity
-        complex_words = len(re.findall(r'\b\w{10,}\b', content))
+        complex_words = len(re.findall(r"\b\w{10,}\b", content))
         total_words = self.count_words(content)
         complexity_ratio = complex_words / max(total_words, 1)
 
@@ -129,18 +132,44 @@ class QualityEvaluator:
 
         # Look for business impact keywords
         business_keywords = [
-            'revenue', 'cost', 'profit', 'roi', 'customer', 'churn', 'retention',
-            'competitive', 'market', 'growth', 'efficiency', 'risk', 'compliance'
+            "revenue",
+            "cost",
+            "profit",
+            "roi",
+            "customer",
+            "churn",
+            "retention",
+            "competitive",
+            "market",
+            "growth",
+            "efficiency",
+            "risk",
+            "compliance",
         ]
 
         strategic_keywords = [
-            'strategic', 'initiative', 'advantage', 'opportunity', 'threat',
-            'crisis', 'critical', 'urgent', 'priority'
+            "strategic",
+            "initiative",
+            "advantage",
+            "opportunity",
+            "threat",
+            "crisis",
+            "critical",
+            "urgent",
+            "priority",
         ]
 
         quantified_keywords = [
-            '%', 'percent', 'million', 'thousand', 'increase', 'decrease',
-            'improve', 'reduce', 'save', 'generate'
+            "%",
+            "percent",
+            "million",
+            "thousand",
+            "increase",
+            "decrease",
+            "improve",
+            "reduce",
+            "save",
+            "generate",
         ]
 
         business_score = sum(1 for kw in business_keywords if kw in content)
@@ -148,8 +177,8 @@ class QualityEvaluator:
         quantified_score = sum(1 for kw in quantified_keywords if kw in content)
 
         # Check for problem framing (crisis vs technical issue)
-        has_crisis_framing = any(word in content for word in ['crisis', 'critical', 'urgent', 'bleeding'])
-        has_stakes = any(word in content for word in ['cost of inaction', 'if we don\'t', 'risk of'])
+        has_crisis_framing = any(word in content for word in ["crisis", "critical", "urgent", "bleeding"])
+        has_stakes = any(word in content for word in ["cost of inaction", "if we don't", "risk of"])
 
         # Scoring
         score = 2.0  # Base score
@@ -174,15 +203,15 @@ class QualityEvaluator:
         content = output.content.lower()
 
         # Look for timeline indicators
-        has_timeline = bool(re.search(r'week|month|quarter|phase \d+|milestone', content))
-        has_phases = bool(re.search(r'phase \d+|stage \d+|step \d+', content))
+        has_timeline = bool(re.search(r"week|month|quarter|phase \d+|milestone", content))
+        has_phases = bool(re.search(r"phase \d+|stage \d+|step \d+", content))
 
         # Look for risk considerations
-        risk_keywords = ['risk', 'challenge', 'dependency', 'assumption', 'constraint']
+        risk_keywords = ["risk", "challenge", "dependency", "assumption", "constraint"]
         has_risks = any(kw in content for kw in risk_keywords)
 
         # Look for resource considerations
-        resource_keywords = ['team', 'resource', 'budget', 'stakeholder', 'approval']
+        resource_keywords = ["team", "resource", "budget", "stakeholder", "approval"]
         has_resources = any(kw in content for kw in resource_keywords)
 
         # Scoring
@@ -209,9 +238,7 @@ class QualityEvaluator:
         content = output.content
 
         # Check for required sections (based on one-pager template)
-        required_sections = [
-            'problem', 'solution', 'goal', 'benefit', 'scope', 'metric', 'stakeholder', 'timeline'
-        ]
+        required_sections = ["problem", "solution", "goal", "benefit", "scope", "metric", "stakeholder", "timeline"]
 
         sections_found = 0
         for section in required_sections:
@@ -219,13 +246,13 @@ class QualityEvaluator:
                 sections_found += 1
 
         # Check for substantive content in each section
-        section_headers = re.findall(r'^#+\s+(.+)$', content, re.MULTILINE)
+        section_headers = re.findall(r"^#+\s+(.+)$", content, re.MULTILINE)
         substantive_sections = 0
 
         for header in section_headers:
             # Find content after this header
             header_pattern = re.escape(header)
-            match = re.search(f'{header_pattern}(.+?)(?=^#+|$)', content, re.MULTILINE | re.DOTALL)
+            match = re.search(f"{header_pattern}(.+?)(?=^#+|$)", content, re.MULTILINE | re.DOTALL)
             if match and len(match.group(1).strip()) > 50:  # At least 50 chars
                 substantive_sections += 1
 
@@ -275,7 +302,7 @@ class QualityEvaluator:
             word_count=output.word_count,
             scores=scores,
             overall_score=overall_score,
-            meets_target=meets_target
+            meets_target=meets_target,
         )
 
     def evaluate_simulation_results(self, results: List[SimulationResult], iteration: int = 0) -> EvaluationReport:
@@ -296,7 +323,7 @@ class QualityEvaluator:
             iteration=iteration,
             timestamp=results[0].timestamp if results else "",
             phase_evaluations=phase_evaluations,
-            summary_stats=summary_stats
+            summary_stats=summary_stats,
         )
 
     def _calculate_summary_stats(self, evaluations: List[PhaseEvaluation]) -> Dict[str, Any]:
@@ -305,7 +332,7 @@ class QualityEvaluator:
             return {}
 
         # Group by phase
-        phases = {}
+        phases: Dict[str, List[Any]] = {}
         for eval in evaluations:
             if eval.phase not in phases:
                 phases[eval.phase] = []
@@ -321,7 +348,7 @@ class QualityEvaluator:
                 "meets_target_count": sum(1 for e in phase_evals if e.meets_target),
                 "meets_target_percentage": sum(1 for e in phase_evals if e.meets_target) / len(phase_evals) * 100,
                 "average_word_count": sum(e.word_count for e in phase_evals) / len(phase_evals),
-                "criteria_averages": {}
+                "criteria_averages": {},
             }
 
             # Calculate averages for each criterion
@@ -338,7 +365,7 @@ class QualityEvaluator:
             "total_evaluations": len(evaluations),
             "average_score": sum(all_scores) / len(all_scores),
             "meets_target_count": sum(1 for e in evaluations if e.meets_target),
-            "meets_target_percentage": sum(1 for e in evaluations if e.meets_target) / len(evaluations) * 100
+            "meets_target_percentage": sum(1 for e in evaluations if e.meets_target) / len(evaluations) * 100,
         }
 
         return summary
@@ -357,12 +384,12 @@ class QualityEvaluator:
         # Generate markdown report
         markdown_content = self._generate_markdown_report(report)
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write(markdown_content)
 
         # Also save JSON version
-        json_file = output_file.with_suffix('.json')
-        with open(json_file, 'w') as f:
+        json_file = output_file.with_suffix(".json")
+        with open(json_file, "w") as f:
             json.dump(asdict(report), f, indent=2)
 
         print(f"Evaluation report saved to: {output_file}")
@@ -396,7 +423,7 @@ class QualityEvaluator:
 **Criteria Breakdown**:
 """
 
-            for criterion, avg_score in phase_stats['criteria_averages'].items():
+            for criterion, avg_score in phase_stats["criteria_averages"].items():
                 md += f"- **{criterion.title()}**: {avg_score:.2f}/5.0\n"
 
             md += "\n"

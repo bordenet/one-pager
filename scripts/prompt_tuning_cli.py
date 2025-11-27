@@ -2,39 +2,40 @@
 """
 AI Agent Prompt Tuning Tool - Command Line Interface
 """
+import asyncio
 import os
 import sys
-import asyncio
-import click
 from pathlib import Path
+
+import click
 from rich.console import Console
-from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
 # Add scripts directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from prompt_tuning_config import load_project_config, validate_api_keys, get_env_file_template
-from prompt_simulator import PromptSimulator
-from quality_evaluator import QualityEvaluator
 from evolutionary_tuner import EvolutionaryTuner
+from prompt_simulator import PromptSimulator
+from prompt_tuning_config import get_env_file_template, load_project_config, validate_api_keys
+from quality_evaluator import QualityEvaluator
 
 console = Console()
 
 
 @click.group()
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 @click.pass_context
 def cli(ctx, verbose):
     """AI Agent Prompt Tuning Tool"""
     ctx.ensure_object(dict)
-    ctx.obj['verbose'] = verbose
+    ctx.obj["verbose"] = verbose
 
 
 @cli.command()
-@click.argument('project_name')
-@click.option('--base-dir', type=click.Path(exists=True), help='Base directory (default: current)')
+@click.argument("project_name")
+@click.option("--base-dir", type=click.Path(exists=True), help="Base directory (default: current)")
 def init(project_name, base_dir):
     """Initialize a new prompt tuning project"""
     base_path = Path(base_dir) if base_dir else Path.cwd()
@@ -53,7 +54,7 @@ def init(project_name, base_dir):
     # Create .env template if it doesn't exist
     env_file = base_path / ".env"
     if not env_file.exists():
-        with open(env_file, 'w') as f:
+        with open(env_file, "w") as f:
             f.write(get_env_file_template())
         console.print(f"[green]Created .env template at {env_file}[/green]")
         console.print("[yellow]Please fill in your API keys in the .env file[/yellow]")
@@ -76,14 +77,15 @@ def init(project_name, base_dir):
                     "inputs": {
                         "projectName": "Sample Project",
                         "problemDescription": "Sample problem description",
-                        "businessContext": "Sample business context"
-                    }
+                        "businessContext": "Sample business context",
+                    },
                 }
-            ]
+            ],
         }
 
         import json
-        with open(test_cases_file, 'w') as f:
+
+        with open(test_cases_file, "w") as f:
             json.dump(sample_test_cases, f, indent=2)
 
         console.print(f"[green]Created sample test cases at {test_cases_file}[/green]")
@@ -94,9 +96,9 @@ def init(project_name, base_dir):
 
 
 @cli.command()
-@click.argument('project_name')
-@click.option('--iteration', '-i', default=0, help='Iteration number (0 for baseline)')
-@click.option('--mock', is_flag=True, help='Run in AI agent mock mode (no API keys required)')
+@click.argument("project_name")
+@click.option("--iteration", "-i", default=0, help="Iteration number (0 for baseline)")
+@click.option("--mock", is_flag=True, help="Run in AI agent mock mode (no API keys required)")
 def simulate(project_name, iteration, mock):
     """Run prompt simulation for test cases"""
     config = load_project_config(project_name)
@@ -123,16 +125,14 @@ def simulate(project_name, iteration, mock):
         simulator = PromptSimulator(config)
 
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
             task = progress.add_task("Running simulation...", total=None)
             results = await simulator.run_simulation(iteration)
             progress.update(task, description="Saving results...")
             output_file = simulator.save_results(results, iteration)
 
-        console.print(f"[bold green]Simulation complete![/bold green]")
+        console.print("[bold green]Simulation complete![/bold green]")
         console.print(f"Results saved to: {output_file}")
 
         return results
@@ -141,8 +141,8 @@ def simulate(project_name, iteration, mock):
 
 
 @cli.command()
-@click.argument('project_name')
-@click.option('--iteration', '-i', default=0, help='Iteration number (0 for baseline)')
+@click.argument("project_name")
+@click.option("--iteration", "-i", default=0, help="Iteration number (0 for baseline)")
 def evaluate(project_name, iteration):
     """Evaluate simulation results"""
     config = load_project_config(project_name)
@@ -161,25 +161,26 @@ def evaluate(project_name, iteration):
         sys.exit(1)
 
     import json
-    from prompt_simulator import SimulationResult
 
-    with open(results_file, 'r') as f:
+    with open(results_file, "r") as f:
         data = json.load(f)
 
     # Convert to SimulationResult objects (simplified)
     results = []
-    for result_data in data['results']:
+    for result_data in data["results"]:
         # This is a simplified conversion - in practice you'd need proper deserialization
         results.append(result_data)
 
-    evaluator = QualityEvaluator(config)
+    _ = QualityEvaluator(config)  # noqa: F841 - Evaluator instantiated for future use
     # Note: This would need proper object reconstruction in a full implementation
-    console.print("[yellow]Evaluation feature needs full object reconstruction - see evolutionary_tuner for complete implementation[/yellow]")
+    console.print(
+        "[yellow]Evaluation feature needs full object reconstruction - see evolutionary_tuner for complete implementation[/yellow]"
+    )
 
 
 @cli.command()
-@click.argument('project_name')
-@click.option('--mock', is_flag=True, help='Run in AI agent mock mode (no API keys required)')
+@click.argument("project_name")
+@click.option("--mock", is_flag=True, help="Run in AI agent mock mode (no API keys required)")
 def evolve(project_name, mock):
     """Run evolutionary prompt tuning"""
     config = load_project_config(project_name)
@@ -205,23 +206,23 @@ def evolve(project_name, mock):
         tuner = EvolutionaryTuner(config)
 
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
-            task = progress.add_task("Running evolutionary tuning...", total=None)
+            progress.add_task("Running evolutionary tuning...", total=None)
             session = await tuner.run_evolutionary_tuning()
 
         # Display results
-        console.print(Panel.fit(
-            f"[bold green]Evolutionary Tuning Complete![/bold green]\n\n"
-            f"Baseline Score: {session.baseline_score:.2f}/5.0\n"
-            f"Final Score: {session.final_score:.2f}/5.0\n"
-            f"Improvement: +{session.total_improvement:.2f} ({session.total_improvement/session.baseline_score*100:.1f}%)\n"
-            f"Success Rate: {session.success_rate:.1%}\n"
-            f"Iterations: {len(session.iterations)}",
-            title="Results"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold green]Evolutionary Tuning Complete![/bold green]\n\n"
+                f"Baseline Score: {session.baseline_score:.2f}/5.0\n"
+                f"Final Score: {session.final_score:.2f}/5.0\n"
+                f"Improvement: +{session.total_improvement:.2f} ({session.total_improvement/session.baseline_score*100:.1f}%)\n"
+                f"Success Rate: {session.success_rate:.1%}\n"
+                f"Iterations: {len(session.iterations)}",
+                title="Results",
+            )
+        )
 
         return session
 
@@ -229,7 +230,7 @@ def evolve(project_name, mock):
 
 
 @cli.command()
-@click.argument('project_name')
+@click.argument("project_name")
 def status(project_name):
     """Show project status and results"""
     config = load_project_config(project_name)
@@ -275,7 +276,7 @@ def status(project_name):
 
 
 @cli.command()
-@click.argument('project_name')
+@click.argument("project_name")
 def ai_agent_optimize(project_name):
     """AI Agent autonomous prompt optimization (no API keys required)"""
     console.print(f"[bold blue]🤖 AI Agent Autonomous Optimization: {project_name}[/bold blue]")
@@ -292,26 +293,26 @@ def ai_agent_optimize(project_name):
         tuner = EvolutionaryTuner(config)
 
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
-            task = progress.add_task("🤖 AI Agent optimizing prompts...", total=None)
+            progress.add_task("🤖 AI Agent optimizing prompts...", total=None)
             session = await tuner.run_evolutionary_tuning()
 
         # Display results with AI agent context
-        console.print(Panel.fit(
-            f"[bold green]🤖 AI Agent Optimization Complete![/bold green]\n\n"
-            f"Baseline Score: {session.baseline_score:.2f}/5.0\n"
-            f"Final Score: {session.final_score:.2f}/5.0\n"
-            f"Improvement: +{session.total_improvement:.2f} ({session.total_improvement/session.baseline_score*100:.1f}%)\n"
-            f"Success Rate: {session.success_rate:.1%}\n"
-            f"Iterations: {len(session.iterations)}\n\n"
-            f"[cyan]✅ Prompts optimized for business impact and strategic framing[/cyan]\n"
-            f"[cyan]✅ Word count compliance achieved (500-700 words)[/cyan]\n"
-            f"[cyan]✅ Ready for deployment to prompts/ directory[/cyan]",
-            title="AI Agent Results"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold green]🤖 AI Agent Optimization Complete![/bold green]\n\n"
+                f"Baseline Score: {session.baseline_score:.2f}/5.0\n"
+                f"Final Score: {session.final_score:.2f}/5.0\n"
+                f"Improvement: +{session.total_improvement:.2f} ({session.total_improvement/session.baseline_score*100:.1f}%)\n"
+                f"Success Rate: {session.success_rate:.1%}\n"
+                f"Iterations: {len(session.iterations)}\n\n"
+                f"[cyan]✅ Prompts optimized for business impact and strategic framing[/cyan]\n"
+                f"[cyan]✅ Word count compliance achieved (500-700 words)[/cyan]\n"
+                f"[cyan]✅ Ready for deployment to prompts/ directory[/cyan]",
+                title="AI Agent Results",
+            )
+        )
 
         # Show next steps for AI agent
         console.print("\n[bold yellow]Next Steps for AI Agent:[/bold yellow]")
@@ -324,5 +325,5 @@ def ai_agent_optimize(project_name):
     return asyncio.run(run_ai_optimization())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

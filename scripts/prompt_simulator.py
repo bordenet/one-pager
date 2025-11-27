@@ -2,21 +2,22 @@
 Prompt Simulation Engine for AI Agent Prompt Tuning
 Executes LLM prompts with test cases and captures outputs
 """
-import json
-import asyncio
-import time
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
 
-from llm_client import create_llm_client, LLMResponse
+import asyncio
+import json
+import time
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from llm_client import LLMResponse, create_llm_client
 from prompt_tuning_config import ProjectConfig
 
 
 @dataclass
 class TestCase:
     """Test case for prompt simulation"""
+
     id: str
     name: str
     description: str
@@ -30,6 +31,7 @@ class TestCase:
 @dataclass
 class PhaseOutput:
     """Output from a single phase"""
+
     phase: str
     content: str
     word_count: int
@@ -42,6 +44,7 @@ class PhaseOutput:
 @dataclass
 class SimulationResult:
     """Result from simulating one test case"""
+
     test_case_id: str
     test_case_name: str
     phase_outputs: Dict[str, PhaseOutput]
@@ -54,7 +57,7 @@ class PromptSimulator:
 
     def __init__(self, config: ProjectConfig):
         self.config = config
-        self.clients = {}
+        self.clients: Dict[str, Any] = {}
         self._load_clients()
 
     def _load_clients(self):
@@ -67,21 +70,23 @@ class PromptSimulator:
         if not self.config.test_cases_file.exists():
             raise FileNotFoundError(f"Test cases file not found: {self.config.test_cases_file}")
 
-        with open(self.config.test_cases_file, 'r') as f:
+        with open(self.config.test_cases_file, "r") as f:
             data = json.load(f)
 
         test_cases = []
-        for case_data in data.get('test_cases', []):
-            test_cases.append(TestCase(
-                id=case_data['id'],
-                name=case_data['name'],
-                description=case_data['description'],
-                industry=case_data['industry'],
-                project_type=case_data['project_type'],
-                scope=case_data['scope'],
-                stakeholder_complexity=case_data['stakeholder_complexity'],
-                inputs=case_data['inputs']
-            ))
+        for case_data in data.get("test_cases", []):
+            test_cases.append(
+                TestCase(
+                    id=case_data["id"],
+                    name=case_data["name"],
+                    description=case_data["description"],
+                    industry=case_data["industry"],
+                    project_type=case_data["project_type"],
+                    scope=case_data["scope"],
+                    stakeholder_complexity=case_data["stakeholder_complexity"],
+                    inputs=case_data["inputs"],
+                )
+            )
 
         return test_cases
 
@@ -95,7 +100,7 @@ class PromptSimulator:
         if not prompt_file.exists():
             raise FileNotFoundError(f"Prompt file not found: {prompt_file}")
 
-        with open(prompt_file, 'r') as f:
+        with open(prompt_file, "r") as f:
             return f.read()
 
     def substitute_variables(self, prompt: str, inputs: Dict[str, str]) -> str:
@@ -106,8 +111,9 @@ class PromptSimulator:
             result = result.replace(placeholder, value)
         return result
 
-    async def simulate_phase(self, phase: str, prompt: str, test_case: TestCase,
-                           previous_outputs: Optional[Dict[str, PhaseOutput]] = None) -> PhaseOutput:
+    async def simulate_phase(
+        self, phase: str, prompt: str, test_case: TestCase, previous_outputs: Optional[Dict[str, PhaseOutput]] = None
+    ) -> PhaseOutput:
         """Simulate a single phase for one test case"""
 
         # Substitute variables in prompt
@@ -115,8 +121,10 @@ class PromptSimulator:
 
         # For phase 3, include previous outputs
         if phase == "phase3" and previous_outputs:
-            phase1_output = previous_outputs.get("phase1", {}).content or ""
-            phase2_output = previous_outputs.get("phase2", {}).content or ""
+            phase1_result = previous_outputs.get("phase1")
+            phase2_result = previous_outputs.get("phase2")
+            phase1_output = phase1_result.content if phase1_result else ""
+            phase2_output = phase2_result.content if phase2_result else ""
 
             final_prompt = final_prompt.replace("{phase1Output}", phase1_output)
             final_prompt = final_prompt.replace("{phase2Output}", phase2_output)
@@ -135,7 +143,7 @@ class PromptSimulator:
             execution_time_ms=response.execution_time_ms or 0,
             tokens_used=response.tokens_used,
             model=response.model,
-            provider=response.provider
+            provider=response.provider,
         )
 
     async def simulate_test_case(self, test_case: TestCase, iteration: int = 0) -> SimulationResult:
@@ -169,7 +177,7 @@ class PromptSimulator:
             test_case_name=test_case.name,
             phase_outputs=phase_outputs,
             total_execution_time_ms=total_time,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
         )
 
     async def run_simulation(self, iteration: int = 0) -> List[SimulationResult]:
@@ -203,10 +211,10 @@ class PromptSimulator:
             "iteration": iteration,
             "timestamp": datetime.now().isoformat(),
             "description": f"Simulation results for iteration {iteration}",
-            "results": [asdict(result) for result in results]
+            "results": [asdict(result) for result in results],
         }
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(output_data, f, indent=2)
 
         print(f"Results saved to: {output_file}")
@@ -216,6 +224,7 @@ class PromptSimulator:
 async def main():
     """CLI entry point for testing"""
     import sys
+
     from prompt_tuning_config import load_project_config
 
     if len(sys.argv) < 2:

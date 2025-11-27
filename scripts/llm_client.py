@@ -2,19 +2,20 @@
 LLM Client Wrapper for AI Agent Prompt Tuning
 Supports Anthropic Claude, Google Gemini, and OpenAI GPT
 """
-import os
-import time
-import asyncio
-import random
-from typing import Dict, Any, Optional
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
 
-# Import LLM clients
+import asyncio
+import os
+import random
+import time
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
+
+# Import LLM clients (optional dependencies)
 try:
     import anthropic
 except ImportError:
-    anthropic = None
+    anthropic = None  # type: ignore[assignment]
 
 try:
     import google.generativeai as genai
@@ -24,7 +25,7 @@ except ImportError:
 try:
     import openai
 except ImportError:
-    openai = None
+    openai = None  # type: ignore[assignment]
 
 from prompt_tuning_config import LLMConfig
 
@@ -32,6 +33,7 @@ from prompt_tuning_config import LLMConfig
 @dataclass
 class LLMResponse:
     """Standardized response from any LLM"""
+
     content: str
     model: str
     provider: str
@@ -71,20 +73,27 @@ class AnthropicClient(LLMClientBase):
         try:
             response = self.client.messages.create(
                 model=self.config.model,
-                max_tokens=kwargs.get('max_tokens', self.config.max_tokens),
-                temperature=kwargs.get('temperature', self.config.temperature),
-                messages=[{"role": "user", "content": prompt}]
+                max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
+                temperature=kwargs.get("temperature", self.config.temperature),
+                messages=[{"role": "user", "content": prompt}],
             )
 
             execution_time = int((time.time() - start_time) * 1000)
 
+            # Extract text content from response
+            content_text = ""
+            if response.content and len(response.content) > 0:
+                first_block = response.content[0]
+                if hasattr(first_block, "text"):
+                    content_text = first_block.text
+
             return LLMResponse(
-                content=response.content[0].text,
+                content=content_text,
                 model=self.config.model,
                 provider="anthropic",
-                tokens_used=response.usage.output_tokens if hasattr(response, 'usage') else None,
+                tokens_used=response.usage.output_tokens if hasattr(response, "usage") else None,
                 execution_time_ms=execution_time,
-                metadata={"stop_reason": response.stop_reason if hasattr(response, 'stop_reason') else None}
+                metadata={"stop_reason": response.stop_reason if hasattr(response, "stop_reason") else None},
             )
 
         except Exception as e:
@@ -108,14 +117,11 @@ class GoogleClient(LLMClientBase):
 
         try:
             generation_config = genai.types.GenerationConfig(
-                max_output_tokens=kwargs.get('max_tokens', self.config.max_tokens),
-                temperature=kwargs.get('temperature', self.config.temperature),
+                max_output_tokens=kwargs.get("max_tokens", self.config.max_tokens),
+                temperature=kwargs.get("temperature", self.config.temperature),
             )
 
-            response = self.model.generate_content(
-                prompt,
-                generation_config=generation_config
-            )
+            response = self.model.generate_content(prompt, generation_config=generation_config)
 
             execution_time = int((time.time() - start_time) * 1000)
 
@@ -123,9 +129,9 @@ class GoogleClient(LLMClientBase):
                 content=response.text,
                 model=self.config.model,
                 provider="google",
-                tokens_used=response.usage_metadata.total_token_count if hasattr(response, 'usage_metadata') else None,
+                tokens_used=response.usage_metadata.total_token_count if hasattr(response, "usage_metadata") else None,
                 execution_time_ms=execution_time,
-                metadata={"finish_reason": response.candidates[0].finish_reason if response.candidates else None}
+                metadata={"finish_reason": response.candidates[0].finish_reason if response.candidates else None},
             )
 
         except Exception as e:
@@ -148,28 +154,31 @@ class OpenAIClient(LLMClientBase):
         try:
             response = self.client.chat.completions.create(
                 model=self.config.model,
-                max_tokens=kwargs.get('max_tokens', self.config.max_tokens),
-                temperature=kwargs.get('temperature', self.config.temperature),
-                messages=[{"role": "user", "content": prompt}]
+                max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
+                temperature=kwargs.get("temperature", self.config.temperature),
+                messages=[{"role": "user", "content": prompt}],
             )
 
             execution_time = int((time.time() - start_time) * 1000)
 
+            content = response.choices[0].message.content or ""
             return LLMResponse(
-                content=response.choices[0].message.content,
+                content=content,
                 model=self.config.model,
                 provider="openai",
                 tokens_used=response.usage.total_tokens if response.usage else None,
                 execution_time_ms=execution_time,
-                metadata={"finish_reason": response.choices[0].finish_reason}
+                metadata={"finish_reason": response.choices[0].finish_reason},
             )
 
         except Exception as e:
             raise RuntimeError(f"OpenAI API error: {str(e)}")
 
 
-def create_llm_client(config: LLMConfig) -> LLMClientBase:
-    """Factory function to create appropriate LLM client"""
+# Original create_llm_client without AI Agent mock support
+# Kept for reference, but the version below with mock support is used
+def _create_llm_client_basic(config: LLMConfig) -> LLMClientBase:
+    """Basic factory function without mock support (internal use only)."""
     if config.provider == "anthropic":
         return AnthropicClient(config)
     elif config.provider == "google":
@@ -212,9 +221,9 @@ class AIAgentMockClient(LLMClientBase):
             content=content,
             model=self.config.model,
             provider=f"{self.config.provider}_mock",
-            tokens_used=len(content.split()) * 1.3,  # Rough token estimate
+            tokens_used=int(len(content.split()) * 1.3),  # Rough token estimate
             execution_time_ms=execution_time,
-            metadata={"mock_mode": True}
+            metadata={"mock_mode": True},
         )
 
     def _generate_phase1_mock(self, prompt: str) -> str:
@@ -353,7 +362,9 @@ This pragmatic approach creates sustainable competitive advantages through opera
     def _generate_phase3_mock(self, prompt: str) -> str:
         """Generate Phase 3 mock response (synthesis)"""
         project_name = self._extract_project_name(prompt)
-        attribution_url = os.getenv("GENESIS_TOOL_URL", "https://github.com/bordenet/genesis/tree/main/tools/prompt-tuning")
+        attribution_url = os.getenv(
+            "GENESIS_TOOL_URL", "https://github.com/bordenet/genesis/tree/main/tools/prompt-tuning"
+        )
 
         return f"""# {project_name}: Strategic Action Plan
 
@@ -439,7 +450,9 @@ The opportunity exists to transform this challenge into competitive advantage th
 
     def _generate_generic_mock(self, prompt: str) -> str:
         """Generate generic mock response"""
-        attribution_url = os.getenv("GENESIS_TOOL_URL", "https://github.com/bordenet/genesis/tree/main/tools/prompt-tuning")
+        attribution_url = os.getenv(
+            "GENESIS_TOOL_URL", "https://github.com/bordenet/genesis/tree/main/tools/prompt-tuning"
+        )
         return f"""# Strategic Business Initiative
 
 ## Executive Summary
@@ -470,6 +483,7 @@ Secure approval and resources to begin Phase 1 implementation within the next tw
         # Look for common project name patterns
         if "projectName" in prompt:
             import re
+
             match = re.search(r'projectName["\']?\s*:\s*["\']?([^"\'}\n]+)', prompt)
             if match:
                 return match.group(1).strip()
@@ -480,7 +494,7 @@ Secure approval and resources to begin Phase 1 implementation within the next tw
             "Operational Excellence Initiative",
             "Digital Transformation Project",
             "Strategic Growth Initiative",
-            "System Optimization Program"
+            "System Optimization Program",
         ]
         return random.choice(defaults)
 

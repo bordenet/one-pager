@@ -1,7 +1,8 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import {
   createProject,
   generatePrompt,
+  generatePromptForPhase,
   validatePhase,
   advancePhase,
   isProjectComplete,
@@ -9,6 +10,8 @@ import {
   updatePhaseResponse,
   updateFormData,
   getProgress,
+  getPhaseMetadata,
+  exportFinalOnePager,
   PHASES
 } from '../js/workflow.js';
 
@@ -234,6 +237,258 @@ describe('Workflow Module', () => {
       });
 
       expect(getProgress(project)).toBe(100);
+    });
+  });
+
+  describe('getPhaseMetadata', () => {
+    test('should return metadata for phase 1', () => {
+      const metadata = getPhaseMetadata(1);
+
+      expect(metadata.title).toBe('Initial Draft');
+      expect(metadata.ai).toBe('Claude');
+      expect(metadata.icon).toBe('📝');
+      expect(metadata.color).toBe('blue');
+    });
+
+    test('should return metadata for phase 2', () => {
+      const metadata = getPhaseMetadata(2);
+
+      expect(metadata.title).toBe('Alternative Perspective');
+      expect(metadata.ai).toBe('Gemini');
+      expect(metadata.icon).toBe('🔄');
+      expect(metadata.color).toBe('green');
+    });
+
+    test('should return metadata for phase 3', () => {
+      const metadata = getPhaseMetadata(3);
+
+      expect(metadata.title).toBe('Final Synthesis');
+      expect(metadata.ai).toBe('Claude');
+      expect(metadata.icon).toBe('✨');
+      expect(metadata.color).toBe('purple');
+    });
+
+    test('should return phase 1 metadata for invalid phase number', () => {
+      const metadata = getPhaseMetadata(999);
+
+      expect(metadata.title).toBe('Initial Draft');
+    });
+  });
+
+  describe('exportFinalOnePager', () => {
+    let mockCreateElement;
+    let createdAnchor;
+    let originalCreateObjectURL;
+    let originalRevokeObjectURL;
+
+    beforeEach(() => {
+      createdAnchor = { click: jest.fn(), href: '', download: '' };
+      mockCreateElement = jest.spyOn(document, 'createElement').mockReturnValue(createdAnchor);
+      originalCreateObjectURL = URL.createObjectURL;
+      originalRevokeObjectURL = URL.revokeObjectURL;
+      URL.createObjectURL = jest.fn().mockReturnValue('blob:test');
+      URL.revokeObjectURL = jest.fn();
+    });
+
+    afterEach(() => {
+      mockCreateElement.mockRestore();
+      URL.createObjectURL = originalCreateObjectURL;
+      URL.revokeObjectURL = originalRevokeObjectURL;
+    });
+
+    test('should export phase 3 response when available', () => {
+      const project = {
+        title: 'Test Project',
+        name: 'Test',
+        phases: {
+          1: { response: 'Phase 1 content' },
+          3: { response: 'Phase 3 final content' }
+        }
+      };
+
+      exportFinalOnePager(project);
+
+      expect(URL.createObjectURL).toHaveBeenCalled();
+      expect(createdAnchor.click).toHaveBeenCalled();
+    });
+
+    test('should fallback to phase 1 response when phase 3 is not available', () => {
+      const project = {
+        title: 'Test Project',
+        name: 'Test',
+        phases: {
+          1: { response: 'Phase 1 content' }
+        }
+      };
+
+      exportFinalOnePager(project);
+
+      expect(URL.createObjectURL).toHaveBeenCalled();
+      expect(createdAnchor.click).toHaveBeenCalled();
+    });
+
+    test('should handle legacy format with array phases', () => {
+      const project = {
+        title: 'Test Project',
+        name: 'Test',
+        phases: [
+          { response: '' },
+          { response: '' },
+          { response: 'Legacy phase 3 content' }
+        ]
+      };
+
+      exportFinalOnePager(project);
+
+      expect(URL.createObjectURL).toHaveBeenCalled();
+    });
+
+    test('should generate fallback content when no responses exist', () => {
+      const project = {
+        title: 'Test Project',
+        name: 'Test',
+        problems: 'Test problems',
+        phases: {}
+      };
+
+      exportFinalOnePager(project);
+
+      expect(URL.createObjectURL).toHaveBeenCalled();
+    });
+
+    test('should sanitize filename', () => {
+      const project = {
+        title: 'Test Project With Special Ch@rs!',
+        phases: { 3: { response: 'Content' } }
+      };
+
+      exportFinalOnePager(project);
+
+      expect(createdAnchor.download).toContain('test-project-with-special-ch-rs-');
+      expect(createdAnchor.download).toContain('-one-pager.md');
+    });
+  });
+
+  describe('generatePromptForPhase', () => {
+    let originalFetch;
+
+    beforeEach(() => {
+      originalFetch = global.fetch;
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        text: () => Promise.resolve('Template for phase {phase1Output} {phase2Output} {projectName} {problemStatement} {context}')
+      });
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    test('should generate phase 1 prompt with object-style phases', async () => {
+      const { generatePromptForPhase } = await import('../js/workflow.js');
+      const project = {
+        title: 'Test Project',
+        problems: 'Test Problems',
+        context: 'Test Context',
+        phase: 1,
+        phases: {
+          1: { prompt: '', response: '' },
+          2: { prompt: '', response: '' },
+          3: { prompt: '', response: '' }
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project, 1);
+
+      expect(prompt).toBeTruthy();
+      expect(global.fetch).toHaveBeenCalledWith('prompts/phase1.md');
+    });
+
+    test('should generate phase 2 prompt using phase 1 response from object-style phases', async () => {
+      const { generatePromptForPhase } = await import('../js/workflow.js');
+      const project = {
+        title: 'Test Project',
+        phase: 2,
+        phases: {
+          1: { prompt: '', response: 'Phase 1 content here' },
+          2: { prompt: '', response: '' },
+          3: { prompt: '', response: '' }
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project, 2);
+
+      expect(prompt).toBeTruthy();
+      expect(global.fetch).toHaveBeenCalledWith('prompts/phase2.md');
+    });
+
+    test('should generate phase 3 prompt using phase 1 and 2 responses from object-style phases', async () => {
+      const { generatePromptForPhase } = await import('../js/workflow.js');
+      const project = {
+        title: 'Test Project',
+        phase: 3,
+        phases: {
+          1: { prompt: '', response: 'Phase 1 content' },
+          2: { prompt: '', response: 'Phase 2 content' },
+          3: { prompt: '', response: '' }
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project, 3);
+
+      expect(prompt).toBeTruthy();
+      expect(global.fetch).toHaveBeenCalledWith('prompts/phase3.md');
+    });
+
+    test('should generate phase 2 prompt using phase 1 response from array-style phases', async () => {
+      const { generatePromptForPhase } = await import('../js/workflow.js');
+      const project = {
+        name: 'Test Project',
+        currentPhase: 2,
+        phases: [
+          { response: 'Phase 1 content from array' },
+          { response: '' },
+          { response: '' }
+        ]
+      };
+
+      const prompt = await generatePromptForPhase(project, 2);
+
+      expect(prompt).toBeTruthy();
+      expect(global.fetch).toHaveBeenCalledWith('prompts/phase2.md');
+    });
+
+    test('should fallback to project.currentPhase when phase not provided', async () => {
+      const { generatePromptForPhase } = await import('../js/workflow.js');
+      const project = {
+        title: 'Test Project',
+        currentPhase: 1,
+        phases: {
+          1: { prompt: '', response: '' }
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project);
+
+      expect(prompt).toBeTruthy();
+      expect(global.fetch).toHaveBeenCalledWith('prompts/phase1.md');
+    });
+
+    test('should fallback to project.phase when currentPhase not provided', async () => {
+      const { generatePromptForPhase } = await import('../js/workflow.js');
+      const project = {
+        title: 'Test Project',
+        phase: 2,
+        phases: {
+          1: { response: 'Phase 1 output' },
+          2: { prompt: '', response: '' }
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project);
+
+      expect(prompt).toBeTruthy();
+      expect(global.fetch).toHaveBeenCalledWith('prompts/phase2.md');
     });
   });
 });

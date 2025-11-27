@@ -210,9 +210,60 @@ export function getPhaseMetadata(phase) {
 
 /**
  * Generate prompt for a specific phase
+ * @param {object} project - The project object
+ * @param {number} phaseNumber - The phase number (1, 2, or 3)
  */
-export async function generatePromptForPhase(project) {
-  return await generatePrompt(project);
+export async function generatePromptForPhase(project, phaseNumber) {
+  // Handle when phaseNumber is not provided (use currentPhase or phase)
+  const phase = phaseNumber || project.currentPhase || project.phase || 1;
+  const template = await loadPromptTemplate(phase);
+
+  // Helper to get phase response, handling both object and array formats
+  const getPhaseResponse = (phaseNum) => {
+    if (project.phases) {
+      // Object format: {1: {response: ''}, 2: {response: ''}, ...}
+      if (project.phases[phaseNum] && project.phases[phaseNum].response) {
+        return project.phases[phaseNum].response;
+      }
+      // Array format: [{response: ''}, {response: ''}, ...]
+      if (Array.isArray(project.phases) && project.phases[phaseNum - 1]) {
+        return project.phases[phaseNum - 1].response || '';
+      }
+    }
+    return '';
+  };
+
+  if (phase === 1) {
+    // Phase 1: Initial Draft - use form data or project fields
+    const vars = project.formData || {
+      projectName: project.title || project.name || '',
+      problemStatement: project.problems || project.description || '',
+      proposedSolution: '',
+      keyGoals: '',
+      scopeInScope: '',
+      scopeOutOfScope: '',
+      successMetrics: '',
+      keyStakeholders: '',
+      timelineEstimate: '',
+      context: project.context || ''
+    };
+    return replaceTemplateVars(template, vars);
+  } else if (phase === 2) {
+    // Phase 2: Gemini Review - include Phase 1 output
+    const vars = {
+      phase1Output: getPhaseResponse(1) || '[No Phase 1 output yet]'
+    };
+    return replaceTemplateVars(template, vars);
+  } else if (phase === 3) {
+    // Phase 3: Final Synthesis - include both Phase 1 and Phase 2 outputs
+    const vars = {
+      phase1Output: getPhaseResponse(1) || '[No Phase 1 output yet]',
+      phase2Output: getPhaseResponse(2) || '[No Phase 2 output yet]'
+    };
+    return replaceTemplateVars(template, vars);
+  }
+
+  return template;
 }
 
 /**
