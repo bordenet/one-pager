@@ -8,7 +8,6 @@ export default {
     'js/**/*.js',
     '!js/**/*.test.js',
     '!js/app.js',
-    '!js/project-view.js',  // Complex UI file with event handlers - difficult to test in isolation
     '!js/router.js',        // Router with complex async behavior - tested via integration
     '!**/node_modules/**',
     '!**/genesis/**'

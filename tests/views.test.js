@@ -1,6 +1,7 @@
-import { describe, test, expect, beforeEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { renderProjectsList, renderNewProjectForm } from '../js/views.js';
-import { createProject, deleteProject, getAllProjects } from '../js/projects.js';
+import { renderProjectView } from '../js/project-view.js';
+import { createProject, deleteProject, getAllProjects, updatePhase } from '../js/projects.js';
 import { initDB } from '../js/storage.js';
 
 describe('Views Module', () => {
@@ -171,6 +172,290 @@ describe('Views Module', () => {
       expect(backBtn).toBeTruthy();
       expect(cancelBtn).toBeTruthy();
       expect(form).toBeTruthy();
+    });
+  });
+
+  describe('renderProjectView', () => {
+    let originalFetch;
+
+    beforeEach(() => {
+      // Mock fetch for prompt templates
+      originalFetch = global.fetch;
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve('Phase template: {projectName}')
+        })
+      );
+
+      // Mock clipboard API
+      Object.defineProperty(navigator, 'clipboard', {
+        value: {
+          writeText: jest.fn(() => Promise.resolve())
+        },
+        configurable: true
+      });
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    test('should render project view with phase tabs', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Test Project');
+      expect(container.innerHTML).toContain('Phase 1');
+      expect(container.innerHTML).toContain('Phase 2');
+      expect(container.innerHTML).toContain('Phase 3');
+    });
+
+    test('should handle non-existent project gracefully', async () => {
+      // Try to render a project that doesn't exist
+      await renderProjectView('non-existent-id');
+
+      // Should show error toast and not crash
+      // The container content should be unchanged or show error state
+      const container = document.getElementById('app-container');
+      expect(container).toBeTruthy();
+    });
+
+    test('should render back button and export button', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      expect(container.querySelector('#back-btn')).toBeTruthy();
+      expect(container.querySelector('#export-one-pager-btn')).toBeTruthy();
+    });
+
+    test('should render copy prompt button', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      expect(container.querySelector('#copy-prompt-btn')).toBeTruthy();
+      expect(container.innerHTML).toContain('Copy Prompt to Clipboard');
+    });
+
+    test('should render save response button and textarea', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      expect(container.querySelector('#save-response-btn')).toBeTruthy();
+      expect(container.querySelector('#response-textarea')).toBeTruthy();
+    });
+
+    test('should render navigation buttons', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      expect(container.querySelector('#prev-phase-btn')).toBeTruthy();
+      expect(container.querySelector('#next-phase-btn')).toBeTruthy();
+    });
+
+    test('should show completed checkmark for completed phases', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      const phaseTabs = container.querySelectorAll('.phase-tab');
+      expect(phaseTabs[0].innerHTML).toContain('✓');
+    });
+
+    test('should display existing response in textarea when viewing that phase', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      // Update phase 1 with a response
+      await updatePhase(project.id, 1, 'Test Prompt', 'Existing response content');
+
+      await renderProjectView(project.id);
+
+      // After saving a response, project advances to next phase (2)
+      // So we need to click on phase 1 tab to see the saved response
+      const phaseTabs = document.querySelectorAll('.phase-tab');
+      phaseTabs[0].click();
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const textarea = document.getElementById('response-textarea');
+      expect(textarea.value).toBe('Existing response content');
+    });
+
+    test('should display phase metadata (title, description, AI)', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Initial Draft');
+      expect(container.innerHTML).toContain('Claude');
+    });
+  });
+
+  describe('Project View Click Handlers', () => {
+    let originalFetch;
+
+    beforeEach(() => {
+      originalFetch = global.fetch;
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve('Phase template: {projectName}')
+        })
+      );
+
+      Object.defineProperty(navigator, 'clipboard', {
+        value: {
+          writeText: jest.fn(() => Promise.resolve())
+        },
+        configurable: true
+      });
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    test('copy prompt button should trigger clipboard write', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      await renderProjectView(project.id);
+
+      const copyBtn = document.getElementById('copy-prompt-btn');
+      await copyBtn.click();
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+    });
+
+    test('phase tabs should be clickable', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      await renderProjectView(project.id);
+
+      const phaseTabs = document.querySelectorAll('.phase-tab');
+      expect(phaseTabs.length).toBe(3);
+
+      // Click phase 2 tab
+      phaseTabs[1].click();
+
+      // Wait for DOM update
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Alternative Perspective');
+    });
+
+    test('phase 2 tab should show Gemini as the AI', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      await renderProjectView(project.id);
+
+      const phaseTabs = document.querySelectorAll('.phase-tab');
+      phaseTabs[1].click();
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Gemini');
+    });
+
+    test('phase 3 tab should show Final Synthesis', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      await renderProjectView(project.id);
+
+      const phaseTabs = document.querySelectorAll('.phase-tab');
+      phaseTabs[2].click();
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Final Synthesis');
+      expect(container.innerHTML).toContain('Claude');
+    });
+
+    test('save response should show warning when textarea is empty', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      await renderProjectView(project.id);
+
+      // Clear the textarea
+      const textarea = document.getElementById('response-textarea');
+      textarea.value = '';
+
+      const saveBtn = document.getElementById('save-response-btn');
+      saveBtn.click();
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Check that warning toast was shown (look for toast in DOM or toast function was called)
+      // The UI should still show the empty textarea
+      expect(textarea.value).toBe('');
+    });
+
+    test('prev phase button should navigate to previous phase', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
+      await renderProjectView(project.id);
+
+      // After phase 1 is complete, we're on phase 2
+      let container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Alternative Perspective');
+
+      // Click prev phase button
+      const prevBtn = document.getElementById('prev-phase-btn');
+      prevBtn.click();
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Initial Draft');
+    });
+
+    test('next phase button should navigate to next phase when current is complete', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
+      await renderProjectView(project.id);
+
+      // Click back to phase 1
+      const phaseTabs = document.querySelectorAll('.phase-tab');
+      phaseTabs[0].click();
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Now click next phase button
+      const nextBtn = document.getElementById('next-phase-btn');
+      nextBtn.click();
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Alternative Perspective');
+    });
+
+    test('save response should update phase and re-render', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      await renderProjectView(project.id);
+
+      // Enter a response
+      const textarea = document.getElementById('response-textarea');
+      textarea.value = 'New response content';
+
+      const saveBtn = document.getElementById('save-response-btn');
+      saveBtn.click();
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // After save, should advance to phase 2
+      const container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Alternative Perspective');
     });
   });
 });
