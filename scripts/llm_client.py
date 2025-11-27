@@ -15,7 +15,7 @@ from typing import Any, Dict, Optional
 try:
     import anthropic
 except ImportError:
-    anthropic = None  # type: ignore[assignment]
+    anthropic = None  # type: ignore[assignment,unused-ignore]
 
 try:
     import google.generativeai as genai
@@ -25,7 +25,7 @@ except ImportError:
 try:
     import openai
 except ImportError:
-    openai = None  # type: ignore[assignment]
+    openai = None  # type: ignore[assignment,unused-ignore]
 
 from prompt_tuning_config import LLMConfig
 
