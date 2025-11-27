@@ -1,15 +1,17 @@
 """
 Configuration for AI Agent Prompt Tuning Tool
 """
+
 import os
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 from pathlib import Path
+from typing import Dict, List, Optional
 
 
 @dataclass
 class LLMConfig:
     """Configuration for LLM API clients"""
+
     provider: str  # "anthropic", "google", "openai"
     model: str
     api_key_env: str
@@ -21,6 +23,7 @@ class LLMConfig:
 @dataclass
 class ScoringConfig:
     """Configuration for quality scoring"""
+
     criteria: List[str]
     scale_min: int = 1
     scale_max: int = 5
@@ -31,6 +34,7 @@ class ScoringConfig:
 @dataclass
 class EvolutionConfig:
     """Configuration for evolutionary tuning"""
+
     max_iterations: int = 20
     improvement_threshold: float = 0.0  # Any improvement
     diminishing_returns_threshold: float = 0.05
@@ -41,6 +45,7 @@ class EvolutionConfig:
 @dataclass
 class ProjectConfig:
     """Main project configuration"""
+
     project_name: str
     prompts_dir: Path
     results_dir: Path
@@ -72,22 +77,22 @@ DEFAULT_PHASE_CONFIGS = {
         model="claude-3-5-sonnet-20241022",
         api_key_env="ANTHROPIC_API_KEY",
         max_tokens=4000,
-        temperature=0.7
+        temperature=0.7,
     ),
     "phase2": LLMConfig(
         provider="google",
         model="gemini-1.5-pro",
         api_key_env="GOOGLE_API_KEY",
         max_tokens=4000,
-        temperature=0.8  # Slightly higher for adversarial creativity
+        temperature=0.8,  # Slightly higher for adversarial creativity
     ),
     "phase3": LLMConfig(
         provider="anthropic",
         model="claude-3-5-sonnet-20241022",
         api_key_env="ANTHROPIC_API_KEY",
         max_tokens=4000,
-        temperature=0.6  # Slightly lower for synthesis consistency
-    )
+        temperature=0.6,  # Slightly lower for synthesis consistency
+    ),
 }
 
 DEFAULT_SCORING = ScoringConfig(
@@ -95,7 +100,7 @@ DEFAULT_SCORING = ScoringConfig(
     scale_min=1,
     scale_max=5,
     target_score=4.0,
-    stretch_score=4.5
+    stretch_score=4.5,
 )
 
 DEFAULT_EVOLUTION = EvolutionConfig(
@@ -103,7 +108,7 @@ DEFAULT_EVOLUTION = EvolutionConfig(
     improvement_threshold=0.0,
     diminishing_returns_threshold=0.05,
     diminishing_returns_window=3,
-    mutation_success_rate_target=0.5
+    mutation_success_rate_target=0.5,
 )
 
 
@@ -127,7 +132,7 @@ def load_project_config(project_name: str, base_dir: Optional[Path] = None) -> P
         phase_configs=DEFAULT_PHASE_CONFIGS,
         scoring=DEFAULT_SCORING,
         evolution=DEFAULT_EVOLUTION,
-        attribution_url=attribution_url
+        attribution_url=attribution_url,
     )
 
 

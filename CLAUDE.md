@@ -66,6 +66,65 @@ This means you failed to proactively communicate. Improve by:
 
 ---
 
+## 🐍 Python Style Guide (MANDATORY)
+
+All Python code in this project MUST follow the conventions in `docs/PYTHON_STYLE_GUIDE.md`. Key requirements:
+
+### Formatting & Linting
+- **Black**: Line length 120, run `black --line-length=120 scripts/*.py`
+- **isort**: Profile black, run `isort --profile black --line-length 120 scripts/*.py`
+- **Ruff**: Run `ruff check scripts/*.py` (must pass with 0 errors)
+- **mypy**: Run `mypy scripts/*.py --ignore-missing-imports` (must pass)
+
+### Type Annotations (REQUIRED)
+- ALL function parameters must have type hints
+- ALL return values must have type hints
+- ALL class attributes must have type hints
+- Use `Optional[T]` for nullable types
+- Use `List`, `Dict`, `Tuple` from typing module
+
+### Docstrings (REQUIRED)
+- ALL public functions must have docstrings
+- ALL classes must have docstrings
+- Use Google-style docstrings
+
+### Before Committing Python Code
+```bash
+# Format code
+black --line-length=120 scripts/*.py
+isort --profile black --line-length 120 scripts/*.py
+
+# Verify linting passes
+ruff check scripts/*.py
+mypy scripts/*.py --ignore-missing-imports
+```
+
+---
+
+## 🔷 Go Style Guide (MANDATORY)
+
+All Go code in this project MUST follow the conventions in `docs/GO_STYLE_GUIDE.md`. Key requirements:
+
+### Formatting & Linting
+- **gofmt**: All code must be formatted with gofmt
+- **golangci-lint**: Must pass with 0 errors
+
+### Error Handling
+- ALWAYS check errors, never ignore them
+- Use `errors.Is()` and `errors.As()` for error comparison
+- Wrap errors with context using `fmt.Errorf("context: %w", err)`
+
+### Naming Conventions
+- Use MixedCaps or mixedCaps, not underscores
+- Acronyms should be all caps (HTTP, URL, ID)
+- Interface names should describe behavior (Reader, Writer)
+
+### Documentation
+- ALL exported functions must have doc comments
+- Doc comments start with the function name
+
+---
+
 ## 🏗️ Project Structure
 
 ### Main Application

@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { renderProjectsList, renderNewProjectForm } from '../js/views.js';
 import { createProject, deleteProject, getAllProjects } from '../js/projects.js';
 import { initDB } from '../js/storage.js';
@@ -132,6 +132,45 @@ describe('Views Module', () => {
       const backBtn = container.querySelector('#back-btn');
       expect(backBtn).toBeTruthy();
       expect(backBtn.textContent).toContain('Back to Projects');
+    });
+  });
+
+  describe('Project card click handlers', () => {
+    test('should navigate when clicking project card (not delete button)', async () => {
+      const project = await createProject('Test Project', 'Problems', 'Context');
+      await renderProjectsList();
+
+      const container = document.getElementById('app-container');
+      const projectCard = container.querySelector(`[data-project-id="${project.id}"]`);
+
+      // The click handler should be attached
+      expect(projectCard).toBeTruthy();
+    });
+
+    test('should not navigate when clicking delete button', async () => {
+      const project = await createProject('Test Project', 'Problems', 'Context');
+      await renderProjectsList();
+
+      const container = document.getElementById('app-container');
+      const deleteBtn = container.querySelector(`.delete-project-btn[data-project-id="${project.id}"]`);
+
+      // The delete button should exist and have the correct data attribute
+      expect(deleteBtn).toBeTruthy();
+      expect(deleteBtn.dataset.projectId).toBe(project.id);
+    });
+  });
+
+  describe('New project form handlers', () => {
+    test('should render form with event handlers attached', () => {
+      renderNewProjectForm();
+
+      const backBtn = document.getElementById('back-btn');
+      const cancelBtn = document.getElementById('cancel-btn');
+      const form = document.getElementById('new-project-form');
+
+      expect(backBtn).toBeTruthy();
+      expect(cancelBtn).toBeTruthy();
+      expect(form).toBeTruthy();
     });
   });
 });

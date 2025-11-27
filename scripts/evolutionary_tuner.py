@@ -2,21 +2,22 @@
 Evolutionary Prompt Tuning Engine
 Implements mutation-based optimization with keep/discard logic
 """
-import json
-import asyncio
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
 
+import asyncio
+import json
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+from prompt_simulator import PromptSimulator
 from prompt_tuning_config import ProjectConfig
-from prompt_simulator import PromptSimulator, SimulationResult
-from quality_evaluator import QualityEvaluator, EvaluationReport
+from quality_evaluator import QualityEvaluator
 
 
 @dataclass
 class Recommendation:
     """A single prompt improvement recommendation"""
+
     id: str
     priority: str  # "HIGH", "MEDIUM", "LOW"
     phase: str
@@ -29,6 +30,7 @@ class Recommendation:
 @dataclass
 class MutationResult:
     """Result of testing a single mutation"""
+
     iteration: int
     recommendation_id: str
     recommendation_title: str
@@ -43,6 +45,7 @@ class MutationResult:
 @dataclass
 class EvolutionarySession:
     """Complete evolutionary tuning session"""
+
     project: str
     start_time: str
     end_time: Optional[str]
@@ -71,25 +74,28 @@ class EvolutionaryTuner:
         if not rec_file.exists():
             raise FileNotFoundError(f"Recommendations file not found: {rec_file}")
 
-        with open(rec_file, 'r') as f:
+        with open(rec_file, "r") as f:
             data = json.load(f)
 
         recommendations = []
-        for rec_data in data.get('recommendations', []):
-            recommendations.append(Recommendation(
-                id=rec_data['id'],
-                priority=rec_data['priority'],
-                phase=rec_data['phase'],
-                title=rec_data['title'],
-                description=rec_data['description'],
-                implementation=rec_data['implementation'],
-                expected_impact=rec_data['expected_impact']
-            ))
+        for rec_data in data.get("recommendations", []):
+            recommendations.append(
+                Recommendation(
+                    id=rec_data["id"],
+                    priority=rec_data["priority"],
+                    phase=rec_data["phase"],
+                    title=rec_data["title"],
+                    description=rec_data["description"],
+                    implementation=rec_data["implementation"],
+                    expected_impact=rec_data["expected_impact"],
+                )
+            )
 
         return recommendations
 
-    def select_next_recommendation(self, recommendations: List[Recommendation],
-                                 tested_ids: List[str]) -> Optional[Recommendation]:
+    def select_next_recommendation(
+        self, recommendations: List[Recommendation], tested_ids: List[str]
+    ) -> Optional[Recommendation]:
         """Select next recommendation to test based on priority"""
         priority_order = ["HIGH", "MEDIUM", "LOW"]
 
@@ -111,7 +117,7 @@ class EvolutionaryTuner:
         if not source_file.exists():
             raise FileNotFoundError(f"Source prompt not found: {source_file}")
 
-        with open(source_file, 'r') as f:
+        with open(source_file, "r") as f:
             current_prompt = f.read()
 
         # Apply the mutation (this is simplified - in practice, you'd have more sophisticated mutation logic)
@@ -119,7 +125,7 @@ class EvolutionaryTuner:
 
         # Save mutated prompt
         target_file = self.config.results_dir / f"{recommendation.phase}_iter{iteration}.md"
-        with open(target_file, 'w') as f:
+        with open(target_file, "w") as f:
             f.write(mutated_prompt)
 
         print(f"Applied mutation {recommendation.id} to {recommendation.phase}")
@@ -137,7 +143,7 @@ class EvolutionaryTuner:
             # Replace word count guidance
             prompt = prompt.replace(
                 "Maximum 1 page (500-700 words)",
-                "**minimum of 500 words** to ensure sufficient detail. If you're under 500 words, you're likely missing important context"
+                "**minimum of 500 words** to ensure sufficient detail. If you're under 500 words, you're likely missing important context",
             )
 
         elif "strategic framing" in implementation.lower():
@@ -170,13 +176,12 @@ class EvolutionaryTuner:
             # Update synthesis guidance
             prompt = prompt.replace(
                 "Maintain Conciseness",
-                "Combine, Don't Compress: Aim for 550-700 words by including the best details from both versions"
+                "Combine, Don't Compress: Aim for 550-700 words by including the best details from both versions",
             )
 
         return prompt
 
-    def evaluate_mutation(self, baseline_score: float, new_score: float,
-                         threshold: float = 0.0) -> Dict[str, Any]:
+    def evaluate_mutation(self, baseline_score: float, new_score: float, threshold: float = 0.0) -> Dict[str, Any]:
         """Evaluate whether to keep or discard a mutation"""
         delta = new_score - baseline_score
 
@@ -184,17 +189,18 @@ class EvolutionaryTuner:
             return {
                 "decision": "KEEP",
                 "delta": delta,
-                "rationale": f"Overall +{delta:.2f} ({delta/baseline_score*100:.1f}% improvement)"
+                "rationale": f"Overall +{delta:.2f} ({delta/baseline_score*100:.1f}% improvement)",
             }
         else:
             return {
                 "decision": "DISCARD",
                 "delta": delta,
-                "rationale": f"Overall {delta:+.2f} ({'no improvement' if delta == 0 else 'regression'}), revert to previous"
+                "rationale": f"Overall {delta:+.2f} ({'no improvement' if delta == 0 else 'regression'}), revert to previous",
             }
 
-    def should_stop_iteration(self, iterations: List[MutationResult],
-                            target_score: float, stretch_score: float) -> Tuple[bool, str]:
+    def should_stop_iteration(
+        self, iterations: List[MutationResult], target_score: float, stretch_score: float
+    ) -> Tuple[bool, str]:
         """Determine if iteration should stop"""
         if not iterations:
             return False, "No iterations yet"
@@ -240,13 +246,13 @@ class EvolutionaryTuner:
         print("Running baseline simulation...")
         baseline_results = await self.simulator.run_simulation(0)
         baseline_report = self.evaluator.evaluate_simulation_results(baseline_results, 0)
-        baseline_score = baseline_report.summary_stats['overall']['average_score']
+        baseline_score = baseline_report.summary_stats["overall"]["average_score"]
 
         print(f"Baseline score: {baseline_score:.2f}")
 
         # Initialize session tracking
-        iterations = []
-        tested_ids = []
+        iterations: List[MutationResult] = []
+        tested_ids: List[str] = []
         current_score = baseline_score
 
         # Evolutionary loop
@@ -266,7 +272,7 @@ class EvolutionaryTuner:
             # Run simulation with mutation
             mutation_results = await self.simulator.run_simulation(iteration)
             mutation_report = self.evaluator.evaluate_simulation_results(mutation_results, iteration)
-            new_score = mutation_report.summary_stats['overall']['average_score']
+            new_score = mutation_report.summary_stats["overall"]["average_score"]
 
             # Evaluate mutation
             evaluation = self.evaluate_mutation(current_score, new_score)
@@ -281,7 +287,7 @@ class EvolutionaryTuner:
                 delta=evaluation["delta"],
                 decision=evaluation["decision"],
                 rationale=evaluation["rationale"],
-                timestamp=datetime.now().isoformat()
+                timestamp=datetime.now().isoformat(),
             )
 
             iterations.append(mutation_result)
@@ -295,9 +301,7 @@ class EvolutionaryTuner:
 
             # Check stopping criteria
             should_stop, stopping_reason = self.should_stop_iteration(
-                iterations,
-                self.config.scoring.target_score,
-                self.config.scoring.stretch_score
+                iterations, self.config.scoring.target_score, self.config.scoring.stretch_score
             )
 
             if should_stop:
@@ -322,13 +326,13 @@ class EvolutionaryTuner:
             iterations=iterations,
             recommendations_tested=tested_ids,
             success_rate=success_rate,
-            stopping_reason=stopping_reason
+            stopping_reason=stopping_reason,
         )
 
         # Save session
         self.save_session(session)
 
-        print(f"\nEvolutionary tuning complete!")
+        print("\nEvolutionary tuning complete!")
         print(f"Final score: {current_score:.2f} (improvement: +{total_improvement:.2f})")
         print(f"Success rate: {success_rate:.1%} ({successful_mutations}/{len(iterations)})")
 
@@ -338,14 +342,14 @@ class EvolutionaryTuner:
         """Save evolutionary session to file"""
         self.config.results_dir.mkdir(exist_ok=True)
 
-        with open(self.session_file, 'w') as f:
+        with open(self.session_file, "w") as f:
             json.dump(asdict(session), f, indent=2)
 
         # Also generate markdown report
         markdown_file = self.config.results_dir / "evolutionary_report.md"
         markdown_content = self._generate_session_report(session)
 
-        with open(markdown_file, 'w') as f:
+        with open(markdown_file, "w") as f:
             f.write(markdown_content)
 
         print(f"Session saved to: {self.session_file}")
@@ -387,12 +391,13 @@ Total: {len(session.recommendations_tested)}
 """
 
         for i, rec_id in enumerate(session.recommendations_tested, 1):
-            iteration = next((it for it in session.iterations if it.recommendation_id == rec_id), None)
-            if iteration:
+            matching = [it for it in session.iterations if it.recommendation_id == rec_id]
+            if matching:
+                iteration = matching[0]
                 status = "✅ KEPT" if iteration.decision == "KEEP" else "❌ DISCARDED"
                 md += f"{i}. **{iteration.recommendation_title}** - {status} ({iteration.delta:+.2f})\n"
 
-        md += f"""
+        md += """
 ## Performance Analysis
 
 ### Score Progression
@@ -415,8 +420,9 @@ Total: {len(session.recommendations_tested)}
 
         try:
             from datetime import datetime
-            start = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
-            end = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
+
+            start = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
+            end = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
             duration = end - start
 
             hours = duration.seconds // 3600
@@ -426,13 +432,14 @@ Total: {len(session.recommendations_tested)}
                 return f"{hours}h {minutes}m"
             else:
                 return f"{minutes}m"
-        except:
+        except (ValueError, TypeError):
             return "Unknown"
 
 
 async def main():
     """CLI entry point for evolutionary tuning"""
     import sys
+
     from prompt_tuning_config import load_project_config
 
     if len(sys.argv) < 2:
