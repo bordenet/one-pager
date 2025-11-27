@@ -491,4 +491,217 @@ describe('Workflow Module', () => {
       expect(global.fetch).toHaveBeenCalledWith('prompts/phase2.md');
     });
   });
+
+  describe('Phase 2 and 3 prompt generation with prior phase content', () => {
+    let originalFetch;
+
+    beforeEach(() => {
+      originalFetch = global.fetch;
+      global.fetch = jest.fn((url) => {
+        const templates = {
+          'prompts/phase1.md': 'Phase 1: {projectName} - {problemStatement}',
+          'prompts/phase2.md': 'Phase 2 Review: Previous output was: {phase1Output}',
+          'prompts/phase3.md': 'Phase 3 Synthesis: Phase 1: {phase1Output}, Phase 2: {phase2Output}'
+        };
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve(templates[url] || 'Unknown template')
+        });
+      });
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    test('should include phase 1 response in phase 2 prompt', async () => {
+      const project = {
+        title: 'Test Project',
+        phase: 2,
+        phases: {
+          1: { prompt: 'Phase 1 prompt', response: 'This is the phase 1 output content' },
+          2: { prompt: '', response: '' },
+          3: { prompt: '', response: '' }
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project, 2);
+
+      expect(prompt).toContain('This is the phase 1 output content');
+      expect(prompt).toContain('Phase 2 Review');
+    });
+
+    test('should include both phase 1 and 2 responses in phase 3 prompt', async () => {
+      const project = {
+        title: 'Test Project',
+        phase: 3,
+        phases: {
+          1: { prompt: 'Phase 1 prompt', response: 'Phase 1 final output' },
+          2: { prompt: 'Phase 2 prompt', response: 'Phase 2 review feedback' },
+          3: { prompt: '', response: '' }
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project, 3);
+
+      expect(prompt).toContain('Phase 1 final output');
+      expect(prompt).toContain('Phase 2 review feedback');
+      expect(prompt).toContain('Phase 3 Synthesis');
+    });
+
+    test('should handle missing phase 1 response gracefully in phase 2', async () => {
+      const project = {
+        title: 'Test Project',
+        phase: 2,
+        phases: {
+          1: { prompt: '', response: '' },
+          2: { prompt: '', response: '' }
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project, 2);
+
+      expect(prompt).toContain('[No Phase 1 output yet]');
+    });
+
+    test('should handle missing phase responses gracefully in phase 3', async () => {
+      const project = {
+        title: 'Test Project',
+        phase: 3,
+        phases: {
+          1: { prompt: '', response: '' },
+          2: { prompt: '', response: '' },
+          3: { prompt: '', response: '' }
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project, 3);
+
+      expect(prompt).toContain('[No Phase 1 output yet]');
+      expect(prompt).toContain('[No Phase 2 output yet]');
+    });
+  });
+
+  describe('getPhaseMetadata for all phases', () => {
+    test('should return correct metadata for phase 1', () => {
+      const meta = getPhaseMetadata(1);
+
+      expect(meta.title).toBe('Initial Draft');
+      expect(meta.ai).toBe('Claude');
+      expect(meta.icon).toBeTruthy();
+      expect(meta.color).toBeTruthy();
+      expect(meta.description).toBeTruthy();
+    });
+
+    test('should return correct metadata for phase 2', () => {
+      const meta = getPhaseMetadata(2);
+
+      expect(meta.title).toBe('Alternative Perspective');
+      expect(meta.ai).toBe('Gemini');
+      expect(meta.icon).toBeTruthy();
+      expect(meta.color).toBeTruthy();
+      expect(meta.description).toBeTruthy();
+    });
+
+    test('should return correct metadata for phase 3', () => {
+      const meta = getPhaseMetadata(3);
+
+      expect(meta.title).toBe('Final Synthesis');
+      expect(meta.ai).toBe('Claude');
+      expect(meta.icon).toBeTruthy();
+      expect(meta.color).toBeTruthy();
+      expect(meta.description).toBeTruthy();
+    });
+
+    test('should return default metadata for invalid phase (falls back to phase 1)', () => {
+      const meta = getPhaseMetadata(99);
+
+      // Falls back to phase 1 metadata
+      expect(meta.title).toBe('Initial Draft');
+      expect(meta.ai).toBe('Claude');
+    });
+  });
+
+  describe('exportFinalOnePager', () => {
+    let createObjectURLMock;
+    let revokeObjectURLMock;
+    let clickedAnchor;
+
+    beforeEach(() => {
+      createObjectURLMock = jest.fn(() => 'blob:mock-url');
+      revokeObjectURLMock = jest.fn();
+      global.URL.createObjectURL = createObjectURLMock;
+      global.URL.revokeObjectURL = revokeObjectURLMock;
+
+      clickedAnchor = null;
+      jest.spyOn(document, 'createElement').mockImplementation((tag) => {
+        if (tag === 'a') {
+          const anchor = {
+            href: '',
+            download: '',
+            click: jest.fn(() => { clickedAnchor = anchor; })
+          };
+          return anchor;
+        }
+        return document.createElement(tag);
+      });
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should export phase 3 response when available', () => {
+      const project = {
+        title: 'My Project',
+        phases: {
+          1: { response: 'Phase 1 content' },
+          2: { response: 'Phase 2 content' },
+          3: { response: 'Final synthesized one-pager content' }
+        }
+      };
+
+      exportFinalOnePager(project);
+
+      expect(createObjectURLMock).toHaveBeenCalled();
+      expect(clickedAnchor).toBeTruthy();
+      expect(clickedAnchor.download).toContain('my-project');
+      expect(clickedAnchor.download).toContain('one-pager.md');
+    });
+
+    test('should fallback to phase 1 response when phase 3 is empty', () => {
+      const project = {
+        title: 'My Project',
+        phases: {
+          1: { response: 'Phase 1 content only' },
+          2: { response: '' },
+          3: { response: '' }
+        }
+      };
+
+      exportFinalOnePager(project);
+
+      expect(createObjectURLMock).toHaveBeenCalled();
+      expect(clickedAnchor).toBeTruthy();
+    });
+
+    test('should use project title/description as fallback when no phases completed', () => {
+      const project = {
+        title: 'My Fallback Project',
+        problems: 'Project problems description',
+        phases: {
+          1: { response: '' },
+          2: { response: '' },
+          3: { response: '' }
+        }
+      };
+
+      exportFinalOnePager(project);
+
+      expect(createObjectURLMock).toHaveBeenCalled();
+      // The blob should contain the title as markdown
+      const blobCall = createObjectURLMock.mock.calls[0][0];
+      expect(blobCall).toBeInstanceOf(Blob);
+    });
+  });
 });
