@@ -5,6 +5,13 @@ frontend.log
 git_reset.log
 .setup-cache/
 
+# Prevent duplicate app files in docs/ (GitHub Pages serves from root /)
+docs/js/
+docs/css/
+docs/prompts/
+docs/templates/
+docs/index.html
+
 # Project data directories (keep directory structure but ignore contents)
 outputs/*
 !outputs/.gitkeep
