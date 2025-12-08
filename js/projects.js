@@ -9,11 +9,15 @@ import storage from './storage.js';
  * Create a new project
  */
 export async function createProject(title, problems, context) {
+  const trimmedTitle = title.trim();
+  const trimmedProblems = problems.trim();
+  const trimmedContext = context.trim();
+
   const project = {
     id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    title: title.trim(),
-    problems: problems.trim(),
-    context: context.trim(),
+    title: trimmedTitle,
+    problems: trimmedProblems,
+    context: trimmedContext,
     phase: 1,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -23,21 +27,23 @@ export async function createProject(title, problems, context) {
       3: { prompt: '', response: '', completed: false }
     },
     // Legacy fields for backward compatibility
-    name: title.trim(),
-    description: problems.trim(),
+    name: trimmedTitle,
+    description: trimmedProblems,
     currentPhase: 1,
     created: Date.now(),
     modified: Date.now(),
+    // Map form inputs to prompt template variables
     formData: {
-      projectName: '',
-      problemStatement: '',
+      projectName: trimmedTitle,
+      problemStatement: trimmedProblems,
       proposedSolution: '',
       keyGoals: '',
       scopeInScope: '',
       scopeOutOfScope: '',
       successMetrics: '',
       keyStakeholders: '',
-      timelineEstimate: ''
+      timelineEstimate: '',
+      context: trimmedContext
     }
   };
 

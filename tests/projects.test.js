@@ -58,6 +58,23 @@ describe('Projects Module', () => {
       expect(project.formData).toBeTruthy();
     });
 
+    test('should populate formData with input values for prompt generation', async () => {
+      const project = await createProject('My Project Title', 'The main problem to solve', 'Additional context here');
+
+      // Critical: formData must contain the input values for Phase 1 prompt generation
+      expect(project.formData.projectName).toBe('My Project Title');
+      expect(project.formData.problemStatement).toBe('The main problem to solve');
+      expect(project.formData.context).toBe('Additional context here');
+    });
+
+    test('should NOT initialize formData with empty strings (data loss bug)', async () => {
+      const project = await createProject('Test Project', 'Test Problem', 'Test Context');
+
+      // Regression test: formData should never be empty when inputs are provided
+      expect(project.formData.projectName).not.toBe('');
+      expect(project.formData.problemStatement).not.toBe('');
+    });
+
     test('should trim whitespace from inputs', async () => {
       const project = await createProject('  Test  ', '  Problems  ', '  Context  ');
 
@@ -293,6 +310,68 @@ describe('Projects Module', () => {
       const file = new File(['not valid json'], 'invalid.json', { type: 'application/json' });
 
       await expect(importProjects(file)).rejects.toThrow();
+    });
+  });
+
+  describe('End-to-End Data Flow', () => {
+    test('should preserve user input from form through to prompt generation', async () => {
+      // Simulate user filling out the new project form
+      const userTitle = 'Mobile App Performance Optimization';
+      const userProblems = 'App is slow on older devices, causing user churn';
+      const userContext = 'Focus on Android devices, Q1 priority';
+
+      // Step 1: Create project (simulates form submission)
+      const project = await createProject(userTitle, userProblems, userContext);
+
+      // Step 2: Verify data is stored correctly in project
+      expect(project.title).toBe(userTitle);
+      expect(project.problems).toBe(userProblems);
+      expect(project.context).toBe(userContext);
+
+      // Step 3: Verify formData is populated for prompt generation
+      expect(project.formData.projectName).toBe(userTitle);
+      expect(project.formData.problemStatement).toBe(userProblems);
+      expect(project.formData.context).toBe(userContext);
+
+      // Step 4: Retrieve project and verify data persists
+      const retrieved = await getProject(project.id);
+      expect(retrieved.formData.projectName).toBe(userTitle);
+      expect(retrieved.formData.problemStatement).toBe(userProblems);
+      expect(retrieved.formData.context).toBe(userContext);
+    });
+
+    test('should handle legacy projects with empty formData gracefully', async () => {
+      // Simulate a legacy project that was created with the old buggy code
+      const legacyProject = {
+        id: 'legacy-project-id',
+        title: 'Legacy Project',
+        problems: 'Legacy problems',
+        context: 'Legacy context',
+        phase: 1,
+        phases: { 1: {}, 2: {}, 3: {} },
+        formData: {
+          projectName: '',
+          problemStatement: '',
+          proposedSolution: '',
+          keyGoals: '',
+          scopeInScope: '',
+          scopeOutOfScope: '',
+          successMetrics: '',
+          keyStakeholders: '',
+          timelineEstimate: ''
+        }
+      };
+
+      // Save the legacy project
+      await storage.saveProject(legacyProject);
+
+      // Retrieve and verify it exists
+      const retrieved = await getProject(legacyProject.id);
+      expect(retrieved).toBeTruthy();
+      expect(retrieved.title).toBe('Legacy Project');
+
+      // The workflow module should handle this gracefully (fallback to title/problems)
+      // This test ensures we don't break backward compatibility
     });
   });
 });

@@ -704,4 +704,107 @@ describe('Workflow Module', () => {
       expect(blobCall).toBeInstanceOf(Blob);
     });
   });
+
+  describe('End-to-End Data Flow: Form Input to Prompt Generation', () => {
+    let originalFetch;
+
+    beforeEach(() => {
+      originalFetch = global.fetch;
+      global.fetch = jest.fn((url) => {
+        const templates = {
+          'prompts/phase1.md': `
+# Phase 1: Initial Draft
+
+**Project:** {projectName}
+**Problem:** {problemStatement}
+**Context:** {context}
+**Solution:** {proposedSolution}
+          `,
+          'prompts/phase2.md': 'Phase 2: Review of {phase1Output}',
+          'prompts/phase3.md': 'Phase 3: {phase1Output} and {phase2Output}'
+        };
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve(templates[url] || 'Unknown')
+        });
+      });
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    test('CRITICAL: User input must appear in Phase 1 prompt (data loss regression test)', async () => {
+      // This test prevents the data loss bug from recurring
+      // When a user fills out the form and clicks submit, their data MUST appear in the prompt
+
+      const project = {
+        title: 'Mobile App Performance Optimization',
+        problems: 'App is slow on older devices',
+        context: 'Focus on Android, Q1 priority',
+        phase: 1,
+        phases: { 1: {}, 2: {}, 3: {} },
+        // Simulate formData populated correctly by createProject
+        formData: {
+          projectName: 'Mobile App Performance Optimization',
+          problemStatement: 'App is slow on older devices',
+          proposedSolution: '',
+          context: 'Focus on Android, Q1 priority'
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project, 1);
+
+      // User's input MUST be in the prompt - this was the bug
+      expect(prompt).toContain('Mobile App Performance Optimization');
+      expect(prompt).toContain('App is slow on older devices');
+      expect(prompt).toContain('Focus on Android, Q1 priority');
+    });
+
+    test('should fallback to project fields when formData is empty (legacy project support)', async () => {
+      // Simulate a legacy project created with the buggy code that had empty formData
+      const legacyProject = {
+        title: 'Legacy Project Title',
+        name: 'Legacy Project Title',
+        problems: 'Legacy problem statement',
+        description: 'Legacy problem statement',
+        context: 'Legacy context',
+        phase: 1,
+        phases: { 1: {}, 2: {}, 3: {} },
+        // Empty formData like the bug created
+        formData: {
+          projectName: '',
+          problemStatement: '',
+          proposedSolution: '',
+          context: ''
+        }
+      };
+
+      const prompt = await generatePromptForPhase(legacyProject, 1);
+
+      // Even with empty formData, should fallback to project.title and project.problems
+      expect(prompt).toContain('Legacy Project Title');
+      expect(prompt).toContain('Legacy problem statement');
+      expect(prompt).toContain('Legacy context');
+    });
+
+    test('should handle project with no formData at all', async () => {
+      // Edge case: very old project without formData property
+      const veryOldProject = {
+        title: 'Very Old Project',
+        problems: 'Old problem',
+        context: 'Old context',
+        phase: 1,
+        phases: { 1: {}, 2: {}, 3: {} }
+        // No formData property at all
+      };
+
+      const prompt = await generatePromptForPhase(veryOldProject, 1);
+
+      // Should use title/problems as fallback
+      expect(prompt).toContain('Very Old Project');
+      expect(prompt).toContain('Old problem');
+      expect(prompt).toContain('Old context');
+    });
+  });
 });
