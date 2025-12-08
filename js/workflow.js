@@ -234,18 +234,20 @@ export async function generatePromptForPhase(project, phaseNumber) {
   };
 
   if (phase === 1) {
-    // Phase 1: Initial Draft - use form data or project fields
-    const vars = project.formData || {
-      projectName: project.title || project.name || '',
-      problemStatement: project.problems || project.description || '',
-      proposedSolution: '',
-      keyGoals: '',
-      scopeInScope: '',
-      scopeOutOfScope: '',
-      successMetrics: '',
-      keyStakeholders: '',
-      timelineEstimate: '',
-      context: project.context || ''
+    // Phase 1: Initial Draft - use form data with fallback to project fields
+    // Handle legacy projects that may have empty formData
+    const formData = project.formData || {};
+    const vars = {
+      projectName: formData.projectName || project.title || project.name || '',
+      problemStatement: formData.problemStatement || project.problems || project.description || '',
+      proposedSolution: formData.proposedSolution || '',
+      keyGoals: formData.keyGoals || '',
+      scopeInScope: formData.scopeInScope || '',
+      scopeOutOfScope: formData.scopeOutOfScope || '',
+      successMetrics: formData.successMetrics || '',
+      keyStakeholders: formData.keyStakeholders || '',
+      timelineEstimate: formData.timelineEstimate || '',
+      context: formData.context || project.context || ''
     };
     return replaceTemplateVars(template, vars);
   } else if (phase === 2) {
