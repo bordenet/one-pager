@@ -5,7 +5,7 @@
 
 import { getProject, updatePhase } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, exportFinalOnePager } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboard } from './ui.js';
+import { escapeHtml, showToast, copyToClipboard, showPromptModal } from './ui.js';
 import { navigateTo } from './router.js';
 
 /**
@@ -217,6 +217,15 @@ function attachPhaseEventListeners(project, phase) {
       project.currentPhase = phase + 1; // Legacy compatibility
       document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase + 1);
       attachPhaseEventListeners(project, phase + 1);
+    });
+  }
+
+  // View Full Prompt button
+  const viewPromptBtn = document.querySelector('.view-prompt-btn');
+  if (viewPromptBtn && project.phases && project.phases[phase] && project.phases[phase].prompt) {
+    viewPromptBtn.addEventListener('click', () => {
+      const meta = getPhaseMetadata(phase);
+      showPromptModal(project.phases[phase].prompt, `Phase ${phase}: ${meta.title} Prompt`);
     });
   }
 }

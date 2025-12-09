@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { formatDate, escapeHtml, confirm, showToast, copyToClipboard, showLoading, hideLoading } from '../js/ui.js';
+import { formatDate, escapeHtml, confirm, showToast, copyToClipboard, showLoading, hideLoading, showPromptModal } from '../js/ui.js';
 
 describe('UI Module', () => {
   beforeEach(() => {
@@ -107,6 +107,82 @@ describe('UI Module', () => {
       // Clean up
       document.querySelector('#cancel-btn').click();
       await confirmPromise;
+    });
+  });
+
+  describe('showPromptModal', () => {
+    test('should display modal with prompt text', () => {
+      showPromptModal('Test prompt content', 'Test Title');
+
+      const modal = document.querySelector('.fixed');
+      expect(modal).toBeTruthy();
+      expect(modal.innerHTML).toContain('Test Title');
+      expect(modal.innerHTML).toContain('Test prompt content');
+
+      // Clean up
+      document.querySelector('#close-prompt-modal-btn').click();
+    });
+
+    test('should close modal when X button is clicked', () => {
+      showPromptModal('Test prompt', 'Title');
+
+      const closeBtn = document.querySelector('#close-prompt-modal');
+      expect(closeBtn).toBeTruthy();
+      closeBtn.click();
+
+      const modal = document.querySelector('.fixed');
+      expect(modal).toBeNull();
+    });
+
+    test('should close modal when Close button is clicked', () => {
+      showPromptModal('Test prompt', 'Title');
+
+      const closeBtn = document.querySelector('#close-prompt-modal-btn');
+      expect(closeBtn).toBeTruthy();
+      closeBtn.click();
+
+      const modal = document.querySelector('.fixed');
+      expect(modal).toBeNull();
+    });
+
+    test('should close modal when backdrop is clicked', () => {
+      showPromptModal('Test prompt', 'Title');
+
+      const modal = document.querySelector('.fixed');
+      expect(modal).toBeTruthy();
+
+      // Simulate backdrop click (click on the modal overlay itself, not content)
+      const event = new MouseEvent('click', { bubbles: true });
+      Object.defineProperty(event, 'target', { value: modal, enumerable: true });
+      modal.dispatchEvent(event);
+
+      const modalAfter = document.querySelector('.fixed');
+      expect(modalAfter).toBeNull();
+    });
+
+    test('should close modal on Escape key', () => {
+      showPromptModal('Test prompt', 'Title');
+
+      const modal = document.querySelector('.fixed');
+      expect(modal).toBeTruthy();
+
+      // Simulate Escape key
+      const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
+      document.dispatchEvent(escapeEvent);
+
+      const modalAfter = document.querySelector('.fixed');
+      expect(modalAfter).toBeNull();
+    });
+
+    test('should escape HTML in prompt text', () => {
+      showPromptModal('<script>alert("xss")</script>', 'Title');
+
+      const modal = document.querySelector('.fixed');
+      expect(modal.innerHTML).not.toContain('<script>');
+      expect(modal.innerHTML).toContain('&lt;script&gt;');
+
+      // Clean up
+      document.querySelector('#close-prompt-modal-btn').click();
     });
   });
 
