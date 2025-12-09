@@ -10,6 +10,8 @@ The user has provided the following information:
 
 **Problem Statement:** {problemStatement}
 
+**Additional Context:** {context}
+
 **Proposed Solution:** {proposedSolution}
 
 **Key Goals/Benefits:** {keyGoals}
