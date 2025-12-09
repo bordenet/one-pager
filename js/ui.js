@@ -34,6 +34,58 @@ export function escapeHtml(text) {
 }
 
 /**
+ * Show prompt modal - displays full prompt text in a scrollable modal
+ */
+export function showPromptModal(promptText, title = 'Full Prompt') {
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+  modal.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${escapeHtml(title)}</h3>
+                <button id="close-prompt-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="overflow-y-auto flex-1 bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <pre class="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono">${escapeHtml(promptText)}</pre>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button id="close-prompt-modal-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+
+  document.body.appendChild(modal);
+
+  // Handle escape key
+  const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  };
+
+  const closeModal = () => {
+    if (document.body.contains(modal)) {
+      document.body.removeChild(modal);
+    }
+    document.removeEventListener('keydown', handleEscape);
+  };
+
+  modal.querySelector('#close-prompt-modal').addEventListener('click', closeModal);
+  modal.querySelector('#close-prompt-modal-btn').addEventListener('click', closeModal);
+
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', handleEscape);
+}
+
+/**
  * Show confirmation dialog
  */
 export async function confirm(message, title = 'Confirm') {
