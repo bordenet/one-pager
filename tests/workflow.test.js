@@ -1,4 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import {
   createProject,
   generatePrompt,
@@ -805,6 +808,119 @@ describe('Workflow Module', () => {
       expect(prompt).toContain('Very Old Project');
       expect(prompt).toContain('Old problem');
       expect(prompt).toContain('Old context');
+    });
+  });
+
+  describe('E2E: Template-Code Sync Validation', () => {
+    // These tests read REAL template files to ensure templates contain required placeholders
+    // This prevents the bug where code populates a variable but template doesn't use it
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    function readRealTemplate(templateName) {
+      const templatePath = path.join(__dirname, '..', 'prompts', templateName);
+      return fs.readFileSync(templatePath, 'utf8');
+    }
+
+    test('CRITICAL: phase1.md template MUST contain {context} placeholder', () => {
+      // This test would have caught the missing {context} bug
+      const template = readRealTemplate('phase1.md');
+      expect(template).toContain('{context}');
+    });
+
+    test('CRITICAL: phase1.md template MUST contain all required user input placeholders', () => {
+      const template = readRealTemplate('phase1.md');
+
+      // These are the fields the user fills out in the form
+      const requiredPlaceholders = [
+        '{projectName}',
+        '{problemStatement}',
+        '{context}'
+      ];
+
+      for (const placeholder of requiredPlaceholders) {
+        expect(template).toContain(placeholder);
+      }
+    });
+
+    test('CRITICAL: phase1.md template MUST contain all formData placeholders', () => {
+      const template = readRealTemplate('phase1.md');
+
+      // All placeholders that generatePromptForPhase populates
+      const allPlaceholders = [
+        '{projectName}',
+        '{problemStatement}',
+        '{proposedSolution}',
+        '{keyGoals}',
+        '{scopeInScope}',
+        '{scopeOutOfScope}',
+        '{successMetrics}',
+        '{keyStakeholders}',
+        '{timelineEstimate}',
+        '{context}'
+      ];
+
+      for (const placeholder of allPlaceholders) {
+        expect(template).toContain(placeholder);
+      }
+    });
+
+    test('CRITICAL: phase2.md template MUST contain {phase1Output} placeholder', () => {
+      const template = readRealTemplate('phase2.md');
+      expect(template).toContain('{phase1Output}');
+    });
+
+    test('CRITICAL: phase3.md template MUST contain phase output placeholders', () => {
+      const template = readRealTemplate('phase3.md');
+      expect(template).toContain('{phase1Output}');
+      expect(template).toContain('{phase2Output}');
+    });
+
+    test('E2E: User input flows through REAL template to generated prompt', async () => {
+      // This test uses the REAL template file, not a mock
+      // It verifies the complete data flow from user input to final prompt
+
+      const originalFetch = global.fetch;
+
+      // Use real template
+      const realTemplate = readRealTemplate('phase1.md');
+      global.fetch = jest.fn(() => Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve(realTemplate)
+      }));
+
+      const project = {
+        title: 'E2E Test Project',
+        problems: 'E2E Test Problem',
+        context: 'E2E Test Context',
+        phase: 1,
+        phases: { 1: {}, 2: {}, 3: {} },
+        formData: {
+          projectName: 'E2E Test Project',
+          problemStatement: 'E2E Test Problem',
+          proposedSolution: '',
+          keyGoals: '',
+          scopeInScope: '',
+          scopeOutOfScope: '',
+          successMetrics: '',
+          keyStakeholders: '',
+          timelineEstimate: '',
+          context: 'E2E Test Context'
+        }
+      };
+
+      const prompt = await generatePromptForPhase(project, 1);
+
+      // ALL user inputs must appear in the generated prompt
+      expect(prompt).toContain('E2E Test Project');
+      expect(prompt).toContain('E2E Test Problem');
+      expect(prompt).toContain('E2E Test Context');
+
+      // Empty fields should show [Not provided]
+      expect(prompt).toContain('[Not provided]');
+
+      global.fetch = originalFetch;
     });
   });
 });
