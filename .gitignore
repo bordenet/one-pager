@@ -29,17 +29,14 @@ venv/
 # Environment variables
 .env
 
-<!-- IF {{ENABLE_BACKEND}} -->
 # Go
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-{{PROJECT_NAME}}
 coverage.out
 *.test
-<!-- END IF -->
 
 # IDE
 .vscode/
@@ -58,14 +55,6 @@ desktop.ini
 .Trashes
 ehthumbs.db
 
-<!-- IF {{ENABLE_DESKTOP_CLIENTS}} -->
-# Desktop client build artifacts
-dist/
-cmd/webview/go.sum
-cmd/electron/node_modules/
-cmd/electron/package-lock.json
-<!-- END IF -->
-
 # Node.js / JavaScript
 node_modules/
 npm-debug.log*
@@ -76,6 +65,7 @@ lerna-debug.log*
 
 # Test coverage
 coverage/
+.coverage
 *.lcov
 .nyc_output/
 coverage.out
