@@ -20,40 +20,20 @@ export async function renderProjectView(projectId) {
     return;
   }
 
-  // Auto-generate Phase 1 prompt if not already generated
-  const currentPhase = project.phase || project.currentPhase || 1;
-  if (currentPhase === 1 && project.phases && !project.phases[1]?.prompt) {
-    const prompt = await generatePromptForPhase(project, 1);
-    if (project.phases[1]) {
-      project.phases[1].prompt = prompt;
-    }
-  }
-
   const container = document.getElementById('app-container');
   container.innerHTML = `
-        <div class="mb-6">
-            <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center mb-4">
+        <div class="mb-6 flex items-center justify-between">
+            <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
                 Back to Projects
             </button>
-
-            <div class="flex items-start justify-between">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        ${escapeHtml(project.title || project.name)}
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-400">
-                        ${escapeHtml(project.problems || project.description)}
-                    </p>
-                </div>
-                ${project.phases && project.phases[3] && project.phases[3].completed ? `
-                    <button id="export-one-pager-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                        ✓ Export Final One-Pager
-                    </button>
-                ` : ''}
-            </div>
+            ${project.phases && project.phases[3] && project.phases[3].completed ? `
+                <button id="export-one-pager-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    ✓ Export Final One-Pager
+                </button>
+            ` : ''}
         </div>
 
         <!-- Phase Tabs -->

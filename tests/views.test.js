@@ -237,10 +237,10 @@ describe('Views Module', () => {
       await renderProjectView(project.id);
 
       const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Test Project');
       expect(container.innerHTML).toContain('Phase 1');
       expect(container.innerHTML).toContain('Phase 2');
       expect(container.innerHTML).toContain('Phase 3');
+      expect(container.innerHTML).toContain('Back to Projects');
     });
 
     test('should handle non-existent project gracefully', async () => {
