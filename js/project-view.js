@@ -161,7 +161,7 @@ function renderPhaseContent(project, phase) {
                     <span class="text-sm text-gray-600 dark:text-gray-400">
                         ${phaseData.completed ? '✓ Phase completed' : 'Paste response to complete this phase'}
                     </span>
-                    <button id="save-response-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    <button id="save-response-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600" ${!phaseData.response || phaseData.response.trim().length < 3 ? 'disabled' : ''}>
                         Save Response
                     </button>
                 </div>
@@ -172,9 +172,11 @@ function renderPhaseContent(project, phase) {
                 <button id="prev-phase-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors ${phase === 1 ? 'invisible' : ''}">
                     ← Previous Phase
                 </button>
-                <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${phase === 3 ? 'invisible' : ''} ${!phaseData.completed ? 'opacity-50 cursor-not-allowed' : ''}">
+                ${phaseData.completed && phase < 3 ? `
+                <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     Next Phase →
                 </button>
+                ` : '<div></div>'}
             </div>
         </div>
     `;
@@ -198,14 +200,32 @@ function attachPhaseEventListeners(project, phase) {
     renderProjectView(project.id);
   });
 
+  // Update button state as user types
+  responseTextarea.addEventListener('input', () => {
+    const hasEnoughContent = responseTextarea.value.trim().length >= 3;
+    saveResponseBtn.disabled = !hasEnoughContent;
+  });
+
   saveResponseBtn.addEventListener('click', async () => {
     const response = responseTextarea.value.trim();
-    if (response) {
+    if (response && response.length >= 3) {
       await updatePhase(project.id, phase, project.phases && project.phases[phase] ? project.phases[phase].prompt : '', response);
-      showToast('Response saved successfully!', 'success');
-      renderProjectView(project.id);
+
+      // Auto-advance to next phase if not on final phase
+      if (phase < 3) {
+        showToast('Response saved! Moving to next phase...', 'success');
+        // Re-fetch the updated project and advance
+        const updatedProject = await getProject(project.id);
+        updatedProject.phase = phase + 1;
+        updatedProject.currentPhase = phase + 1;
+        document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
+        attachPhaseEventListeners(updatedProject, phase + 1);
+      } else {
+        showToast('Phase 3 complete! Your one-pager is ready.', 'success');
+        renderProjectView(project.id);
+      }
     } else {
-      showToast('Please enter a response', 'warning');
+      showToast('Please enter at least 3 characters', 'warning');
     }
   });
 
