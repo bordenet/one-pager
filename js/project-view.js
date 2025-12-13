@@ -169,8 +169,9 @@ function renderPhaseContent(project, phase) {
                 <textarea
                     id="response-textarea"
                     rows="12"
-                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-800"
                     placeholder="Paste ${meta.ai}'s response here..."
+                    ${!phaseData.response ? 'disabled' : ''}
                 >${escapeHtml(phaseData.response || '')}</textarea>
 
                 <div class="mt-3 flex justify-between items-center">
@@ -221,6 +222,13 @@ function attachPhaseEventListeners(project, phase) {
       openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
       openAiBtn.classList.add('hover:bg-green-700');
       openAiBtn.removeAttribute('aria-disabled');
+    }
+
+    // Enable the response textarea now that prompt is copied
+    if (responseTextarea) {
+      responseTextarea.disabled = false;
+      responseTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
+      responseTextarea.focus();
     }
   });
 
