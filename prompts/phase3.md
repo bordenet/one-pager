@@ -36,6 +36,9 @@ Provide the final synthesized one-pager in this format:
 ## Problem Statement
 {Synthesized version combining best of both}
 
+## Cost of Doing Nothing
+{Synthesized version combining best of both}
+
 ## Proposed Solution
 {Synthesized version combining best of both}
 

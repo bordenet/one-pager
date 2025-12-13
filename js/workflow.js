@@ -24,6 +24,7 @@ export function createProject(name, description) {
     formData: {
       projectName: '',
       problemStatement: '',
+      costOfDoingNothing: '',
       proposedSolution: '',
       keyGoals: '',
       scopeInScope: '',
@@ -240,6 +241,7 @@ export async function generatePromptForPhase(project, phaseNumber) {
     const vars = {
       projectName: formData.projectName || project.title || project.name || '',
       problemStatement: formData.problemStatement || project.problems || project.description || '',
+      costOfDoingNothing: formData.costOfDoingNothing || '',
       proposedSolution: formData.proposedSolution || '',
       keyGoals: formData.keyGoals || '',
       scopeInScope: formData.scopeInScope || '',

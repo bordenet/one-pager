@@ -132,6 +132,9 @@ A one-pager is a concise 1-page document that captures a project or feature requ
 ## Problem Statement
 [What problem are you solving? 2-3 sentences.]
 
+## Cost of Doing Nothing
+[What happens if we don't solve this? Business impact, urgency, consequences. 2-3 sentences.]
+
 ## Proposed Solution
 [High-level approach. 3-4 sentences.]
 

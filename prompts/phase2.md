@@ -14,12 +14,13 @@ A high-quality one-pager should include:
 
 1. **Project/Feature Name**: Clear, descriptive title
 2. **Problem Statement**: Specific customer or business problem, quantified if possible
-3. **Proposed Solution**: High-level description, avoiding technical jargon
-4. **Key Goals/Benefits**: Measurable outcomes (e.g., "Reduce onboarding time by 50%")
-5. **Scope**: What's explicitly included and excluded to prevent scope creep
-6. **Success Metrics**: 2-3 key performance indicators (KPIs)
-7. **Key Stakeholders**: Owners, approvers, key contributors
-8. **Timeline**: High-level milestones
+3. **Cost of Doing Nothing**: Business impact, consequences, and urgency of inaction (create compelling case for action)
+4. **Proposed Solution**: High-level description, avoiding technical jargon
+5. **Key Goals/Benefits**: Measurable outcomes (e.g., "Reduce onboarding time by 50%")
+6. **Scope**: What's explicitly included and excluded to prevent scope creep
+7. **Success Metrics**: 2-3 key performance indicators (KPIs)
+8. **Key Stakeholders**: Owners, approvers, key contributors
+9. **Timeline**: High-level milestones
 
 ## Review Criteria
 
@@ -48,6 +49,9 @@ When ready, provide your improved version in this format:
 # {Project/Feature Name}
 
 ## Problem Statement
+{Your improved version}
+
+## Cost of Doing Nothing
 {Your improved version}
 
 ## Proposed Solution
