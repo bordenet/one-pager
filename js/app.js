@@ -4,7 +4,7 @@
  */
 
 import storage from './storage.js';
-import { initRouter } from './router.js';
+import { initRouter, updateStorageInfo } from './router.js';
 import { exportAllProjects, importProjects } from './projects.js';
 import { showToast, hideLoading } from './ui.js';
 import { initMockMode, setMockMode } from './ai-mock.js';
@@ -137,29 +137,6 @@ function toggleTheme() {
   } else {
     html.classList.add('dark');
     localStorage.setItem('theme', 'dark');
-  }
-}
-
-/**
- * Update storage info in footer
- */
-async function updateStorageInfo() {
-  try {
-    const estimate = await storage.getStorageEstimate();
-    const projects = await storage.getAllProjects();
-
-    const storageInfo = document.getElementById('storage-info');
-    if (storageInfo) {
-      if (estimate) {
-        const usedMB = (estimate.usage / (1024 * 1024)).toFixed(1);
-        const quotaMB = (estimate.quota / (1024 * 1024)).toFixed(0);
-        storageInfo.textContent = `${projects.length} projects • ${usedMB}MB used of ${quotaMB}MB`;
-      } else {
-        storageInfo.textContent = `${projects.length} projects stored locally`;
-      }
-    }
-  } catch (error) {
-    console.error('Failed to update storage info:', error);
   }
 }
 
