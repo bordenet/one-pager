@@ -148,13 +148,13 @@ function renderPhaseContent(project, phase) {
             <!-- Step 2: Paste Response -->
             <div class="mb-6">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    Step 2: Paste AI Response
+                    Step 2: Paste ${meta.ai}'s Response
                 </h4>
                 <textarea
                     id="response-textarea"
                     rows="12"
                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
-                    placeholder="Paste the AI's response here..."
+                    placeholder="Paste ${meta.ai}'s response here..."
                 >${escapeHtml(phaseData.response || '')}</textarea>
 
                 <div class="mt-3 flex justify-between items-center">

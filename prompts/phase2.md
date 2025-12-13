@@ -43,6 +43,8 @@ Evaluate the document on:
 
 ## Output Format
 
+**IMPORTANT**: Do NOT provide the final markdown document until all clarifying questions have been answered and the user confirms they are satisfied with the improvements. Only after the Q&A process is complete should you output the improved one-pager in markdown format.
+
 When ready, provide your improved version in this format:
 
 ```markdown
