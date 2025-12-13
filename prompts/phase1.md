@@ -95,4 +95,6 @@ Work with the user iteratively until you have a complete, compelling one-pager.
 
 ## Output Format
 
-Provide the final one-pager as a downloadable markdown document.
+**IMPORTANT**: Do NOT provide the final markdown document until all clarifying questions have been answered and you have refined the content with the user. Only after the Q&A process is complete should you output the final one-pager in markdown format.
+
+When ready, provide the final one-pager as a downloadable markdown document.

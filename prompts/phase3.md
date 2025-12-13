@@ -28,6 +28,8 @@ Compare the two versions below and create a final, polished one-pager that:
 
 ## Output Format
 
+**IMPORTANT**: Do NOT provide the final markdown document until all clarifying questions have been answered and the user confirms they are satisfied with the synthesis. Only after the Q&A process is complete should you output the final synthesized one-pager in markdown format.
+
 Provide the final synthesized one-pager in this format:
 
 ```markdown
