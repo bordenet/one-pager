@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { renderProjectsList, renderNewProjectForm } from '../js/views.js';
 import { renderProjectView } from '../js/project-view.js';
-import { createProject, deleteProject, getAllProjects, updatePhase } from '../js/projects.js';
+import { createProject, deleteProject, getAllProjects, updatePhase, getProject, updateProject } from '../js/projects.js';
 import { initDB } from '../js/storage.js';
 
 describe('Views Module', () => {
@@ -299,14 +299,42 @@ describe('Views Module', () => {
       expect(container.querySelector('#response-textarea')).toBeTruthy();
     });
 
-    test('should render navigation buttons', async () => {
+    test('should render Previous Phase button', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      // Complete phase 1 to advance to phase 2, where prev button is visible
+      await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      // On phase 2, previous phase button should be visible
+      expect(container.querySelector('#prev-phase-btn')).toBeTruthy();
+    });
+
+    test('should show Next Phase button when current phase is completed', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      // Complete phases 1 and 2, stay on phase 2 to see "Next Phase" button
+      await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
+      await updatePhase(project.id, 2, 'Prompt 2', 'Response 2');
+
+      // Manually set phase back to 2 to view completed phase with "Next Phase" button
+      await updateProject(project.id, { phase: 2, currentPhase: 2 });
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      // On completed phase 2, Next Phase button should appear
+      expect(container.querySelector('#next-phase-btn')).toBeTruthy();
+    });
+
+    test('should hide Next Phase button when current phase is not completed', async () => {
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
 
       await renderProjectView(project.id);
 
       const container = document.getElementById('app-container');
-      expect(container.querySelector('#prev-phase-btn')).toBeTruthy();
-      expect(container.querySelector('#next-phase-btn')).toBeTruthy();
+      // On phase 1 (not completed), Next Phase button should NOT appear
+      expect(container.querySelector('#next-phase-btn')).toBeNull();
     });
 
     test('should show completed checkmark for completed phases', async () => {
@@ -493,6 +521,7 @@ describe('Views Module', () => {
       // Enter a response
       const textarea = document.getElementById('response-textarea');
       textarea.value = 'New response content';
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
 
       const saveBtn = document.getElementById('save-response-btn');
       saveBtn.click();
