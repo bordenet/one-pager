@@ -96,12 +96,29 @@ export async function renderProjectView(projectId) {
       const phase = parseInt(tab.dataset.phase);
       project.phase = phase;
       project.currentPhase = phase; // Legacy compatibility
+      updatePhaseTabStyles(phase);
       document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase);
       attachPhaseEventListeners(project, phase);
     });
   });
 
   attachPhaseEventListeners(project, project.phase || project.currentPhase || 1);
+}
+
+/**
+ * Update phase tab styles to reflect the active phase
+ */
+function updatePhaseTabStyles(activePhase) {
+  document.querySelectorAll('.phase-tab').forEach(tab => {
+    const tabPhase = parseInt(tab.dataset.phase);
+    if (tabPhase === activePhase) {
+      tab.classList.remove('text-gray-600', 'dark:text-gray-400', 'hover:text-gray-900', 'dark:hover:text-gray-200');
+      tab.classList.add('border-b-2', 'border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+    } else {
+      tab.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+      tab.classList.add('text-gray-600', 'dark:text-gray-400', 'hover:text-gray-900', 'dark:hover:text-gray-200');
+    }
+  });
 }
 
 /**
@@ -250,6 +267,7 @@ function attachPhaseEventListeners(project, phase) {
         const updatedProject = await getProject(project.id);
         updatedProject.phase = phase + 1;
         updatedProject.currentPhase = phase + 1;
+        updatePhaseTabStyles(phase + 1);
         document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
         attachPhaseEventListeners(updatedProject, phase + 1);
       } else {
@@ -276,6 +294,7 @@ function attachPhaseEventListeners(project, phase) {
     prevPhaseBtn.addEventListener('click', () => {
       project.phase = phase - 1;
       project.currentPhase = phase - 1; // Legacy compatibility
+      updatePhaseTabStyles(phase - 1);
       document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase - 1);
       attachPhaseEventListeners(project, phase - 1);
     });
@@ -285,6 +304,7 @@ function attachPhaseEventListeners(project, phase) {
     nextPhaseBtn.addEventListener('click', () => {
       project.phase = phase + 1;
       project.currentPhase = phase + 1; // Legacy compatibility
+      updatePhaseTabStyles(phase + 1);
       document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase + 1);
       attachPhaseEventListeners(project, phase + 1);
     });
