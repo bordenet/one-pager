@@ -253,13 +253,29 @@ describe('Views Module', () => {
       expect(container).toBeTruthy();
     });
 
-    test('should render back button and export button', async () => {
+    test('should render back button', async () => {
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
 
       await renderProjectView(project.id);
 
       const container = document.getElementById('app-container');
       expect(container.querySelector('#back-btn')).toBeTruthy();
+    });
+
+    test('should only show export button when Phase 3 is completed', async () => {
+      const { updatePhase } = await import('../js/projects.js');
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      await renderProjectView(project.id);
+
+      let container = document.getElementById('app-container');
+      expect(container.querySelector('#export-one-pager-btn')).toBeFalsy();
+
+      // Complete Phase 3 by updating with a response
+      await updatePhase(project.id, 3, 'Phase 3 prompt', 'Phase 3 response');
+      await renderProjectView(project.id);
+
+      container = document.getElementById('app-container');
       expect(container.querySelector('#export-one-pager-btn')).toBeTruthy();
     });
 

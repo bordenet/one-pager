@@ -48,9 +48,11 @@ export async function renderProjectView(projectId) {
                         ${escapeHtml(project.problems || project.description)}
                     </p>
                 </div>
-                <button id="export-one-pager-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                    Export One-Pager
-                </button>
+                ${project.phases && project.phases[3] && project.phases[3].completed ? `
+                    <button id="export-one-pager-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        ✓ Export Final One-Pager
+                    </button>
+                ` : ''}
             </div>
         </div>
 
@@ -88,7 +90,10 @@ export async function renderProjectView(projectId) {
 
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
-  document.getElementById('export-one-pager-btn').addEventListener('click', () => exportFinalOnePager(project));
+  const exportBtn = document.getElementById('export-one-pager-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => exportFinalOnePager(project));
+  }
 
   document.querySelectorAll('.phase-tab').forEach(tab => {
     tab.addEventListener('click', () => {
