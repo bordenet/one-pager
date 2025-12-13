@@ -3,6 +3,7 @@ import { renderProjectsList, renderNewProjectForm } from '../js/views.js';
 import { renderProjectView, extractTitleFromMarkdown } from '../js/project-view.js';
 import { createProject, deleteProject, getAllProjects, updatePhase, getProject, updateProject } from '../js/projects.js';
 import { initDB } from '../js/storage.js';
+import { updateStorageInfo } from '../js/router.js';
 
 describe('Views Module', () => {
   beforeEach(async () => {
@@ -15,8 +16,8 @@ describe('Views Module', () => {
       await deleteProject(project.id);
     }
 
-    // Set up DOM
-    document.body.innerHTML = '<div id="app-container"></div>';
+    // Set up DOM with footer
+    document.body.innerHTML = '<div id="app-container"></div><span id="storage-info"></span>';
   });
 
   describe('renderProjectsList', () => {
@@ -561,6 +562,55 @@ describe('Views Module', () => {
     test('should extract first H1 if multiple exist', () => {
       const markdown = '# First Title\n\n# Second Title\n\nContent';
       expect(extractTitleFromMarkdown(markdown)).toBe('First Title');
+    });
+  });
+
+  describe('updateStorageInfo - footer project count', () => {
+    test('should show 0 projects when no projects exist', async () => {
+      await updateStorageInfo();
+
+      const storageInfo = document.getElementById('storage-info');
+      expect(storageInfo.textContent).toContain('0 projects');
+    });
+
+    test('should show correct project count after creating projects', async () => {
+      // Create 2 projects
+      await createProject('Project 1', 'Description 1', 'Context');
+      await createProject('Project 2', 'Description 2', 'Context');
+
+      await updateStorageInfo();
+
+      const storageInfo = document.getElementById('storage-info');
+      expect(storageInfo.textContent).toContain('2 projects');
+    });
+
+    test('should update count after deleting a project', async () => {
+      // Create 2 projects
+      const project1 = await createProject('Project 1', 'Description 1', 'Context');
+      await createProject('Project 2', 'Description 2', 'Context');
+
+      // Delete one
+      await deleteProject(project1.id);
+
+      await updateStorageInfo();
+
+      const storageInfo = document.getElementById('storage-info');
+      expect(storageInfo.textContent).toContain('1 projects');
+    });
+
+    test('should immediately reflect project count without page refresh', async () => {
+      // Initially 0 projects
+      await updateStorageInfo();
+      let storageInfo = document.getElementById('storage-info');
+      expect(storageInfo.textContent).toContain('0 projects');
+
+      // Create a project
+      await createProject('New Project', 'Description', 'Context');
+
+      // Update footer - should immediately show 1 project (no page refresh)
+      await updateStorageInfo();
+      storageInfo = document.getElementById('storage-info');
+      expect(storageInfo.textContent).toContain('1 projects');
     });
   });
 });
