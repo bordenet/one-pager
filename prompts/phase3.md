@@ -37,6 +37,7 @@ Provide the final synthesized one-pager in this format:
 {Synthesized version combining best of both}
 
 ## Cost of Doing Nothing
+[OPTIONAL - Only include this section if present in both versions. Omit entirely if not needed. Do not write "N/A"]
 {Synthesized version combining best of both}
 
 ## Proposed Solution

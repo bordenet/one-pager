@@ -41,6 +41,7 @@ Generate a crisp, professional one-pager document based on the information provi
 {2-3 sentences clearly articulating the problem}
 
 ## Cost of Doing Nothing
+[OPTIONAL - Only include this section if the user provided information about it. If empty or not provided, omit this section entirely. Do not write "N/A"]
 {Business impact if this problem is not solved. What are the consequences, costs, or risks of inaction? 2-3 sentences with quantifiable impact if possible.}
 
 ## Proposed Solution
