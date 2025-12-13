@@ -52,6 +52,7 @@ When ready, provide your improved version in this format:
 {Your improved version}
 
 ## Cost of Doing Nothing
+[OPTIONAL - Only include this section if present in the original. Omit entirely if not needed. Do not write "N/A"]
 {Your improved version}
 
 ## Proposed Solution
