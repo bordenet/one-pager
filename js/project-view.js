@@ -196,7 +196,8 @@ function attachPhaseEventListeners(project, phase) {
     const prompt = await generatePromptForPhase(project, phase);
     await copyToClipboard(prompt);
     showToast('Prompt copied to clipboard!', 'success');
-    await updatePhase(project.id, phase, prompt, project.phases && project.phases[phase] ? project.phases[phase].response : '');
+    // Save prompt but DON'T auto-advance - user is still working on this phase
+    await updatePhase(project.id, phase, prompt, project.phases && project.phases[phase] ? project.phases[phase].response : '', { skipAutoAdvance: true });
     renderProjectView(project.id);
   });
 
