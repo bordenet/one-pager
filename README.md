@@ -13,8 +13,6 @@
 [![GitHub issues](https://img.shields.io/github/issues/bordenet/one-pager.svg)](https://github.com/bordenet/one-pager/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/bordenet/one-pager.svg)](https://github.com/bordenet/one-pager/pulls)
 
-> **⚠️ DEVELOPMENT STATUS**: This project is under active development. Current test coverage: 28.82% (target: 70%). Core UI modules are untested due to architectural constraints. See [QUALITY_ASSESSMENT.md](QUALITY_ASSESSMENT.md) for details.
-
 An opinionated, AI-assisted workflow helper for generating crisp and high-quality one-pager documents.
 
 **🌐 Try it now: [https://bordenet.github.io/one-pager/](https://bordenet.github.io/one-pager/)**
@@ -46,11 +44,7 @@ This tool helps you create high-quality one-pager documents using a 3-phase AI w
 
 **🌐 [Launch Web App](https://bordenet.github.io/one-pager/)**
 
-- ✅ No download required
-- ✅ Works on any device
-- ✅ 100% client-side - all data stored in your browser
-- ✅ Privacy-first - no server, no tracking
-- ✅ Export/import projects as JSON files
+No download, works on any device, 100% client-side, and privacy-first.
 
 ### Run Locally
 
@@ -128,29 +122,56 @@ open index.html
 - AI (mocked) synthesizes the best of both versions through Q&A
 - Download final, polished markdown document
 
-### Template Structure
+### One-Pager Template
 
-Based on [The One-Pager](https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md) methodology:
+A one-pager is a concise 1-page document that captures a project or feature request. Based on [The One-Pager](https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md) methodology:
 
-1. **Project/Feature Name**: Clear, descriptive title
-2. **Problem Statement**: What specific problem are you solving?
-3. **Proposed Solution**: High-level description of the solution
-4. **Key Goals/Benefits**: Measurable outcomes
-5. **Scope (and Out-of-Scope)**: What's included and what's not
-6. **Success Metrics**: 2-3 key performance indicators
-7. **Key Stakeholders**: Owners, approvers, contributors
-8. **Timeline Estimate**: High-level milestones
+```markdown
+# [Project Name]
+
+## Problem Statement
+[What problem are you solving? 2-3 sentences.]
+
+## Proposed Solution
+[High-level approach. 3-4 sentences.]
+
+## Key Goals/Benefits
+- [Benefit 1]
+- [Benefit 2]
+- [Benefit 3]
+
+## Scope
+**In Scope:** [What's included]
+**Out of Scope:** [What's explicitly not included]
+
+## Success Metrics
+- [Metric 1]: [Target]
+- [Metric 2]: [Target]
+
+## Key Stakeholders
+- **Owner**: [Name]
+- **Approvers**: [Names]
+- **Contributors**: [Names]
+
+## Timeline
+- **Phase 1**: [Milestone] - [Date]
+- **Launch**: [Date]
+```
+
+**Key principles:**
+- Be ruthlessly concise (500-700 words max)
+- Focus on the "why" before the "what"
+- Quantify outcomes whenever possible
+- Distinguish benefits from features
 
 ---
 
 ## Features
 
 - **3-Phase AI Workflow**: Leverage Claude and Gemini's different perspectives
-- **Template-Driven**: Based on proven one-pager methodology
-- **Local Storage**: All data stored in browser using IndexedDB
-- **Export/Import**: Save and load projects as JSON files
-- **Dark Mode**: Automatic dark mode support
+- **Local Storage & Export/Import**: Store projects in browser (IndexedDB) or save/load as JSON files
 - **Privacy-First**: No server, no tracking, no data collection
+- **Dark Mode**: Automatic dark mode support
 - **AI Mock Mode**: Test the workflow without API costs (development feature)
 
 ---
@@ -171,39 +192,19 @@ npm install
 # Or manually: pre-commit install
 ```
 
-### Running Tests
+### Running Tests & Quality Checks
 
 ```bash
-# Run all tests
+# Run all tests (or with coverage)
 npm test
-
-# Run with coverage
 npm run test:coverage
 
-# Run in watch mode
-npm run test:watch
-
-# Run unit tests only
-npm run test:unit
-
-# Run E2E tests
-npm run test:e2e
-```
-
-### Code Quality
-
-```bash
-# Run linting
+# Run linting (or auto-fix)
 npm run lint
-
-# Fix linting errors automatically
 npm run lint:fix
 
-# Run all quality checks (lint + coverage)
+# Run all checks at once
 npm run quality
-
-# Run pre-commit hooks manually
-pre-commit run --all-files
 ```
 
 ### Pre-Commit Hooks

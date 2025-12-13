@@ -43,11 +43,8 @@ Provide the final synthesized one-pager in this format:
 {Synthesized version combining best of both}
 
 ## Scope
-### In Scope
-{Synthesized version combining best of both}
-
-### Out of Scope
-{Synthesized version combining best of both}
+**In Scope:** {Synthesized version combining best of both}
+**Out of Scope:** {Synthesized version combining best of both}
 
 ## Success Metrics
 {Synthesized version combining best of both}
@@ -55,7 +52,7 @@ Provide the final synthesized one-pager in this format:
 ## Key Stakeholders
 {Synthesized version combining best of both}
 
-## Timeline Estimate
+## Timeline
 {Synthesized version combining best of both}
 ```
 

@@ -16,10 +16,10 @@ A high-quality one-pager should include:
 2. **Problem Statement**: Specific customer or business problem, quantified if possible
 3. **Proposed Solution**: High-level description, avoiding technical jargon
 4. **Key Goals/Benefits**: Measurable outcomes (e.g., "Reduce onboarding time by 50%")
-5. **Scope (In/Out)**: What's explicitly included and excluded to prevent scope creep
+5. **Scope**: What's explicitly included and excluded to prevent scope creep
 6. **Success Metrics**: 2-3 key performance indicators (KPIs)
 7. **Key Stakeholders**: Owners, approvers, key contributors
-8. **Timeline Estimate**: High-level milestones
+8. **Timeline**: High-level milestones
 
 ## Review Criteria
 
@@ -57,11 +57,8 @@ When ready, provide your improved version in this format:
 {Your improved version}
 
 ## Scope
-### In Scope
-{Your improved version}
-
-### Out of Scope
-{Your improved version}
+**In Scope:** {Your improved version}
+**Out of Scope:** {Your improved version}
 
 ## Success Metrics
 {Your improved version}
@@ -69,7 +66,7 @@ When ready, provide your improved version in this format:
 ## Key Stakeholders
 {Your improved version}
 
-## Timeline Estimate
+## Timeline
 {Your improved version}
 ```
 
