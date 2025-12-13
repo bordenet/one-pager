@@ -47,29 +47,20 @@ Generate a crisp, professional one-pager document based on the information provi
 - {Benefit 3}
 
 ## Scope
-
-### In Scope
-- {Item 1}
-- {Item 2}
-- {Item 3}
-
-### Out of Scope
-- {Item 1}
-- {Item 2}
+**In Scope:** {What is explicitly included}
+**Out of Scope:** {What is explicitly excluded}
 
 ## Success Metrics
 - {Metric 1}: {Target}
 - {Metric 2}: {Target}
-- {Metric 3}: {Target}
 
 ## Key Stakeholders
 - **Owner**: {Name}
 - **Approvers**: {Names}
 - **Contributors**: {Names}
 
-## Timeline Estimate
+## Timeline
 - **Phase 1**: {Milestone} - {Date}
-- **Phase 2**: {Milestone} - {Date}
 - **Launch**: {Date}
 ```
 
