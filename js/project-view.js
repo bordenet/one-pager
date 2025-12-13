@@ -3,10 +3,26 @@
  * Handles rendering the project workflow view
  */
 
-import { getProject, updatePhase } from './projects.js';
+import { getProject, updatePhase, updateProject } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, exportFinalOnePager } from './workflow.js';
 import { escapeHtml, showToast, copyToClipboard, showPromptModal } from './ui.js';
 import { navigateTo } from './router.js';
+
+/**
+ * Extract title from markdown content (looks for # Title at the beginning)
+ * @param {string} markdown - The markdown content
+ * @returns {string|null} - The extracted title or null if not found
+ */
+export function extractTitleFromMarkdown(markdown) {
+  if (!markdown) return null;
+
+  // Look for first H1 heading (# Title)
+  const match = markdown.match(/^#\s+(.+?)$/m);
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+  return null;
+}
 
 /**
  * Render the project detail view
@@ -110,10 +126,10 @@ function renderPhaseContent(project, phase) {
                 </div>
             </div>
 
-            <!-- Step 1: Generate Prompt -->
+            <!-- Step A: Generate Prompt -->
              <div class="mb-6">
                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                     Step 1: Copy Prompt to AI
+                     Step A: Copy Prompt to AI
                  </h4>
                  <div class="flex gap-3 flex-wrap">
                      <button id="copy-prompt-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
@@ -145,10 +161,10 @@ function renderPhaseContent(project, phase) {
                  ` : ''}
              </div>
 
-            <!-- Step 2: Paste Response -->
+            <!-- Step B: Paste Response -->
             <div class="mb-6">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    Step 2: Paste ${meta.ai}'s Response
+                    Step B: Paste ${meta.ai}'s Response
                 </h4>
                 <textarea
                     id="response-textarea"
@@ -229,7 +245,18 @@ function attachPhaseEventListeners(project, phase) {
         document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
         attachPhaseEventListeners(updatedProject, phase + 1);
       } else {
-        showToast('Phase 3 complete! Your one-pager is ready.', 'success');
+        // Phase 3 complete - extract and update project title if changed
+        const extractedTitle = extractTitleFromMarkdown(response);
+        if (extractedTitle && extractedTitle !== project.title) {
+          await updateProject(project.id, {
+            title: extractedTitle,
+            name: extractedTitle, // Legacy compatibility
+            formData: { ...project.formData, projectName: extractedTitle }
+          });
+          showToast(`Phase 3 complete! Title updated to "${extractedTitle}"`, 'success');
+        } else {
+          showToast('Phase 3 complete! Your one-pager is ready.', 'success');
+        }
         renderProjectView(project.id);
       }
     } else {

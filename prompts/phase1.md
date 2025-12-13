@@ -82,6 +82,7 @@ Generate a crisp, professional one-pager document based on the information provi
 ## Interactive Refinement
 
 After generating the initial draft, ask clarifying questions if:
+
 - The problem statement is unclear or too vague
 - The cost of inaction is missing, vague, or not quantified—**this is critical, always ask for specifics**
 - The solution doesn't clearly address the problem

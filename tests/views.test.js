@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { renderProjectsList, renderNewProjectForm } from '../js/views.js';
-import { renderProjectView } from '../js/project-view.js';
+import { renderProjectView, extractTitleFromMarkdown } from '../js/project-view.js';
 import { createProject, deleteProject, getAllProjects, updatePhase, getProject, updateProject } from '../js/projects.js';
 import { initDB } from '../js/storage.js';
 
@@ -531,6 +531,36 @@ describe('Views Module', () => {
       // After save, should advance to phase 2
       const container = document.getElementById('app-container');
       expect(container.innerHTML).toContain('Alternative Perspective');
+    });
+  });
+
+  describe('extractTitleFromMarkdown', () => {
+    test('should extract title from markdown with H1 heading', () => {
+      const markdown = '# Transparent Incident Management\n\n## Problem Statement\nSome content here';
+      expect(extractTitleFromMarkdown(markdown)).toBe('Transparent Incident Management');
+    });
+
+    test('should extract title from middle of document', () => {
+      const markdown = 'Some preamble\n\n# My Project Title\n\nContent below';
+      expect(extractTitleFromMarkdown(markdown)).toBe('My Project Title');
+    });
+
+    test('should return null for markdown without H1', () => {
+      const markdown = '## Not an H1\n\nContent here';
+      expect(extractTitleFromMarkdown(markdown)).toBeNull();
+    });
+
+    test('should return null for empty string', () => {
+      expect(extractTitleFromMarkdown('')).toBeNull();
+    });
+
+    test('should return null for null input', () => {
+      expect(extractTitleFromMarkdown(null)).toBeNull();
+    });
+
+    test('should extract first H1 if multiple exist', () => {
+      const markdown = '# First Title\n\n# Second Title\n\nContent';
+      expect(extractTitleFromMarkdown(markdown)).toBe('First Title');
     });
   });
 });
