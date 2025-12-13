@@ -69,9 +69,11 @@ export async function getProject(id) {
 /**
  * Update project phase data
  */
-export async function updatePhase(projectId, phase, prompt, response) {
+export async function updatePhase(projectId, phase, prompt, response, options = {}) {
   const project = await storage.getProject(projectId);
   if (!project) throw new Error('Project not found');
+
+  const { skipAutoAdvance = false } = options;
 
   project.phases[phase] = {
     prompt: prompt || '',
@@ -79,8 +81,8 @@ export async function updatePhase(projectId, phase, prompt, response) {
     completed: !!response
   };
 
-  // Auto-advance to next phase if current phase is completed
-  if (response && phase < 3) {
+  // Auto-advance to next phase if current phase is completed (unless skipped)
+  if (response && phase < 3 && !skipAutoAdvance) {
     project.phase = phase + 1;
     project.currentPhase = phase + 1; // Legacy compatibility
   }
