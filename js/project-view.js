@@ -20,6 +20,15 @@ export async function renderProjectView(projectId) {
     return;
   }
 
+  // Auto-generate Phase 1 prompt if not already generated
+  const currentPhase = project.phase || project.currentPhase || 1;
+  if (currentPhase === 1 && project.phases && !project.phases[1]?.prompt) {
+    const prompt = await generatePromptForPhase(project, 1);
+    if (project.phases[1]) {
+      project.phases[1].prompt = prompt;
+    }
+  }
+
   const container = document.getElementById('app-container');
   container.innerHTML = `
         <div class="mb-6">

@@ -36,6 +36,7 @@ export async function createProject(title, problems, context) {
     formData: {
       projectName: trimmedTitle,
       problemStatement: trimmedProblems,
+      costOfDoingNothing: '',
       proposedSolution: '',
       keyGoals: '',
       scopeInScope: '',
