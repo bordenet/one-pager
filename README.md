@@ -5,6 +5,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-28.82%25-orange.svg)](https://github.com/bordenet/one-pager)
 [![Node.js 18+](https://img.shields.io/badge/node-18+-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot)](https://github.com/bordenet/one-pager/security/dependabot)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 [![Linting: ESLint](https://img.shields.io/badge/linting-ESLint-4B32C3)](https://eslint.org/)
 [![Testing: Jest](https://img.shields.io/badge/testing-Jest-C21325)](https://jestjs.io/)
