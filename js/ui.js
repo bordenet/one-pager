@@ -164,7 +164,7 @@ export async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
     showToast('Copied to clipboard', 'success');
-  } catch (err) {
+  } catch {
     // Fallback for older browsers
     const textArea = document.createElement('textarea');
     textArea.value = text;

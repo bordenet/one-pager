@@ -1,5 +1,8 @@
 export default {
   testEnvironment: 'jsdom',
+  testEnvironmentOptions: {
+    url: 'http://localhost/'
+  },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleFileExtensions: ['js'],
   testMatch: ['**/*.test.js'],

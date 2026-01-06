@@ -64,7 +64,7 @@ function setupGlobalEventListeners() {
     try {
       await exportAllProjects();
       showToast('All projects exported', 'success');
-    } catch (error) {
+    } catch {
       showToast('Export failed', 'error');
     }
   });
