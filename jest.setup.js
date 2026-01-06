@@ -23,16 +23,7 @@ global.localStorage = {
   }
 };
 
-// Mock window.location
-delete window.location;
-window.location = {
-  hostname: 'localhost',
-  href: 'http://localhost/',
-  origin: 'http://localhost',
-  pathname: '/',
-  search: '',
-  hash: ''
-};
+// window.location is now configured via testEnvironmentOptions.url in jest.config.js
 
 // Mock navigator.clipboard
 global.navigator.clipboard = {

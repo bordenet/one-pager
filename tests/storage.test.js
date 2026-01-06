@@ -20,7 +20,10 @@ describe('Storage Module', () => {
 
     test('should generate IDs with correct format', () => {
       const id = generateId();
-      expect(id).toMatch(/^\d+-[a-z0-9]+$/);
+      // Accept either UUID format (crypto.randomUUID) or fallback format (timestamp-random)
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+      const fallbackPattern = /^\d+-[a-z0-9]+$/;
+      expect(id).toMatch(new RegExp(`${uuidPattern.source}|${fallbackPattern.source}`));
     });
   });
 
