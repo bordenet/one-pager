@@ -32,6 +32,15 @@ jobs:
     - name: Run tests with coverage
       run: npm run test:coverage
 
+    - name: Check for npm vulnerabilities
+      run: npm audit --audit-level=moderate
+
+    - name: Check for outdated dependencies
+      run: |
+        echo "Checking for outdated dependencies..."
+        npm outdated || true
+        echo "Note: Outdated dependencies found above (if any). Consider updating them."
+
     - name: Upload coverage to Codecov
       if: matrix.node-version == '20.x'
       uses: codecov/codecov-action@v5
@@ -56,7 +65,7 @@ jobs:
 
     - name: Install Python linting tools
       run: |
-        pip install black isort ruff mypy pydocstyle
+        pip install black isort ruff mypy pydocstyle safety
 
     - name: Run Black (check mode)
       run: black --check --line-length=120 scripts/*.py
@@ -69,6 +78,13 @@ jobs:
 
     - name: Run mypy
       run: mypy scripts/*.py --ignore-missing-imports
+
+    - name: Check Python dependencies for vulnerabilities
+      run: |
+        if [ -f requirements.txt ]; then
+          safety check --file requirements.txt || true
+          echo "Note: Python security check completed."
+        fi
 
   pre-commit:
     name: Pre-commit Hooks

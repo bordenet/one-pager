@@ -82,6 +82,20 @@ async function renderRoute(path, param) {
       renderNewProjectForm();
       break;
 
+    case 'edit-project':
+      if (param) {
+        const project = await storage.getProject(param);
+        if (project) {
+          const { renderNewProjectForm } = await import('./views.js');
+          renderNewProjectForm(project);
+        } else {
+          navigateTo('home');
+        }
+      } else {
+        navigateTo('home');
+      }
+      break;
+
     case 'project':
       if (param) {
         await renderProjectView(param);
