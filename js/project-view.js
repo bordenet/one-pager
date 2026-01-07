@@ -36,6 +36,13 @@ export async function renderProjectView(projectId) {
     return;
   }
 
+  // If Phase 1 is not completed, redirect to edit form to fill in details
+  const phase1Completed = project.phases && project.phases[1] && project.phases[1].completed;
+  if (!phase1Completed) {
+    navigateTo('edit-project/' + projectId);
+    return;
+  }
+
   const container = document.getElementById('app-container');
   container.innerHTML = `
         <div class="mb-6 flex items-center justify-between">

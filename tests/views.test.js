@@ -232,8 +232,27 @@ describe('Views Module', () => {
       global.fetch = originalFetch;
     });
 
-    test('should render project view with phase tabs', async () => {
+    test('should show edit form when Phase 1 is not completed', async () => {
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Render the edit form directly (simulating the redirect)
+      const { renderNewProjectForm } = await import('../js/views.js');
+      renderNewProjectForm(project);
+
+      const container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Edit Project Details');
+      expect(container.innerHTML).toContain('Continue to Phase 1');
+      expect(container.querySelector('#title').value).toBe('Test Project');
+      expect(container.querySelector('#problems').value).toBe('Test Problems');
+      expect(container.querySelector('#context').value).toBe('Test Context');
+    });
+
+    test('should render project view with phase tabs', async () => {
+      const { updatePhase } = await import('../js/projects.js');
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
 
       await renderProjectView(project.id);
 
@@ -255,7 +274,11 @@ describe('Views Module', () => {
     });
 
     test('should render back button', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
 
       await renderProjectView(project.id);
 
@@ -266,6 +289,9 @@ describe('Views Module', () => {
     test('should only show export button when Phase 3 is completed', async () => {
       const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
 
       await renderProjectView(project.id);
 
@@ -281,7 +307,11 @@ describe('Views Module', () => {
     });
 
     test('should render copy prompt button', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
 
       await renderProjectView(project.id);
 
@@ -291,7 +321,11 @@ describe('Views Module', () => {
     });
 
     test('should render save response button and textarea', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
 
       await renderProjectView(project.id);
 
@@ -367,13 +401,17 @@ describe('Views Module', () => {
     });
 
     test('should display phase metadata (title, description, AI)', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
 
       await renderProjectView(project.id);
 
       const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Initial Draft');
-      expect(container.innerHTML).toContain('Claude');
+      expect(container.innerHTML).toContain('Alternative Perspective');
+      expect(container.innerHTML).toContain('Gemini');
     });
   });
 
@@ -402,7 +440,12 @@ describe('Views Module', () => {
     });
 
     test('copy prompt button should trigger clipboard write', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+
       await renderProjectView(project.id);
 
       const copyBtn = document.getElementById('copy-prompt-btn');
@@ -415,7 +458,12 @@ describe('Views Module', () => {
     });
 
     test('phase tabs should be clickable', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+
       await renderProjectView(project.id);
 
       const phaseTabs = document.querySelectorAll('.phase-tab');
@@ -432,7 +480,12 @@ describe('Views Module', () => {
     });
 
     test('phase 2 tab should show Gemini as the AI', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+
       await renderProjectView(project.id);
 
       const phaseTabs = document.querySelectorAll('.phase-tab');
@@ -445,7 +498,12 @@ describe('Views Module', () => {
     });
 
     test('phase 3 tab should show Final Synthesis', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+
       await renderProjectView(project.id);
 
       const phaseTabs = document.querySelectorAll('.phase-tab');
@@ -459,7 +517,12 @@ describe('Views Module', () => {
     });
 
     test('save response should show warning when textarea is empty', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+
       await renderProjectView(project.id);
 
       // Clear the textarea
@@ -516,12 +579,21 @@ describe('Views Module', () => {
     });
 
     test('save response should update phase and re-render', async () => {
+      const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 so we don't get redirected to edit form
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+
       await renderProjectView(project.id);
 
-      // Enter a response
+      // We're now on Phase 2 (Alternative Perspective)
+      let container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Alternative Perspective');
+
+      // Enter a response for Phase 2
       const textarea = document.getElementById('response-textarea');
-      textarea.value = 'New response content';
+      textarea.value = 'New response content for Phase 2';
       textarea.dispatchEvent(new Event('input', { bubbles: true }));
 
       const saveBtn = document.getElementById('save-response-btn');
@@ -529,9 +601,9 @@ describe('Views Module', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // After save, should advance to phase 2
-      const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Alternative Perspective');
+      // After saving Phase 2, should advance to Phase 3 (Final Synthesis)
+      container = document.getElementById('app-container');
+      expect(container.innerHTML).toContain('Final Synthesis');
     });
   });
 

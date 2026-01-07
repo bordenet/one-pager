@@ -116,7 +116,8 @@ export async function renderProjectsList() {
 /**
  * Render the new project form
  */
-export function renderNewProjectForm() {
+export function renderNewProjectForm(existingProject = null) {
+  const isEditing = !!existingProject;
   const container = document.getElementById('app-container');
   container.innerHTML = `
         <div class="max-w-3xl mx-auto">
@@ -125,14 +126,21 @@ export function renderNewProjectForm() {
                     <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
-                    Back to Projects
+                    ${isEditing ? 'Back to Project' : 'Back to Projects'}
                 </button>
             </div>
 
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                    Create New Project
+                    ${isEditing ? 'Edit Project Details' : 'Create New Project'}
                 </h2>
+                ${isEditing ? `
+                    <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                        <p class="text-sm text-blue-800 dark:text-blue-300">
+                            💡 Update your project details below. Changes will be saved when you continue to Phase 1.
+                        </p>
+                    </div>
+                ` : ''}
 
                 <form id="new-project-form" class="space-y-6">
                     <div>
@@ -144,6 +152,7 @@ export function renderNewProjectForm() {
                             id="title"
                             name="title"
                             required
+                            value="${escapeHtml(existingProject?.title || existingProject?.name || '')}"
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             placeholder="e.g., Mobile App Performance Optimization"
                         >
@@ -160,7 +169,7 @@ export function renderNewProjectForm() {
                             rows="4"
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             placeholder="Describe the problems this project will address..."
-                        ></textarea>
+                        >${escapeHtml(existingProject?.problems || existingProject?.description || '')}</textarea>
                     </div>
 
                     <div>
@@ -173,7 +182,7 @@ export function renderNewProjectForm() {
                             rows="6"
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             placeholder="Any simplifications, considerations, constraints, or other context..."
-                        ></textarea>
+                        >${escapeHtml(existingProject?.context || '')}</textarea>
                     </div>
 
                     <div class="flex justify-end space-x-3">
@@ -181,7 +190,7 @@ export function renderNewProjectForm() {
                             Cancel
                         </button>
                         <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                            Create Project
+                            ${isEditing ? 'Save & Continue to Phase 1' : 'Create Project'}
                         </button>
                     </div>
                 </form>
@@ -190,8 +199,21 @@ export function renderNewProjectForm() {
     `;
 
   // Event listeners
-  document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
-  document.getElementById('cancel-btn').addEventListener('click', () => navigateTo('home'));
+  document.getElementById('back-btn').addEventListener('click', () => {
+    if (isEditing) {
+      navigateTo('project/' + existingProject.id);
+    } else {
+      navigateTo('home');
+    }
+  });
+
+  document.getElementById('cancel-btn').addEventListener('click', () => {
+    if (isEditing) {
+      navigateTo('project/' + existingProject.id);
+    } else {
+      navigateTo('home');
+    }
+  });
 
   document.getElementById('new-project-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -201,8 +223,29 @@ export function renderNewProjectForm() {
     const problems = formData.get('problems');
     const context = formData.get('context') || '';
 
-    const project = await createProject(title, problems, context);
-    showToast('Project created successfully!', 'success');
-    navigateTo('project/' + project.id);
+    if (isEditing) {
+      // Update existing project
+      const { updateProject } = await import('./projects.js');
+      await updateProject(existingProject.id, {
+        title,
+        name: title, // Legacy compatibility
+        problems,
+        description: problems, // Legacy compatibility
+        context,
+        formData: {
+          ...existingProject.formData,
+          projectName: title,
+          problemStatement: problems,
+          context
+        }
+      });
+      showToast('Project updated successfully!', 'success');
+      navigateTo('project/' + existingProject.id);
+    } else {
+      // Create new project
+      const project = await createProject(title, problems, context);
+      showToast('Project created successfully!', 'success');
+      navigateTo('project/' + project.id);
+    }
   });
 }
