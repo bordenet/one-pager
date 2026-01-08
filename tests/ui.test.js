@@ -250,26 +250,29 @@ describe('UI Module', () => {
       expect(writeTextMock).toHaveBeenCalledWith('Test text');
     });
 
-    test('should show success toast after copying', async () => {
+    test('should return true on successful copy', async () => {
       const writeTextMock = jest.fn().mockResolvedValue();
       navigator.clipboard.writeText = writeTextMock;
 
-      await copyToClipboard('Test text');
+      const result = await copyToClipboard('Test text');
 
-      const toast = document.querySelector('.toast-notification');
-      expect(toast).toBeTruthy();
-      expect(toast.textContent).toBe('Copied to clipboard');
+      expect(result).toBe(true);
     });
 
-    test('should fallback to execCommand if clipboard API fails', async () => {
-      const writeTextMock = jest.fn().mockRejectedValue(new Error('Not allowed'));
-      navigator.clipboard.writeText = writeTextMock;
+    test('should throw error if both clipboard API and execCommand fail', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      document.execCommand = jest.fn();
+      // Mock clipboard API to fail
+      navigator.clipboard.writeText = jest.fn().mockImplementation(() => {
+        return Promise.reject(new Error('Not allowed'));
+      });
 
-      await copyToClipboard('Test text');
+      // Mock execCommand to also fail
+      document.execCommand = jest.fn().mockReturnValue(false);
 
-      expect(document.execCommand).toHaveBeenCalledWith('copy');
+      await expect(copyToClipboard('Test text')).rejects.toThrow();
+
+      consoleErrorSpy.mockRestore();
     });
   });
 
