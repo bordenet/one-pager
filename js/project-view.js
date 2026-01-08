@@ -36,9 +36,9 @@ export async function renderProjectView(projectId) {
     return;
   }
 
-  // If Phase 1 is not completed, redirect to edit form to fill in details
-  const phase1Completed = project.phases && project.phases[1] && project.phases[1].completed;
-  if (!phase1Completed) {
+  // Check if project has basic details filled in
+  // If not, redirect to edit form
+  if (!project.title || !project.problems) {
     navigateTo('edit-project/' + projectId);
     return;
   }
@@ -159,6 +159,9 @@ function renderPhaseContent(project, phase) {
                      <button id="copy-prompt-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                          📋 Copy Prompt to Clipboard
                      </button>
+                     <button id="view-prompt-btn" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium">
+                         👁️ View Prompt
+                     </button>
                      <a
                          id="open-ai-btn"
                          href="${phase === 2 ? 'https://gemini.google.com' : 'https://claude.ai'}"
@@ -228,32 +231,46 @@ function renderPhaseContent(project, phase) {
  */
 function attachPhaseEventListeners(project, phase) {
   const copyPromptBtn = document.getElementById('copy-prompt-btn');
+  const viewGeneratedPromptBtn = document.getElementById('view-prompt-btn');
   const saveResponseBtn = document.getElementById('save-response-btn');
   const responseTextarea = document.getElementById('response-textarea');
   const prevPhaseBtn = document.getElementById('prev-phase-btn');
   const nextPhaseBtn = document.getElementById('next-phase-btn');
 
   copyPromptBtn.addEventListener('click', async () => {
+    try {
+      const prompt = await generatePromptForPhase(project, phase);
+      await copyToClipboard(prompt);
+      showToast('Prompt copied to clipboard!', 'success');
+
+      // Save prompt but DON'T auto-advance - user is still working on this phase
+      await updatePhase(project.id, phase, prompt, project.phases && project.phases[phase] ? project.phases[phase].response : '', { skipAutoAdvance: true });
+
+      // Enable the "Open AI" button now that prompt is copied
+      const openAiBtn = document.getElementById('open-ai-btn');
+      if (openAiBtn) {
+        openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        openAiBtn.classList.add('hover:bg-green-700');
+        openAiBtn.removeAttribute('aria-disabled');
+      }
+
+      // Enable the response textarea now that prompt is copied
+      if (responseTextarea) {
+        responseTextarea.disabled = false;
+        responseTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
+        responseTextarea.focus();
+      }
+    } catch (error) {
+      console.error('Failed to copy prompt:', error);
+      showToast('Failed to copy to clipboard. Please check browser permissions.', 'error');
+    }
+  });
+
+  // View prompt in modal
+  viewGeneratedPromptBtn.addEventListener('click', async () => {
     const prompt = await generatePromptForPhase(project, phase);
-    await copyToClipboard(prompt);
-    showToast('Prompt copied to clipboard!', 'success');
-    // Save prompt but DON'T auto-advance - user is still working on this phase
-    await updatePhase(project.id, phase, prompt, project.phases && project.phases[phase] ? project.phases[phase].response : '', { skipAutoAdvance: true });
-
-    // Enable the "Open AI" button now that prompt is copied
-    const openAiBtn = document.getElementById('open-ai-btn');
-    if (openAiBtn) {
-      openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      openAiBtn.classList.add('hover:bg-green-700');
-      openAiBtn.removeAttribute('aria-disabled');
-    }
-
-    // Enable the response textarea now that prompt is copied
-    if (responseTextarea) {
-      responseTextarea.disabled = false;
-      responseTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
-      responseTextarea.focus();
-    }
+    const meta = getPhaseMetadata(phase);
+    showPromptModal(prompt, `Phase ${phase}: ${meta.title} Prompt`);
   });
 
   // Update button state as user types

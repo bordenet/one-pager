@@ -162,17 +162,37 @@ export function showToast(message, type = 'info', duration = 3000) {
  */
 export async function copyToClipboard(text) {
   try {
-    await navigator.clipboard.writeText(text);
-    showToast('Copied to clipboard', 'success');
-  } catch {
-    // Fallback for older browsers
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    // Fallback for older browsers or insecure contexts
     const textArea = document.createElement('textarea');
     textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
     document.body.appendChild(textArea);
+    textArea.focus();
     textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-    showToast('Copied to clipboard', 'success');
+
+    try {
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (successful) {
+        return true;
+      } else {
+        throw new Error('Copy command failed');
+      }
+    } catch (err) {
+      document.body.removeChild(textArea);
+      throw err;
+    }
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error);
+    throw error;
   }
 }
 
