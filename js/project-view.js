@@ -54,7 +54,7 @@ export async function renderProjectView(projectId) {
             </button>
             ${project.phases && project.phases[3] && project.phases[3].completed ? `
                 <button id="export-one-pager-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                    ✓ Export Final One-Pager
+                    ✓ Export as Markdown
                 </button>
             ` : ''}
         </div>
@@ -222,11 +222,11 @@ function renderPhaseContent(project, phase) {
                             <span class="mr-2">🎉</span> Your One-Pager is Complete!
                         </h4>
                         <p class="text-green-700 dark:text-green-400 mt-1">
-                            Export your finished one-pager as a formatted Markdown document.
+                            Download your finished one-pager as a Markdown (.md) file.
                         </p>
                     </div>
                     <button id="export-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
-                        📄 Export One-Pager
+                        📄 Export as Markdown
                     </button>
                 </div>
             </div>

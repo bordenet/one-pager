@@ -30,7 +30,7 @@ Save Response
 Next Phase →
 ← Previous Phase
 ← Edit Details
-📄 Export One-Pager
+📄 Export as Markdown          ← Explicitly states file format!
 Delete
 ```
 
@@ -78,6 +78,43 @@ When a workflow/phase is complete, ALWAYS show a prominent call-to-action.
 ```
 
 **Users must NEVER wonder "what's next?" after completing a workflow.**
+
+### Button State Rules (CRITICAL!)
+
+Buttons MUST follow this state diagram. Incorrect states break workflows.
+
+**State Flow:**
+```
+INITIAL → [Copy Prompt] → PROMPT_COPIED → [Type 3+ chars] → CAN_SAVE → [Save] → PHASE_COMPLETE
+```
+
+**Button States by Condition:**
+
+| Button | Condition | State |
+|--------|-----------|-------|
+| 📋 Copy Prompt | Always | ✅ Enabled |
+| 🔗 Open AI | Before prompt copied | ❌ Disabled |
+| 🔗 Open AI | After prompt copied | ✅ Enabled |
+| Response Textarea | Before prompt copied | ❌ Disabled |
+| Response Textarea | After prompt copied | ✅ Enabled (auto-focus) |
+| Save Response | Response < 3 chars | ❌ Disabled |
+| Save Response | Response ≥ 3 chars | ✅ Enabled |
+| Next Phase → | Phase NOT completed | ❌ Hidden |
+| Next Phase → | Phase completed & phase < 3 | ✅ Visible |
+| 📄 Export | Phase 3 NOT completed | ❌ Hidden |
+| 📄 Export | Phase 3 completed | ✅ Visible |
+| Delete | Always | ✅ Enabled |
+
+**Disabled Styling:**
+```css
+/* Buttons: */ disabled:opacity-50 disabled:cursor-not-allowed
+/* Links: */ opacity-50 cursor-not-allowed pointer-events-none aria-disabled="true"
+```
+
+**Enabling Dynamically:**
+1. Remove: `opacity-50`, `cursor-not-allowed`, `pointer-events-none`
+2. Add: `hover:bg-[color]-700`
+3. Remove: `aria-disabled` attribute
 
 ### Modal Dismissal
 Modals must be dismissible via:
