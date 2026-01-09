@@ -89,7 +89,7 @@ This means you failed to proactively communicate. Improve by:
 
 ## 🐍 Python Style Guide (MANDATORY)
 
-All Python code in this project MUST follow the conventions in `docs/PYTHON_STYLE_GUIDE.md`. Key requirements:
+All Python code in `scripts/` MUST follow these conventions:
 
 ### Formatting & Linting
 
@@ -123,34 +123,6 @@ isort --profile black --line-length 120 scripts/*.py
 ruff check scripts/*.py
 mypy scripts/*.py --ignore-missing-imports
 ```
-
----
-
-## 🔷 Go Style Guide (MANDATORY)
-
-All Go code in this project MUST follow the conventions in `docs/GO_STYLE_GUIDE.md`. Key requirements:
-
-### Formatting & Linting
-
-- **gofmt**: All code must be formatted with gofmt
-- **golangci-lint**: Must pass with 0 errors
-
-### Error Handling
-
-- ALWAYS check errors, never ignore them
-- Use `errors.Is()` and `errors.As()` for error comparison
-- Wrap errors with context using `fmt.Errorf("context: %w", err)`
-
-### Naming Conventions
-
-- Use MixedCaps or mixedCaps, not underscores
-- Acronyms should be all caps (HTTP, URL, ID)
-- Interface names should describe behavior (Reader, Writer)
-
-### Documentation
-
-- ALL exported functions must have doc comments
-- Doc comments start with the function name
 
 ---
 
