@@ -3,9 +3,9 @@
  * Handles rendering the project workflow view
  */
 
-import { getProject, updatePhase, updateProject } from './projects.js';
+import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, exportFinalOnePager } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboard, showPromptModal } from './ui.js';
+import { escapeHtml, showToast, copyToClipboard, showPromptModal, confirm } from './ui.js';
 import { navigateTo } from './router.js';
 
 /**
@@ -215,20 +215,25 @@ function renderPhaseContent(project, phase) {
 
             <!-- Navigation -->
             <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
-                ${phase === 1 && !phaseData.response ? `
-                <button id="edit-details-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                    ← Edit Details
+                <div class="flex space-x-3">
+                    ${phase === 1 && !phaseData.response ? `
+                    <button id="edit-details-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        ← Edit Details
+                    </button>
+                    ` : phase === 1 ? '' : `
+                    <button id="prev-phase-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        ← Previous Phase
+                    </button>
+                    `}
+                    ${phaseData.completed && phase < 3 ? `
+                    <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Next Phase →
+                    </button>
+                    ` : ''}
+                </div>
+                <button id="delete-project-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                    Delete
                 </button>
-                ` : phase === 1 ? '<div></div>' : `
-                <button id="prev-phase-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                    ← Previous Phase
-                </button>
-                `}
-                ${phaseData.completed && phase < 3 ? `
-                <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Next Phase →
-                </button>
-                ` : '<div></div>'}
             </div>
         </div>
     `;
@@ -356,6 +361,18 @@ function attachPhaseEventListeners(project, phase) {
     viewPromptBtn.addEventListener('click', () => {
       const meta = getPhaseMetadata(phase);
       showPromptModal(project.phases[phase].prompt, `Phase ${phase}: ${meta.title} Prompt`);
+    });
+  }
+
+  // Delete project button
+  const deleteProjectBtn = document.getElementById('delete-project-btn');
+  if (deleteProjectBtn) {
+    deleteProjectBtn.addEventListener('click', async () => {
+      if (await confirm(`Are you sure you want to delete "${project.title || project.name}"?`, 'Delete One-Pager')) {
+        await deleteProject(project.id);
+        showToast('One-Pager deleted', 'success');
+        navigateTo('home');
+      }
     });
   }
 }
