@@ -154,6 +154,20 @@ All Go code in this project MUST follow the conventions in `docs/GO_STYLE_GUIDE.
 
 ---
 
+## 🎨 UI Style Guide (MANDATORY)
+
+All UI components in this project MUST follow the conventions in `docs/UI_STYLE_GUIDE.md`. Key requirements:
+
+- **Button colors**: Blue (primary), Green (save/success), Red (delete/danger), Gray (secondary/navigation)
+- **Button copy**: Use exact labels specified (e.g., "📋 Copy Prompt to Clipboard", "Next Phase →")
+- **Layout**: Delete button always on right, navigation on left
+- **Required fields**: Asterisks in red (`<span class="text-red-500">*</span>`)
+- **Modals**: Dismiss via ×, Close button, backdrop click, or Escape key
+
+This guide ensures design parity across all tools in this ecosystem.
+
+---
+
 ## 🏗️ Project Structure
 
 ### Main Application
