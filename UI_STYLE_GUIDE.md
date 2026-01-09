@@ -29,6 +29,7 @@ Save Response                  (green, after pasting AI response)
 Next Phase →                   (blue, advances workflow)
 ← Previous Phase               (gray, goes back)
 ← Edit Details                 (gray, returns to form - Phase 1 only, before response saved)
+📄 Export One-Pager            (green, prominent - Phase 3 complete ONLY)
 Delete                         (red, destructive - always visible)
 ```
 
@@ -61,6 +62,31 @@ Delete                         (red, destructive - always visible)
 - Phases 2-3: Shows "← Previous Phase"
 - "Next Phase →" only appears when current phase is completed
 - Delete button **always visible** on the right
+
+### Phase 3 Complete: Export Call-to-Action (CRITICAL!)
+
+When Phase 3 is completed, users MUST see a prominent export CTA. **This is critical for usability.**
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🎉 Your One-Pager is Complete!                        [📄 Export One-Pager]│
+│  Export your finished one-pager as a formatted         ↑                    │
+│  Markdown document.                                    Green, prominent     │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Styling:**
+- Container: `bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6`
+- Heading: `text-lg font-semibold text-green-800 dark:text-green-300` with 🎉 emoji
+- Description: `text-green-700 dark:text-green-400`
+- Button: `px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-lg`
+- Button label: `📄 Export One-Pager`
+
+**Rules:**
+- Only appears on Phase 3 view when `phaseData.completed === true`
+- Positioned ABOVE the navigation footer
+- Button triggers `exportFinalOnePager(project)` function
+- Must be impossible to miss - users should never wonder "what's next?"
 
 ### Step A (Copy Prompt Section)
 

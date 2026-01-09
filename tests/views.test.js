@@ -286,7 +286,7 @@ describe('Views Module', () => {
       expect(container.querySelector('#back-btn')).toBeTruthy();
     });
 
-    test('should only show export button when Phase 3 is completed', async () => {
+    test('should only show header export button when Phase 3 is completed', async () => {
       const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
 
@@ -304,6 +304,57 @@ describe('Views Module', () => {
 
       container = document.getElementById('app-container');
       expect(container.querySelector('#export-one-pager-btn')).toBeTruthy();
+    });
+
+    test('should show prominent export CTA when Phase 3 is completed', async () => {
+      const { updatePhase } = await import('../js/projects.js');
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete all phases
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+      await updatePhase(project.id, 2, 'Phase 2 prompt', 'Phase 2 response');
+      await updatePhase(project.id, 3, 'Phase 3 prompt', 'Phase 3 response');
+
+      await renderProjectView(project.id);
+
+      // Navigate to Phase 3
+      const phaseTabs = document.querySelectorAll('.phase-tab');
+      phaseTabs[2].click();
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const container = document.getElementById('app-container');
+
+      // Should show completion message
+      expect(container.innerHTML).toContain('Your One-Pager is Complete');
+
+      // Should show prominent export button with correct label
+      const exportBtn = container.querySelector('#export-btn');
+      expect(exportBtn).toBeTruthy();
+      expect(exportBtn.textContent).toContain('Export One-Pager');
+    });
+
+    test('should NOT show export CTA on Phase 3 if not completed', async () => {
+      const { updatePhase } = await import('../js/projects.js');
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      // Complete Phase 1 and 2, but not Phase 3
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+      await updatePhase(project.id, 2, 'Phase 2 prompt', 'Phase 2 response');
+
+      await renderProjectView(project.id);
+
+      // Navigate to Phase 3
+      const phaseTabs = document.querySelectorAll('.phase-tab');
+      phaseTabs[2].click();
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const container = document.getElementById('app-container');
+
+      // Should NOT show completion message or export button
+      expect(container.innerHTML).not.toContain('Your One-Pager is Complete');
+      expect(container.querySelector('#export-btn')).toBeFalsy();
     });
 
     test('should render copy prompt button', async () => {
