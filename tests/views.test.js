@@ -39,7 +39,7 @@ describe('Views Module', () => {
       const container = document.getElementById('app-container');
       expect(container.innerHTML).toContain('Test Project 1');
       expect(container.innerHTML).toContain('Test Project 2');
-      expect(container.innerHTML).toContain('My <span class="text-blue-600">One-Pagers</span>');
+      expect(container.innerHTML).toContain('My <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md"');
     });
 
     test('should render new project button', async () => {
