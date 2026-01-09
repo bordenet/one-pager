@@ -109,22 +109,23 @@ describe('Views Module', () => {
       expect(container.querySelector('#context')).toBeTruthy();
     });
 
-    test('should render create button', () => {
+    test('should render Save and Next Phase buttons', () => {
       renderNewProjectForm();
 
       const container = document.getElementById('app-container');
-      const createBtn = container.querySelector('button[type="submit"]');
-      expect(createBtn).toBeTruthy();
-      expect(createBtn.textContent).toContain('Create One-Pager');
+      const saveBtn = container.querySelector('#save-btn');
+      const nextPhaseBtn = container.querySelector('button[type="submit"]');
+      expect(saveBtn).toBeTruthy();
+      expect(saveBtn.textContent).toContain('Save');
+      expect(nextPhaseBtn).toBeTruthy();
+      expect(nextPhaseBtn.textContent).toContain('Next Phase');
     });
 
-    test('should render cancel button', () => {
+    test('should render delete button only when editing', () => {
+      // New project form should not have delete button
       renderNewProjectForm();
-
-      const container = document.getElementById('app-container');
-      const cancelBtn = container.querySelector('#cancel-btn');
-      expect(cancelBtn).toBeTruthy();
-      expect(cancelBtn.textContent).toContain('Cancel');
+      let container = document.getElementById('app-container');
+      expect(container.querySelector('#delete-btn')).toBeFalsy();
     });
 
     test('should render back button', () => {
@@ -174,11 +175,11 @@ describe('Views Module', () => {
       renderNewProjectForm();
 
       const backBtn = document.getElementById('back-btn');
-      const cancelBtn = document.getElementById('cancel-btn');
+      const saveBtn = document.getElementById('save-btn');
       const form = document.getElementById('new-project-form');
 
       expect(backBtn).toBeTruthy();
-      expect(cancelBtn).toBeTruthy();
+      expect(saveBtn).toBeTruthy();
       expect(form).toBeTruthy();
     });
 
@@ -241,7 +242,8 @@ describe('Views Module', () => {
 
       const container = document.getElementById('app-container');
       expect(container.innerHTML).toContain('Edit One-Pager Details');
-      expect(container.innerHTML).toContain('Continue to Phase 1');
+      expect(container.innerHTML).toContain('Next Phase');
+      expect(container.innerHTML).toContain('Delete'); // Delete button should appear when editing
       expect(container.querySelector('#title').value).toBe('Test Project');
       expect(container.querySelector('#problems').value).toBe('Test Problems');
       expect(container.querySelector('#context').value).toBe('Test Context');
