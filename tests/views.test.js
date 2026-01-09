@@ -373,6 +373,49 @@ describe('Views Module', () => {
       expect(container.querySelector('#next-phase-btn')).toBeNull();
     });
 
+    test('should show Edit Details button on Phase 1 when no response saved', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      await renderProjectView(project.id);
+
+      const container = document.getElementById('app-container');
+      // On phase 1 without response, Edit Details button should appear
+      expect(container.querySelector('#edit-details-btn')).toBeTruthy();
+      expect(container.querySelector('#edit-details-btn').textContent).toContain('Edit Details');
+      // Previous Phase button should NOT appear
+      expect(container.querySelector('#prev-phase-btn')).toBeNull();
+    });
+
+    test('should hide Edit Details button on Phase 1 when response is saved', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      // Complete Phase 1 with a response
+      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+
+      await renderProjectView(project.id);
+
+      // Click back to Phase 1 to view it
+      const phaseTabs = document.querySelectorAll('.phase-tab');
+      phaseTabs[0].click();
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const container = document.getElementById('app-container');
+      // Edit Details button should NOT appear when response exists
+      expect(container.querySelector('#edit-details-btn')).toBeNull();
+    });
+
+    test('Edit Details button should navigate to edit form', async () => {
+      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+
+      await renderProjectView(project.id);
+
+      const editBtn = document.getElementById('edit-details-btn');
+      editBtn.click();
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Should navigate to edit form - check that URL changed
+      expect(window.location.hash).toBe('#edit-project/' + project.id);
+    });
+
     test('should show completed checkmark for completed phases', async () => {
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
       await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');

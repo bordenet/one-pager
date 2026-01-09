@@ -213,9 +213,15 @@ function renderPhaseContent(project, phase) {
 
             <!-- Navigation -->
             <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
-                <button id="prev-phase-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors ${phase === 1 ? 'invisible' : ''}">
+                ${phase === 1 && !phaseData.response ? `
+                <button id="edit-details-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    ← Edit Details
+                </button>
+                ` : phase === 1 ? '<div></div>' : `
+                <button id="prev-phase-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                     ← Previous Phase
                 </button>
+                `}
                 ${phaseData.completed && phase < 3 ? `
                 <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     Next Phase →
@@ -321,6 +327,14 @@ function attachPhaseEventListeners(project, phase) {
       updatePhaseTabStyles(phase - 1);
       document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase - 1);
       attachPhaseEventListeners(project, phase - 1);
+    });
+  }
+
+  // Edit Details button (Phase 1 only, before response is saved)
+  const editDetailsBtn = document.getElementById('edit-details-btn');
+  if (editDetailsBtn) {
+    editDetailsBtn.addEventListener('click', () => {
+      navigateTo('edit-project/' + project.id);
     });
   }
 
