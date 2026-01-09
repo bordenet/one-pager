@@ -114,7 +114,7 @@ describe('Views Module', () => {
 
       const container = document.getElementById('app-container');
       const saveBtn = container.querySelector('#save-btn');
-      const nextPhaseBtn = container.querySelector('button[type="submit"]');
+      const nextPhaseBtn = container.querySelector('#next-phase-btn');
       expect(saveBtn).toBeTruthy();
       expect(saveBtn.textContent).toContain('Save');
       expect(nextPhaseBtn).toBeTruthy();
@@ -183,7 +183,7 @@ describe('Views Module', () => {
       expect(form).toBeTruthy();
     });
 
-    test('should handle form submission and create project', async () => {
+    test('should handle Next Phase click and create project', async () => {
       renderNewProjectForm();
 
       // Fill in the form
@@ -191,11 +191,9 @@ describe('Views Module', () => {
       document.getElementById('problems').value = 'Test problems description';
       document.getElementById('context').value = 'Test context';
 
-      const form = document.getElementById('new-project-form');
-
-      // Trigger form submission
-      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-      form.dispatchEvent(submitEvent);
+      // Click the Next Phase button
+      const nextPhaseBtn = document.getElementById('next-phase-btn');
+      nextPhaseBtn.click();
 
       // Wait for async operations
       await new Promise(resolve => setTimeout(resolve, 100));

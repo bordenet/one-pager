@@ -185,22 +185,24 @@ export function renderNewProjectForm(existingProject = null) {
                         >${escapeHtml(existingProject?.context || '')}</textarea>
                     </div>
 
-                    <div class="flex justify-between items-center">
-                        <div class="flex space-x-3">
-                            <button type="button" id="save-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                                Save
-                            </button>
-                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                Next Phase →
-                            </button>
-                        </div>
-                        ${isEditing ? `
-                            <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                                Delete
-                            </button>
-                        ` : ''}
-                    </div>
                 </form>
+            </div>
+
+            <!-- Footer buttons (outside the card, like ADR tool) -->
+            <div class="mt-6 flex justify-between items-center">
+                <div class="flex space-x-3">
+                    <button type="button" id="save-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                        Save
+                    </button>
+                    <button type="button" id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Next Phase →
+                    </button>
+                </div>
+                ${isEditing ? `
+                    <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                        Delete
+                    </button>
+                ` : ''}
             </div>
         </div>
     `;
@@ -268,8 +270,7 @@ export function renderNewProjectForm(existingProject = null) {
   });
 
   // Next Phase button - saves and navigates to Phase 1
-  document.getElementById('new-project-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  document.getElementById('next-phase-btn').addEventListener('click', async () => {
     await saveProject(true);
   });
 
