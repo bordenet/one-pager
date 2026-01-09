@@ -10,7 +10,8 @@ readonly DEPLOY_DIR="${PROJECT_ROOT}/docs"
 readonly GITHUB_PAGES_URL="https://bordenet.github.io/one-pager/"
 readonly REQUIRED_FILES=(
     "index.html" "css/styles.css" "js/app.js" "js/workflow.js" "js/storage.js"
-    "js/ai-mock.js" "prompts/phase1.md" "prompts/phase2.md" "prompts/phase3.md"
+    "js/ai-mock.js" "js/views.js" "js/projects.js" "js/ui.js" "js/router.js"
+    "prompts/phase1.md" "prompts/phase2.md" "prompts/phase3.md"
     "templates/one-pager-template.md"
 )
 
