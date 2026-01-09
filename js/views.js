@@ -198,11 +198,9 @@ export function renderNewProjectForm(existingProject = null) {
                         Next Phase →
                     </button>
                 </div>
-                ${isEditing ? `
-                    <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                        Delete
-                    </button>
-                ` : ''}
+                <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                    Delete
+                </button>
             </div>
         </div>
     `;
@@ -274,15 +272,17 @@ export function renderNewProjectForm(existingProject = null) {
     await saveProject(true);
   });
 
-  // Delete button (only for existing projects)
-  const deleteBtn = document.getElementById('delete-btn');
-  if (deleteBtn && isEditing) {
-    deleteBtn.addEventListener('click', async () => {
+  // Delete button
+  document.getElementById('delete-btn').addEventListener('click', async () => {
+    if (isEditing) {
       if (await confirm(`Are you sure you want to delete "${existingProject.title || existingProject.name}"?`, 'Delete One-Pager')) {
         await deleteProject(existingProject.id);
         showToast('One-Pager deleted', 'success');
         navigateTo('home');
       }
-    });
-  }
+    } else {
+      // For new projects, just go back home
+      navigateTo('home');
+    }
+  });
 }

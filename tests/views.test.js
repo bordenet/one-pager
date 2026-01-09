@@ -121,11 +121,12 @@ describe('Views Module', () => {
       expect(nextPhaseBtn.textContent).toContain('Next Phase');
     });
 
-    test('should render delete button only when editing', () => {
-      // New project form should not have delete button
+    test('should render delete button always (red)', () => {
       renderNewProjectForm();
       let container = document.getElementById('app-container');
-      expect(container.querySelector('#delete-btn')).toBeFalsy();
+      const deleteBtn = container.querySelector('#delete-btn');
+      expect(deleteBtn).toBeTruthy();
+      expect(deleteBtn.classList.contains('bg-red-600')).toBe(true);
     });
 
     test('should render back button', () => {
