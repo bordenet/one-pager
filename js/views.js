@@ -17,24 +17,24 @@ export async function renderProjectsList() {
   container.innerHTML = `
         <div class="mb-6 flex items-center justify-between">
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
-                My Projects
+                My <span class="text-blue-600">One-Pagers</span>
             </h2>
             <button id="new-project-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                + New Project
+                + New One-Pager
             </button>
         </div>
 
         ${projects.length === 0 ? `
             <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-                <span class="text-6xl mb-4 block">📄</span>
+                <span class="text-6xl mb-4 block">📋</span>
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    No projects yet
+                    No One-Pagers yet
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 mb-6">
-                    Create your first One-Pager document
+                    Create your first <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md" target="_blank" rel="noopener" class="text-green-600 hover:underline">One-Pager</a> document
                 </p>
                 <button id="new-project-btn-empty" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                    + Create Your First Project
+                    + Create Your First One-Pager
                 </button>
             </div>
         ` : `
