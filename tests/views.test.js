@@ -109,14 +109,13 @@ describe('Views Module', () => {
       expect(container.querySelector('#context')).toBeTruthy();
     });
 
-    test('should render Save and Next Phase buttons', () => {
+    test('should render Next Phase button (no Save button)', () => {
       renderNewProjectForm();
 
       const container = document.getElementById('app-container');
       const saveBtn = container.querySelector('#save-btn');
       const nextPhaseBtn = container.querySelector('#next-phase-btn');
-      expect(saveBtn).toBeTruthy();
-      expect(saveBtn.textContent).toContain('Save');
+      expect(saveBtn).toBeNull(); // Save button removed - Next Phase saves automatically
       expect(nextPhaseBtn).toBeTruthy();
       expect(nextPhaseBtn.textContent).toContain('Next Phase');
     });
@@ -176,11 +175,11 @@ describe('Views Module', () => {
       renderNewProjectForm();
 
       const backBtn = document.getElementById('back-btn');
-      const saveBtn = document.getElementById('save-btn');
+      const nextPhaseBtn = document.getElementById('next-phase-btn');
       const form = document.getElementById('new-project-form');
 
       expect(backBtn).toBeTruthy();
-      expect(saveBtn).toBeTruthy();
+      expect(nextPhaseBtn).toBeTruthy();
       expect(form).toBeTruthy();
     });
 

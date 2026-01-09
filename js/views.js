@@ -190,14 +190,9 @@ export function renderNewProjectForm(existingProject = null) {
 
             <!-- Footer buttons (outside the card, like ADR tool) -->
             <div class="mt-6 flex justify-between items-center">
-                <div class="flex space-x-3">
-                    <button type="button" id="save-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
-                        Save
-                    </button>
-                    <button type="button" id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        Next Phase →
-                    </button>
-                </div>
+                <button type="button" id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    Next Phase →
+                </button>
                 <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
                     Delete
                 </button>
@@ -257,15 +252,6 @@ export function renderNewProjectForm(existingProject = null) {
 
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
-
-  // Save button - saves without navigating
-  document.getElementById('save-btn').addEventListener('click', async () => {
-    const project = await saveProject(false);
-    if (project && !isEditing) {
-      // For new projects, redirect to edit mode so subsequent saves work
-      navigateTo('project/' + project.id);
-    }
-  });
 
   // Next Phase button - saves and navigates to Phase 1
   document.getElementById('next-phase-btn').addEventListener('click', async () => {
