@@ -96,7 +96,7 @@ describe('Views Module', () => {
       renderNewProjectForm();
 
       const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Create New Project');
+      expect(container.innerHTML).toContain('Create New <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md"');
       expect(container.innerHTML).toContain('Project Title');
     });
 
@@ -115,7 +115,7 @@ describe('Views Module', () => {
       const container = document.getElementById('app-container');
       const createBtn = container.querySelector('button[type="submit"]');
       expect(createBtn).toBeTruthy();
-      expect(createBtn.textContent).toContain('Create Project');
+      expect(createBtn.textContent).toContain('Create One-Pager');
     });
 
     test('should render cancel button', () => {
@@ -133,7 +133,7 @@ describe('Views Module', () => {
       const container = document.getElementById('app-container');
       const backBtn = container.querySelector('#back-btn');
       expect(backBtn).toBeTruthy();
-      expect(backBtn.textContent).toContain('Back to Projects');
+      expect(backBtn.textContent).toContain('Back to One-Pagers');
     });
   });
 
@@ -240,7 +240,7 @@ describe('Views Module', () => {
       renderNewProjectForm(project);
 
       const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Edit Project Details');
+      expect(container.innerHTML).toContain('Edit One-Pager Details');
       expect(container.innerHTML).toContain('Continue to Phase 1');
       expect(container.querySelector('#title').value).toBe('Test Project');
       expect(container.querySelector('#problems').value).toBe('Test Problems');
@@ -260,7 +260,7 @@ describe('Views Module', () => {
       expect(container.innerHTML).toContain('Phase 1');
       expect(container.innerHTML).toContain('Phase 2');
       expect(container.innerHTML).toContain('Phase 3');
-      expect(container.innerHTML).toContain('Back to Projects');
+      expect(container.innerHTML).toContain('Back to One-Pagers');
     });
 
     test('should handle non-existent project gracefully', async () => {

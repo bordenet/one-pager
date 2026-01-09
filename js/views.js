@@ -126,13 +126,13 @@ export function renderNewProjectForm(existingProject = null) {
                     <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
-                    ${isEditing ? 'Back to Project' : 'Back to Projects'}
+                    ${isEditing ? 'Back to One-Pager' : 'Back to One-Pagers'}
                 </button>
             </div>
 
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                    ${isEditing ? 'Edit Project Details' : 'Create New Project'}
+                    ${isEditing ? 'Edit One-Pager Details' : 'Create New <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md" target="_blank" rel="noopener" class="text-blue-600 hover:underline">One-Pager</a>'}
                 </h2>
                 ${isEditing ? `
                     <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -190,7 +190,7 @@ export function renderNewProjectForm(existingProject = null) {
                             Cancel
                         </button>
                         <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                            ${isEditing ? 'Save & Continue to Phase 1' : 'Create Project'}
+                            ${isEditing ? 'Save & Continue to Phase 1' : 'Create One-Pager'}
                         </button>
                     </div>
                 </form>
