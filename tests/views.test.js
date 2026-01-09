@@ -26,7 +26,7 @@ describe('Views Module', () => {
 
       const container = document.getElementById('app-container');
       expect(container.innerHTML).toContain('No One-Pagers yet');
-      expect(container.innerHTML).toContain('One-Pager</a> document');
+      expect(container.innerHTML).toContain('Create your first One-Pager document');
     });
 
     test('should render projects list when projects exist', async () => {
