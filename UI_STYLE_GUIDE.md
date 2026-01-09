@@ -29,9 +29,11 @@ Save Response                  (green, after pasting AI response)
 Next Phase →                   (blue, advances workflow)
 ← Previous Phase               (gray, goes back)
 ← Edit Details                 (gray, returns to form - Phase 1 only, before response saved)
-📄 Export One-Pager            (green, prominent - Phase 3 complete ONLY)
+📄 Export as Markdown          (green, prominent - Phase 3 complete ONLY)
 Delete                         (red, destructive - always visible)
 ```
+
+**Note:** "Export as Markdown" explicitly tells users the file format. Not all users know what Markdown is, but seeing ".md" in the description helps set expectations.
 
 ---
 
@@ -79,9 +81,9 @@ When Phase 3 is completed, users MUST see a prominent export CTA. **This is crit
 │  - Response textarea (with saved content)                                   │
 │                                                                             │
 │  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │  🎉 Your One-Pager is Complete!              [📄 Export One-Pager]    │  │
-│  │  Export your finished one-pager as a                                  │  │
-│  │  formatted Markdown document.                                         │  │
+│  │  🎉 Your One-Pager is Complete!              [📄 Export as Markdown]  │  │
+│  │  Download your finished one-pager as a                                │  │
+│  │  Markdown (.md) file.                                                 │  │
 │  └───────────────────────────────────────────────────────────────────────┘  │
 │                            ↑                                                │
 │              BOTTOM of content area, ABOVE navigation footer                │
@@ -96,9 +98,9 @@ When Phase 3 is completed, users MUST see a prominent export CTA. **This is crit
 **Styling:**
 - Container: `bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6`
 - Heading: `text-lg font-semibold text-green-800 dark:text-green-300` with 🎉 emoji
-- Description: `text-green-700 dark:text-green-400`
+- Description: `text-green-700 dark:text-green-400` — mention "Markdown (.md) file" explicitly
 - Button: `px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-lg`
-- Button label: `📄 Export One-Pager`
+- Button label: `📄 Export as Markdown` (explicitly states file format)
 
 **Rules:**
 - Only appears on Phase 3 view when `phaseData.completed === true`
@@ -106,6 +108,7 @@ When Phase 3 is completed, users MUST see a prominent export CTA. **This is crit
 - Must be inside the content card, not floating or in the header
 - Button triggers `exportFinalOnePager(project)` function
 - Must be impossible to miss - users should never wonder "what's next?"
+- Description MUST mention "Markdown (.md)" so users understand the file format
 
 ### Step A (Copy Prompt Section)
 
@@ -118,6 +121,90 @@ When Phase 3 is completed, users MUST see a prominent export CTA. **This is crit
 
 - "Open AI" link is **disabled** until prompt is copied (opacity-50, pointer-events-none)
 - After copying, link becomes active and opens in named tab `target="ai-assistant-tab"`
+
+---
+
+## 🔘 Button State Rules (CRITICAL!)
+
+Buttons MUST follow this state diagram strictly. Incorrect states confuse users and break workflows.
+
+### State Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         PHASE WORKFLOW STATE DIAGRAM                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌──────────────┐     Copy Prompt     ┌──────────────┐                      │
+│  │ INITIAL      │ ─────────────────▶  │ PROMPT       │                      │
+│  │              │                     │ COPIED       │                      │
+│  └──────────────┘                     └──────────────┘                      │
+│        │                                     │                              │
+│        │                                     │ Type 3+ chars                │
+│        ▼                                     ▼                              │
+│  ┌──────────────┐                     ┌──────────────┐                      │
+│  │ Buttons:     │                     │ Buttons:     │                      │
+│  │ • Copy ✓     │                     │ • Copy ✓     │                      │
+│  │ • Open AI ✗  │                     │ • Open AI ✓  │                      │
+│  │ • Textarea ✗ │                     │ • Textarea ✓ │                      │
+│  │ • Save ✗     │                     │ • Save ✓     │                      │
+│  └──────────────┘                     └──────────────┘                      │
+│                                              │                              │
+│                                              │ Save Response                │
+│                                              ▼                              │
+│                                       ┌──────────────┐                      │
+│                                       │ PHASE        │                      │
+│                                       │ COMPLETE     │                      │
+│                                       └──────────────┘                      │
+│                                              │                              │
+│                                              │ Shows:                       │
+│                                              │ • Next Phase → (if < 3)      │
+│                                              │ • Export CTA (if phase 3)    │
+│                                              ▼                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Button States by Condition
+
+| Button | Condition | State |
+|--------|-----------|-------|
+| **📋 Copy Prompt** | Always | ✅ Enabled |
+| **🔗 Open AI** | Before prompt copied | ❌ Disabled (`opacity-50 cursor-not-allowed pointer-events-none aria-disabled="true"`) |
+| **🔗 Open AI** | After prompt copied | ✅ Enabled |
+| **Response Textarea** | Before prompt copied | ❌ Disabled (`disabled` attribute) |
+| **Response Textarea** | After prompt copied | ✅ Enabled (auto-focus) |
+| **Save Response** | Response < 3 chars | ❌ Disabled (`disabled` attribute) |
+| **Save Response** | Response ≥ 3 chars | ✅ Enabled |
+| **Next Phase →** | Phase NOT completed | ❌ Hidden (not rendered) |
+| **Next Phase →** | Phase completed AND phase < 3 | ✅ Visible & enabled |
+| **← Previous Phase** | Phase 1 | ❌ Hidden (show "← Edit Details" instead if no response) |
+| **← Previous Phase** | Phase 2 or 3 | ✅ Visible & enabled |
+| **📄 Export One-Pager** | Phase 3 NOT completed | ❌ Hidden |
+| **📄 Export One-Pager** | Phase 3 completed | ✅ Visible & enabled |
+| **Delete** | Always | ✅ Enabled (always visible) |
+
+### Disabled Button Styling
+
+```css
+/* For <button> elements */
+.disabled:opacity-50
+.disabled:cursor-not-allowed
+.disabled:hover:bg-[same-as-base]  /* Prevent hover color change */
+
+/* For <a> elements (links styled as buttons) */
+.opacity-50
+.cursor-not-allowed
+.pointer-events-none
+aria-disabled="true"
+```
+
+### Enabling Buttons Dynamically
+
+When enabling a previously disabled button:
+1. Remove disabled classes: `opacity-50`, `cursor-not-allowed`, `pointer-events-none`
+2. Add hover class: `hover:bg-[color]-700`
+3. Remove `aria-disabled` attribute
+4. For textareas: `element.disabled = false`
 
 ---
 
