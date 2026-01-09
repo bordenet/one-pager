@@ -135,8 +135,17 @@ All UI components in this project MUST follow the conventions in `UI_STYLE_GUIDE
 - **Layout**: Delete button always on right, navigation on left
 - **Required fields**: Asterisks in red (`<span class="text-red-500">*</span>`)
 - **Modals**: Dismiss via ×, Close button, backdrop click, or Escape key
+- **Completion states**: ALWAYS show prominent CTA when workflow is complete (users must never wonder "what's next?")
 
 This guide ensures design parity across all tools in this ecosystem.
+
+### For Sibling Projects
+
+The UI Style Guide is also available at:
+- **GitHub Instructions**: `.github/instructions/ui-style.instructions.md` (AI-readable format)
+- **Remote URL**: https://github.com/bordenet/one-pager/blob/main/UI_STYLE_GUIDE.md
+
+Sibling projects should reference these files to maintain UI consistency across the ecosystem.
 
 ---
 
