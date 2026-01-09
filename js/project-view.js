@@ -155,23 +155,25 @@ function renderPhaseContent(project, phase) {
                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                      Step A: Copy Prompt to AI
                  </h4>
-                 <div class="flex gap-3 flex-wrap">
-                     <button id="copy-prompt-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                         📋 Copy Prompt to Clipboard
-                     </button>
+                 <div class="flex justify-between items-center flex-wrap gap-3">
+                     <div class="flex gap-3 flex-wrap">
+                         <button id="copy-prompt-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                             📋 Copy Prompt to Clipboard
+                         </button>
+                         <a
+                             id="open-ai-btn"
+                             href="${phase === 2 ? 'https://gemini.google.com' : 'https://claude.ai'}"
+                             target="ai-assistant-tab"
+                             rel="noopener noreferrer"
+                             class="px-6 py-3 bg-green-600 text-white rounded-lg transition-colors font-medium opacity-50 cursor-not-allowed pointer-events-none"
+                             aria-disabled="true"
+                         >
+                             🔗 Open ${phase === 2 ? 'Gemini' : 'Claude'}
+                         </a>
+                     </div>
                      <button id="view-prompt-btn" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium">
                          👁️ View Prompt
                      </button>
-                     <a
-                         id="open-ai-btn"
-                         href="${phase === 2 ? 'https://gemini.google.com' : 'https://claude.ai'}"
-                         target="ai-assistant-tab"
-                         rel="noopener noreferrer"
-                         class="px-6 py-3 bg-green-600 text-white rounded-lg transition-colors font-medium opacity-50 cursor-not-allowed pointer-events-none"
-                         aria-disabled="true"
-                     >
-                         🔗 Open ${phase === 2 ? 'Gemini' : 'Claude'}
-                     </a>
                  </div>
                  ${phaseData.prompt ? `
                      <div class="mt-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
