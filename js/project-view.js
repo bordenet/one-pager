@@ -213,6 +213,25 @@ function renderPhaseContent(project, phase) {
                 </div>
             </div>
 
+            ${phase === 3 && phaseData.completed ? `
+            <!-- Phase 3 Complete: Export Call-to-Action -->
+            <div class="mt-6 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                        <h4 class="text-lg font-semibold text-green-800 dark:text-green-300 flex items-center">
+                            <span class="mr-2">🎉</span> Your One-Pager is Complete!
+                        </h4>
+                        <p class="text-green-700 dark:text-green-400 mt-1">
+                            Export your finished one-pager as a formatted Markdown document.
+                        </p>
+                    </div>
+                    <button id="export-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
+                        📄 Export One-Pager
+                    </button>
+                </div>
+            </div>
+            ` : ''}
+
             <!-- Navigation -->
             <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
                 <div class="flex space-x-3">
@@ -373,6 +392,14 @@ function attachPhaseEventListeners(project, phase) {
         showToast('One-Pager deleted', 'success');
         navigateTo('home');
       }
+    });
+  }
+
+  // Export button (Phase 3 complete)
+  const exportBtn = document.getElementById('export-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      exportFinalOnePager(project);
     });
   }
 }
