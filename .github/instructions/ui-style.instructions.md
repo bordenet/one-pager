@@ -5,6 +5,14 @@ applyTo: '**/*.html,**/*.js,**/*.css,**/*.jsx,**/*.tsx,**/*.vue,**/*.svelte'
 
 # UI Style Guide Reference
 
+## Project Lineage
+
+**All projects in this ecosystem derive from https://github.com/bordenet/genesis/**
+
+This means UI patterns, button styles, workflow conventions, and interaction behaviors MUST remain consistent across all sibling projects. When in doubt, refer to genesis or the canonical style guide below.
+
+---
+
 This project maintains a comprehensive UI Style Guide at `UI_STYLE_GUIDE.md` in the repository root.
 
 ## For Sibling Projects

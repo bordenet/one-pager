@@ -2,6 +2,12 @@
 
 **Purpose**: This document captures the visual design patterns and UX conventions established for the One-Pager tool. Use this as a reference when implementing similar tools or achieving design parity across projects.
 
+## 🧬 Project Lineage
+
+**All projects in this ecosystem derive from https://github.com/bordenet/genesis/**
+
+This style guide ensures UI consistency across all sibling projects. When building new tools or features, these patterns are **mandatory** to maintain a cohesive user experience across the ecosystem.
+
 ---
 
 ## 🎨 Button Styles & Colors
