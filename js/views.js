@@ -185,52 +185,53 @@ export function renderNewProjectForm(existingProject = null) {
                         >${escapeHtml(existingProject?.context || '')}</textarea>
                     </div>
 
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" id="cancel-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                            ${isEditing ? 'Save & Continue to Phase 1' : 'Create One-Pager'}
-                        </button>
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-3">
+                            <button type="button" id="save-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                Save
+                            </button>
+                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                Next Phase →
+                            </button>
+                        </div>
+                        ${isEditing ? `
+                            <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                                Delete
+                            </button>
+                        ` : ''}
                     </div>
                 </form>
             </div>
         </div>
     `;
 
-  // Event listeners
-  document.getElementById('back-btn').addEventListener('click', () => {
-    if (isEditing) {
-      navigateTo('project/' + existingProject.id);
-    } else {
-      navigateTo('home');
+  // Helper function to get form data
+  const getFormData = () => {
+    const form = document.getElementById('new-project-form');
+    const formDataObj = new FormData(form);
+    return {
+      title: formDataObj.get('title'),
+      problems: formDataObj.get('problems'),
+      context: formDataObj.get('context') || ''
+    };
+  };
+
+  // Helper function to save project
+  const saveProject = async (navigateAfter = false) => {
+    const { title, problems, context } = getFormData();
+
+    if (!title || !problems) {
+      showToast('Please fill in required fields', 'error');
+      return null;
     }
-  });
-
-  document.getElementById('cancel-btn').addEventListener('click', () => {
-    if (isEditing) {
-      navigateTo('project/' + existingProject.id);
-    } else {
-      navigateTo('home');
-    }
-  });
-
-  document.getElementById('new-project-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.target);
-    const title = formData.get('title');
-    const problems = formData.get('problems');
-    const context = formData.get('context') || '';
 
     if (isEditing) {
-      // Update existing project
       const { updateProject } = await import('./projects.js');
       await updateProject(existingProject.id, {
         title,
-        name: title, // Legacy compatibility
+        name: title,
         problems,
-        description: problems, // Legacy compatibility
+        description: problems,
         context,
         formData: {
           ...existingProject.formData,
@@ -239,13 +240,48 @@ export function renderNewProjectForm(existingProject = null) {
           context
         }
       });
-      showToast('Project updated successfully!', 'success');
-      navigateTo('project/' + existingProject.id);
+      showToast('One-Pager saved!', 'success');
+      if (navigateAfter) {
+        navigateTo('project/' + existingProject.id);
+      }
+      return existingProject;
     } else {
-      // Create new project
       const project = await createProject(title, problems, context);
-      showToast('Project created successfully!', 'success');
+      showToast('One-Pager created!', 'success');
+      if (navigateAfter) {
+        navigateTo('project/' + project.id);
+      }
+      return project;
+    }
+  };
+
+  // Event listeners
+  document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
+
+  // Save button - saves without navigating
+  document.getElementById('save-btn').addEventListener('click', async () => {
+    const project = await saveProject(false);
+    if (project && !isEditing) {
+      // For new projects, redirect to edit mode so subsequent saves work
       navigateTo('project/' + project.id);
     }
   });
+
+  // Next Phase button - saves and navigates to Phase 1
+  document.getElementById('new-project-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await saveProject(true);
+  });
+
+  // Delete button (only for existing projects)
+  const deleteBtn = document.getElementById('delete-btn');
+  if (deleteBtn && isEditing) {
+    deleteBtn.addEventListener('click', async () => {
+      if (await confirm(`Are you sure you want to delete "${existingProject.title || existingProject.name}"?`, 'Delete One-Pager')) {
+        await deleteProject(existingProject.id);
+        showToast('One-Pager deleted', 'success');
+        navigateTo('home');
+      }
+    });
+  }
 }
