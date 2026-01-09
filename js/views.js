@@ -31,7 +31,7 @@ export async function renderProjectsList() {
                     No One-Pagers yet
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 mb-6">
-                    Create your first <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md" target="_blank" rel="noopener" class="text-green-600 hover:underline">One-Pager</a> document
+                    Create your first One-Pager document
                 </p>
                 <button id="new-project-btn-empty" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                     + Create Your First One-Pager
