@@ -150,7 +150,7 @@ function showAboutModal() {
         <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">About One-Pager Assistant</h3>
             <div class="text-gray-600 dark:text-gray-400 space-y-3">
-                <p>A privacy-first tool for creating high-quality one-pager documents using AI assistance.</p>
+                <p>A privacy-first tool for creating high-quality <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md" target="_blank" rel="noopener" class="text-blue-600 hover:underline">One-Pager</a> documents using AI assistance.</p>
                 <p><strong>Features:</strong></p>
                 <ul class="list-disc list-inside space-y-1 text-sm">
                     <li>100% client-side processing</li>

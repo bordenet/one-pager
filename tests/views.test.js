@@ -25,8 +25,8 @@ describe('Views Module', () => {
       await renderProjectsList();
 
       const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('No projects yet');
-      expect(container.innerHTML).toContain('Create your first One-Pager document');
+      expect(container.innerHTML).toContain('No One-Pagers yet');
+      expect(container.innerHTML).toContain('One-Pager</a> document');
     });
 
     test('should render projects list when projects exist', async () => {
@@ -39,7 +39,7 @@ describe('Views Module', () => {
       const container = document.getElementById('app-container');
       expect(container.innerHTML).toContain('Test Project 1');
       expect(container.innerHTML).toContain('Test Project 2');
-      expect(container.innerHTML).toContain('My Projects');
+      expect(container.innerHTML).toContain('My <span class="text-blue-600">One-Pagers</span>');
     });
 
     test('should render new project button', async () => {
@@ -48,7 +48,7 @@ describe('Views Module', () => {
       const container = document.getElementById('app-container');
       const newProjectBtn = container.querySelector('#new-project-btn');
       expect(newProjectBtn).toBeTruthy();
-      expect(newProjectBtn.textContent).toContain('New Project');
+      expect(newProjectBtn.textContent).toContain('New One-Pager');
     });
 
     test('should render project cards with phase information', async () => {
