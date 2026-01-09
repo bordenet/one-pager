@@ -67,11 +67,29 @@ Delete                         (red, destructive - always visible)
 
 When Phase 3 is completed, users MUST see a prominent export CTA. **This is critical for usability.**
 
+**Screen Position:**
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  🎉 Your One-Pager is Complete!                        [📄 Export One-Pager]│
-│  Export your finished one-pager as a formatted         ↑                    │
-│  Markdown document.                                    Green, prominent     │
+│  [Header with Back + Export buttons]                                        │
+│  [Phase Tabs: 1 | 2 | 3✓]                                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Phase 3 Content Area                                                       │
+│  - Copy Prompt section                                                      │
+│  - Response textarea (with saved content)                                   │
+│                                                                             │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │  🎉 Your One-Pager is Complete!              [📄 Export One-Pager]    │  │
+│  │  Export your finished one-pager as a                                  │  │
+│  │  formatted Markdown document.                                         │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+│                            ↑                                                │
+│              BOTTOM of content area, ABOVE navigation footer                │
+│                                                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  [← Previous Phase]                                              [Delete]   │
+│                            ↑                                                │
+│                    Navigation footer                                        │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -84,7 +102,8 @@ When Phase 3 is completed, users MUST see a prominent export CTA. **This is crit
 
 **Rules:**
 - Only appears on Phase 3 view when `phaseData.completed === true`
-- Positioned ABOVE the navigation footer
+- Positioned at **BOTTOM of the phase content area**, immediately ABOVE the navigation footer
+- Must be inside the content card, not floating or in the header
 - Button triggers `exportFinalOnePager(project)` function
 - Must be impossible to miss - users should never wonder "what's next?"
 

@@ -40,8 +40,25 @@ Delete
 - Required field asterisks: Use red (`<span class="text-red-500">*</span>`)
 
 ### Completion States (CRITICAL!)
-When a workflow/phase is complete, ALWAYS show a prominent call-to-action:
+When a workflow/phase is complete, ALWAYS show a prominent call-to-action.
 
+**Screen Position:** At the **BOTTOM of the content area**, immediately ABOVE the navigation footer. Must be inside the content card, not floating or in the header.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  [Main content area]                                            │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  🎉 Completion Message          [Primary Action Button]   │  │
+│  │  Next step instruction                                    │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│               ↑ BOTTOM of content, ABOVE footer                 │
+│  ─────────────────────────────────────────────────────────────  │
+│  [← Back]                                           [Delete]    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**HTML Pattern:**
 ```html
 <div class="p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
   <div class="flex items-center justify-between flex-wrap gap-4">
