@@ -269,40 +269,47 @@ function attachPhaseEventListeners(project, phase) {
   const prevPhaseBtn = document.getElementById('prev-phase-btn');
   const nextPhaseBtn = document.getElementById('next-phase-btn');
 
+  /**
+   * Enable workflow progression after prompt is copied
+   * Called from both main copy button and modal copy button
+   */
+  const enableWorkflowProgression = async (prompt) => {
+    // Save prompt but DON'T auto-advance - user is still working on this phase
+    await updatePhase(project.id, phase, prompt, project.phases && project.phases[phase] ? project.phases[phase].response : '', { skipAutoAdvance: true });
+
+    // Enable the "Open AI" button now that prompt is copied
+    const openAiBtn = document.getElementById('open-ai-btn');
+    if (openAiBtn) {
+      openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      openAiBtn.classList.add('hover:bg-green-700');
+      openAiBtn.removeAttribute('aria-disabled');
+    }
+
+    // Enable the response textarea now that prompt is copied
+    if (responseTextarea) {
+      responseTextarea.disabled = false;
+      responseTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
+      responseTextarea.focus();
+    }
+  };
+
   copyPromptBtn.addEventListener('click', async () => {
     try {
       const prompt = await generatePromptForPhase(project, phase);
       await copyToClipboard(prompt);
       showToast('Prompt copied to clipboard!', 'success');
-
-      // Save prompt but DON'T auto-advance - user is still working on this phase
-      await updatePhase(project.id, phase, prompt, project.phases && project.phases[phase] ? project.phases[phase].response : '', { skipAutoAdvance: true });
-
-      // Enable the "Open AI" button now that prompt is copied
-      const openAiBtn = document.getElementById('open-ai-btn');
-      if (openAiBtn) {
-        openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-        openAiBtn.classList.add('hover:bg-green-700');
-        openAiBtn.removeAttribute('aria-disabled');
-      }
-
-      // Enable the response textarea now that prompt is copied
-      if (responseTextarea) {
-        responseTextarea.disabled = false;
-        responseTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
-        responseTextarea.focus();
-      }
+      await enableWorkflowProgression(prompt);
     } catch (error) {
       console.error('Failed to copy prompt:', error);
       showToast('Failed to copy to clipboard. Please check browser permissions.', 'error');
     }
   });
 
-  // View prompt in modal
+  // View prompt in modal - passes callback to enable workflow when copied from modal
   viewGeneratedPromptBtn.addEventListener('click', async () => {
     const prompt = await generatePromptForPhase(project, phase);
     const meta = getPhaseMetadata(phase);
-    showPromptModal(prompt, `Phase ${phase}: ${meta.title} Prompt`);
+    showPromptModal(prompt, `Phase ${phase}: ${meta.title} Prompt`, () => enableWorkflowProgression(prompt));
   });
 
   // Update button state as user types
@@ -374,12 +381,31 @@ function attachPhaseEventListeners(project, phase) {
     });
   }
 
-  // View Full Prompt button
+  // View Full Prompt button (for viewing previously generated prompts)
   const viewPromptBtn = document.querySelector('.view-prompt-btn');
   if (viewPromptBtn && project.phases && project.phases[phase] && project.phases[phase].prompt) {
     viewPromptBtn.addEventListener('click', () => {
       const meta = getPhaseMetadata(phase);
-      showPromptModal(project.phases[phase].prompt, `Phase ${phase}: ${meta.title} Prompt`);
+      const responseTextarea = document.getElementById('response-textarea');
+
+      // Create enablement callback for modal copy
+      const enableWorkflow = async () => {
+        // Enable the "Open AI" button
+        const openAiBtn = document.getElementById('open-ai-btn');
+        if (openAiBtn) {
+          openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          openAiBtn.classList.add('hover:bg-green-700');
+          openAiBtn.removeAttribute('aria-disabled');
+        }
+        // Enable the response textarea
+        if (responseTextarea) {
+          responseTextarea.disabled = false;
+          responseTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
+          responseTextarea.focus();
+        }
+      };
+
+      showPromptModal(project.phases[phase].prompt, `Phase ${phase}: ${meta.title} Prompt`, enableWorkflow);
     });
   }
 
