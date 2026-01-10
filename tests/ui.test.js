@@ -250,13 +250,12 @@ describe('UI Module', () => {
       expect(writeTextMock).toHaveBeenCalledWith('Test text');
     });
 
-    test('should return true on successful copy', async () => {
+    test('should complete successfully on successful copy', async () => {
       const writeTextMock = jest.fn().mockResolvedValue();
       navigator.clipboard.writeText = writeTextMock;
 
-      const result = await copyToClipboard('Test text');
-
-      expect(result).toBe(true);
+      // Should not throw - void return
+      await expect(copyToClipboard('Test text')).resolves.not.toThrow();
     });
 
     test('should throw error if both clipboard API and execCommand fail', async () => {
