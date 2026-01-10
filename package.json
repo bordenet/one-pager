@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "AI-assisted workflow helper for generating crisp and high-quality one-pager documents",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/bordenet/one-pager.git"
