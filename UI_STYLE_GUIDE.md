@@ -268,7 +268,122 @@ When enabling a previously disabled button:
 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
 focus:ring-2 focus:ring-blue-500 focus:border-transparent
 dark:bg-gray-700 dark:text-white
+placeholder:text-gray-500 dark:placeholder:text-gray-400
 ```
+
+**CRITICAL**: Always include ALL of these classes together. Missing `dark:text-white` or placeholder classes causes invisible text in dark mode.
+
+---
+
+## 🌗 Dark Mode Requirements (MANDATORY!)
+
+**Every color class MUST have a dark mode counterpart.** This is non-negotiable.
+
+### Dark Mode Checklist
+
+When adding any color class, ask: "What is the dark mode equivalent?"
+
+| Light Mode | Dark Mode Equivalent |
+|------------|---------------------|
+| `bg-white` | `dark:bg-gray-800` |
+| `bg-gray-50` | `dark:bg-gray-900` |
+| `bg-gray-100` | `dark:bg-gray-800` |
+| `text-gray-900` | `dark:text-white` |
+| `text-gray-700` | `dark:text-gray-300` |
+| `text-gray-600` | `dark:text-gray-400` |
+| `text-gray-500` | `dark:text-gray-400` |
+| `border-gray-200` | `dark:border-gray-700` |
+| `border-gray-300` | `dark:border-gray-600` |
+| `placeholder:text-gray-500` | `dark:placeholder:text-gray-400` |
+
+### Common Dark Mode Mistakes
+
+❌ **WRONG**: Adding light class without dark equivalent
+```html
+<div class="bg-white text-gray-900">  <!-- Invisible in dark mode! -->
+```
+
+✅ **CORRECT**: Always pair light and dark
+```html
+<div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+```
+
+### Status Colors in Dark Mode
+
+| Status | Light Mode | Dark Mode |
+|--------|------------|-----------|
+| Success Background | `bg-green-50` | `dark:bg-green-900/20` |
+| Success Text | `text-green-800` | `dark:text-green-300` |
+| Success Border | `border-green-200` | `dark:border-green-800` |
+| Error Background | `bg-red-50` | `dark:bg-red-900/20` |
+| Error Text | `text-red-800` | `dark:text-red-300` |
+| Error Border | `border-red-200` | `dark:border-red-800` |
+| Warning Background | `bg-yellow-50` | `dark:bg-yellow-900/20` |
+| Warning Text | `text-yellow-800` | `dark:text-yellow-300` |
+| Warning Border | `border-yellow-200` | `dark:border-yellow-800` |
+
+---
+
+## 🔧 Utility Function Conventions (CRITICAL!)
+
+### Clipboard Operations (`copyToClipboard`)
+
+The `copyToClipboard` function follows a **throw-on-error** pattern. This is mandatory across all projects.
+
+**Implementation Pattern:**
+```javascript
+/**
+ * Copy text to clipboard
+ * @param {string} text - Text to copy
+ * @returns {Promise<void>} Resolves if successful, throws if failed
+ */
+export async function copyToClipboard(text) {
+  await navigator.clipboard.writeText(text);
+}
+```
+
+**Caller Pattern:**
+```javascript
+document.getElementById('copy-btn').addEventListener('click', async () => {
+  try {
+    await copyToClipboard(textToCopy);
+    showToast('Copied to clipboard!', 'success');
+  } catch {
+    showToast('Failed to copy to clipboard', 'error');
+  }
+});
+```
+
+**Rules:**
+1. ✅ `copyToClipboard` MUST throw on error (not return boolean)
+2. ✅ `copyToClipboard` MUST NOT show toast internally
+3. ✅ Callers MUST handle their own success/error toasts
+4. ✅ Callers MAY customize toast message for context (e.g., "Prompt copied!")
+
+**Why This Pattern?**
+- Callers have context for appropriate messages ("Prompt copied" vs "URL copied")
+- Error handling is explicit and visible in calling code
+- No hidden side effects in utility functions
+- Testable: can verify function throws without mocking toast
+
+### Toast Notifications (`showToast`)
+
+```javascript
+/**
+ * Show a toast notification
+ * @param {string} message - Message to display
+ * @param {'success' | 'error' | 'info'} type - Toast type for styling
+ */
+export function showToast(message, type = 'info') {
+  // Implementation creates/manages toast container
+}
+```
+
+**Rules:**
+1. Toast types: `'success'` (green), `'error'` (red), `'info'` (gray)
+2. Toasts auto-dismiss after 3-5 seconds
+3. Toast container ID: `toast-container`
+4. Position: top-right of viewport
 
 ---
 
@@ -282,6 +397,36 @@ Ensure these test cases exist:
 4. **Navigation flow**: Test phase transitions, back navigation
 5. **Form validation**: Test required fields, error messages
 6. **Confirmation dialogs**: Test cancel vs. confirm behavior
+7. **Clipboard operations**: Test `copyToClipboard` throws on error, calls clipboard API
+8. **Dark mode rendering**: Verify text visibility in both themes
+
+### Clipboard Test Example
+
+```javascript
+describe('copyToClipboard', () => {
+  let writeTextSpy;
+
+  beforeEach(() => {
+    writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+  });
+
+  it('should call clipboard.writeText with provided text', async () => {
+    await copyToClipboard('test text');
+    expect(writeTextSpy).toHaveBeenCalledWith('test text');
+  });
+
+  it('should throw error on failure (callers must handle)', async () => {
+    writeTextSpy.mockRejectedValueOnce(new Error('Clipboard access denied'));
+    await expect(copyToClipboard('test')).rejects.toThrow('Clipboard access denied');
+  });
+
+  it('should not show any toast notifications internally', async () => {
+    document.body.innerHTML = '';
+    await copyToClipboard('test text');
+    expect(document.getElementById('toast-container')).toBeNull();
+  });
+});
+```
 
 ---
 
