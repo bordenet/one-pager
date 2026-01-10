@@ -159,17 +159,31 @@ export function renderNewProjectForm(existingProject = null) {
                     </div>
 
                     <div>
-                        <label for="problems" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Problems to Solve <span class="text-red-500">*</span>
+                        <label for="problemStatement" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Problem Statement <span class="text-red-500">*</span>
                         </label>
                         <textarea
-                            id="problems"
-                            name="problems"
+                            id="problemStatement"
+                            name="problemStatement"
                             required
-                            rows="4"
+                            rows="3"
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                            placeholder="Describe the problems this project will address..."
-                        >${escapeHtml(existingProject?.problems || existingProject?.description || '')}</textarea>
+                            placeholder="What problem are you solving? Be specific..."
+                        >${escapeHtml(existingProject?.formData?.problemStatement || existingProject?.problems || existingProject?.description || '')}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="costOfDoingNothing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Cost of Doing Nothing
+                        </label>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">What happens if this isn't solved? Include business impact, revenue loss, etc.</p>
+                        <textarea
+                            id="costOfDoingNothing"
+                            name="costOfDoingNothing"
+                            rows="2"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            placeholder="e.g., $50K/month lost revenue, 10% customer churn..."
+                        >${escapeHtml(existingProject?.formData?.costOfDoingNothing || '')}</textarea>
                     </div>
 
                     <div>
@@ -179,10 +193,102 @@ export function renderNewProjectForm(existingProject = null) {
                         <textarea
                             id="context"
                             name="context"
-                            rows="6"
+                            rows="2"
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                            placeholder="Any simplifications, considerations, constraints, or other context..."
-                        >${escapeHtml(existingProject?.context || '')}</textarea>
+                            placeholder="Any background, constraints, or considerations..."
+                        >${escapeHtml(existingProject?.formData?.context || existingProject?.context || '')}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="proposedSolution" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Proposed Solution
+                        </label>
+                        <textarea
+                            id="proposedSolution"
+                            name="proposedSolution"
+                            rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            placeholder="High-level description of the proposed solution..."
+                        >${escapeHtml(existingProject?.formData?.proposedSolution || '')}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="keyGoals" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Key Goals/Benefits
+                        </label>
+                        <textarea
+                            id="keyGoals"
+                            name="keyGoals"
+                            rows="2"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            placeholder="List the main goals and expected benefits..."
+                        >${escapeHtml(existingProject?.formData?.keyGoals || '')}</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="scopeInScope" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                In Scope
+                            </label>
+                            <textarea
+                                id="scopeInScope"
+                                name="scopeInScope"
+                                rows="2"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                placeholder="What's included..."
+                            >${escapeHtml(existingProject?.formData?.scopeInScope || '')}</textarea>
+                        </div>
+                        <div>
+                            <label for="scopeOutOfScope" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Out of Scope
+                            </label>
+                            <textarea
+                                id="scopeOutOfScope"
+                                name="scopeOutOfScope"
+                                rows="2"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                placeholder="What's explicitly excluded..."
+                            >${escapeHtml(existingProject?.formData?.scopeOutOfScope || '')}</textarea>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="successMetrics" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Success Metrics
+                        </label>
+                        <textarea
+                            id="successMetrics"
+                            name="successMetrics"
+                            rows="2"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            placeholder="How will you measure success? e.g., Reduce latency by 50%..."
+                        >${escapeHtml(existingProject?.formData?.successMetrics || '')}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="keyStakeholders" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Key Stakeholders
+                        </label>
+                        <textarea
+                            id="keyStakeholders"
+                            name="keyStakeholders"
+                            rows="2"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            placeholder="Owner, approvers, contributors..."
+                        >${escapeHtml(existingProject?.formData?.keyStakeholders || '')}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="timelineEstimate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Timeline Estimate
+                        </label>
+                        <textarea
+                            id="timelineEstimate"
+                            name="timelineEstimate"
+                            rows="2"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            placeholder="e.g., Phase 1: 2 weeks, Launch: Q2 2025..."
+                        >${escapeHtml(existingProject?.formData?.timelineEstimate || '')}</textarea>
                     </div>
 
                 </form>
@@ -206,16 +312,24 @@ export function renderNewProjectForm(existingProject = null) {
     const formDataObj = new FormData(form);
     return {
       title: formDataObj.get('title'),
-      problems: formDataObj.get('problems'),
-      context: formDataObj.get('context') || ''
+      problemStatement: formDataObj.get('problemStatement'),
+      costOfDoingNothing: formDataObj.get('costOfDoingNothing') || '',
+      context: formDataObj.get('context') || '',
+      proposedSolution: formDataObj.get('proposedSolution') || '',
+      keyGoals: formDataObj.get('keyGoals') || '',
+      scopeInScope: formDataObj.get('scopeInScope') || '',
+      scopeOutOfScope: formDataObj.get('scopeOutOfScope') || '',
+      successMetrics: formDataObj.get('successMetrics') || '',
+      keyStakeholders: formDataObj.get('keyStakeholders') || '',
+      timelineEstimate: formDataObj.get('timelineEstimate') || ''
     };
   };
 
   // Helper function to save project
   const saveProject = async (navigateAfter = false) => {
-    const { title, problems, context } = getFormData();
+    const formData = getFormData();
 
-    if (!title || !problems) {
+    if (!formData.title || !formData.problemStatement) {
       showToast('Please fill in required fields', 'error');
       return null;
     }
@@ -223,16 +337,23 @@ export function renderNewProjectForm(existingProject = null) {
     if (isEditing) {
       const { updateProject } = await import('./projects.js');
       await updateProject(existingProject.id, {
-        title,
-        name: title,
-        problems,
-        description: problems,
-        context,
+        title: formData.title,
+        name: formData.title,
+        problems: formData.problemStatement,
+        description: formData.problemStatement,
+        context: formData.context,
         formData: {
-          ...existingProject.formData,
-          projectName: title,
-          problemStatement: problems,
-          context
+          projectName: formData.title,
+          problemStatement: formData.problemStatement,
+          costOfDoingNothing: formData.costOfDoingNothing,
+          context: formData.context,
+          proposedSolution: formData.proposedSolution,
+          keyGoals: formData.keyGoals,
+          scopeInScope: formData.scopeInScope,
+          scopeOutOfScope: formData.scopeOutOfScope,
+          successMetrics: formData.successMetrics,
+          keyStakeholders: formData.keyStakeholders,
+          timelineEstimate: formData.timelineEstimate
         }
       });
       showToast('One-Pager saved!', 'success');
@@ -241,7 +362,7 @@ export function renderNewProjectForm(existingProject = null) {
       }
       return existingProject;
     } else {
-      const project = await createProject(title, problems, context);
+      const project = await createProject(formData.title, formData.problemStatement, formData.context, formData);
       showToast('One-Pager created!', 'success');
       if (navigateAfter) {
         navigateTo('project/' + project.id);

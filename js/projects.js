@@ -8,15 +8,15 @@ import storage from './storage.js';
 /**
  * Create a new project
  */
-export async function createProject(title, problems, context) {
+export async function createProject(title, problemStatement, context, formData = {}) {
   const trimmedTitle = title.trim();
-  const trimmedProblems = problems.trim();
+  const trimmedProblemStatement = problemStatement.trim();
   const trimmedContext = context.trim();
 
   const project = {
     id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title: trimmedTitle,
-    problems: trimmedProblems,
+    problems: trimmedProblemStatement,
     context: trimmedContext,
     phase: 1,
     createdAt: new Date().toISOString(),
@@ -28,22 +28,22 @@ export async function createProject(title, problems, context) {
     },
     // Legacy fields for backward compatibility
     name: trimmedTitle,
-    description: trimmedProblems,
+    description: trimmedProblemStatement,
     currentPhase: 1,
     created: Date.now(),
     modified: Date.now(),
     // Map form inputs to prompt template variables
     formData: {
       projectName: trimmedTitle,
-      problemStatement: trimmedProblems,
-      costOfDoingNothing: '',
-      proposedSolution: '',
-      keyGoals: '',
-      scopeInScope: '',
-      scopeOutOfScope: '',
-      successMetrics: '',
-      keyStakeholders: '',
-      timelineEstimate: '',
+      problemStatement: trimmedProblemStatement,
+      costOfDoingNothing: formData.costOfDoingNothing || '',
+      proposedSolution: formData.proposedSolution || '',
+      keyGoals: formData.keyGoals || '',
+      scopeInScope: formData.scopeInScope || '',
+      scopeOutOfScope: formData.scopeOutOfScope || '',
+      successMetrics: formData.successMetrics || '',
+      keyStakeholders: formData.keyStakeholders || '',
+      timelineEstimate: formData.timelineEstimate || '',
       context: trimmedContext
     }
   };
