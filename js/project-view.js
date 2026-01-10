@@ -158,22 +158,24 @@ function renderPhaseContent(project, phase) {
                  <div class="flex justify-between items-center flex-wrap gap-3">
                      <div class="flex gap-3 flex-wrap">
                          <button id="copy-prompt-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                             📋 Copy Prompt to Clipboard
+                             📋 ${phaseData.prompt ? 'Copy Prompt Again' : 'Generate & Copy Prompt'}
                          </button>
                          <a
                              id="open-ai-btn"
                              href="${phase === 2 ? 'https://gemini.google.com' : 'https://claude.ai'}"
                              target="ai-assistant-tab"
                              rel="noopener noreferrer"
-                             class="px-6 py-3 bg-green-600 text-white rounded-lg transition-colors font-medium opacity-50 cursor-not-allowed pointer-events-none"
-                             aria-disabled="true"
+                             class="px-6 py-3 bg-green-600 text-white rounded-lg transition-colors font-medium ${phaseData.prompt ? 'hover:bg-green-700' : 'opacity-50 cursor-not-allowed pointer-events-none'}"
+                             ${phaseData.prompt ? '' : 'aria-disabled="true"'}
                          >
                              🔗 Open ${phase === 2 ? 'Gemini' : 'Claude'}
                          </a>
                      </div>
+                     ${phaseData.prompt ? `
                      <button id="view-prompt-btn" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium">
                          👁️ View Prompt
                      </button>
+                     ` : ''}
                  </div>
                  ${phaseData.prompt ? `
                      <div class="mt-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -306,11 +308,13 @@ function attachPhaseEventListeners(project, phase) {
   });
 
   // View prompt in modal - passes callback to enable workflow when copied from modal
-  viewGeneratedPromptBtn.addEventListener('click', async () => {
-    const prompt = await generatePromptForPhase(project, phase);
-    const meta = getPhaseMetadata(phase);
-    showPromptModal(prompt, `Phase ${phase}: ${meta.title} Prompt`, () => enableWorkflowProgression(prompt));
-  });
+  if (viewGeneratedPromptBtn) {
+    viewGeneratedPromptBtn.addEventListener('click', async () => {
+      const prompt = await generatePromptForPhase(project, phase);
+      const meta = getPhaseMetadata(phase);
+      showPromptModal(prompt, `Phase ${phase}: ${meta.title} Prompt`, () => enableWorkflowProgression(prompt));
+    });
+  }
 
   // Update button state as user types
   responseTextarea.addEventListener('input', () => {

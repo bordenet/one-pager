@@ -105,7 +105,7 @@ describe('Views Module', () => {
 
       const container = document.getElementById('app-container');
       expect(container.querySelector('#title')).toBeTruthy();
-      expect(container.querySelector('#problems')).toBeTruthy();
+      expect(container.querySelector('#problemStatement')).toBeTruthy();
       expect(container.querySelector('#context')).toBeTruthy();
     });
 
@@ -188,7 +188,7 @@ describe('Views Module', () => {
 
       // Fill in the form
       document.getElementById('title').value = 'Test Form Project';
-      document.getElementById('problems').value = 'Test problems description';
+      document.getElementById('problemStatement').value = 'Test problems description';
       document.getElementById('context').value = 'Test context';
 
       // Click the Next Phase button
@@ -243,7 +243,7 @@ describe('Views Module', () => {
       expect(container.innerHTML).toContain('Next Phase');
       expect(container.innerHTML).toContain('Delete'); // Delete button should appear when editing
       expect(container.querySelector('#title').value).toBe('Test Project');
-      expect(container.querySelector('#problems').value).toBe('Test Problems');
+      expect(container.querySelector('#problemStatement').value).toBe('Test Problems');
       expect(container.querySelector('#context').value).toBe('Test Context');
     });
 
@@ -368,7 +368,8 @@ describe('Views Module', () => {
 
       const container = document.getElementById('app-container');
       expect(container.querySelector('#copy-prompt-btn')).toBeTruthy();
-      expect(container.innerHTML).toContain('Copy Prompt to Clipboard');
+      // Button text is "Generate & Copy Prompt" when no prompt exists, or "Copy Prompt Again" when prompt exists
+      expect(container.innerHTML).toMatch(/Generate &amp; Copy Prompt|Copy Prompt Again/);
     });
 
     test('should render save response button and textarea', async () => {
