@@ -36,7 +36,13 @@ export function escapeHtml(text) {
 /**
  * Show prompt modal - displays full prompt text in a scrollable modal
  */
-export function showPromptModal(promptText, title = 'Full Prompt') {
+/**
+ * Show prompt modal - displays full prompt text in a scrollable modal
+ * @param {string} promptText - The prompt text to display
+ * @param {string} title - Modal title
+ * @param {Function} [onCopySuccess] - Optional callback to run after successful copy (enables workflow progression)
+ */
+export function showPromptModal(promptText, title = 'Full Prompt', onCopySuccess = null) {
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
   modal.innerHTML = `
@@ -48,7 +54,10 @@ export function showPromptModal(promptText, title = 'Full Prompt') {
             <div class="overflow-y-auto flex-1 bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                 <pre class="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono">${escapeHtml(promptText)}</pre>
             </div>
-            <div class="mt-4 flex justify-end">
+            <div class="mt-4 flex justify-end gap-2">
+                <button id="copy-prompt-modal-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    📋 Copy to Clipboard
+                </button>
                 <button id="close-prompt-modal-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                     Close
                 </button>
@@ -74,6 +83,20 @@ export function showPromptModal(promptText, title = 'Full Prompt') {
 
   modal.querySelector('#close-prompt-modal').addEventListener('click', closeModal);
   modal.querySelector('#close-prompt-modal-btn').addEventListener('click', closeModal);
+
+  // Copy button handler
+  modal.querySelector('#copy-prompt-modal-btn').addEventListener('click', async () => {
+    try {
+      await copyToClipboard(promptText);
+      showToast('Prompt copied to clipboard!', 'success');
+      // Run callback to enable workflow progression (Open AI button, textarea, etc.)
+      if (onCopySuccess) {
+        onCopySuccess();
+      }
+    } catch {
+      showToast('Failed to copy to clipboard', 'error');
+    }
+  });
 
   // Close on backdrop click
   modal.addEventListener('click', (e) => {
@@ -159,40 +182,45 @@ export function showToast(message, type = 'info', duration = 3000) {
 
 /**
  * Copy text to clipboard
+ *
+ * Uses a fallback chain for maximum compatibility:
+ * 1. Modern Clipboard API (navigator.clipboard.writeText)
+ * 2. Legacy execCommand('copy') for older browsers and iPad/mobile
+ *
+ * @param {string} text - Text to copy
+ * @returns {Promise<void>} Resolves if successful, throws if failed
+ * @throws {Error} If copy fails
  */
 export async function copyToClipboard(text) {
-  try {
-    // Try modern clipboard API first
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-
-    // Fallback for older browsers or insecure contexts
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
+  // Try modern Clipboard API first
+  if (navigator.clipboard && navigator.clipboard.writeText) {
     try {
-      const successful = document.execCommand('copy');
-      document.body.removeChild(textArea);
-      if (successful) {
-        return true;
-      } else {
-        throw new Error('Copy command failed');
-      }
-    } catch (err) {
-      document.body.removeChild(textArea);
-      throw err;
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {
+      // Fall through to legacy method (iPad/mobile often fails here)
     }
-  } catch (error) {
-    console.error('Failed to copy to clipboard:', error);
-    throw error;
+  }
+
+  // Fallback for iOS Safari, older browsers, or when Clipboard API fails
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    if (!successful) {
+      throw new Error('Copy command failed');
+    }
+  } catch {
+    document.body.removeChild(textArea);
+    throw new Error('Failed to copy to clipboard');
   }
 }
 
