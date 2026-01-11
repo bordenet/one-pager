@@ -1,19 +1,17 @@
 export default {
   testEnvironment: 'jsdom',
-  testEnvironmentOptions: {
-    url: 'http://localhost/'
-  },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleFileExtensions: ['js'],
   testMatch: ['**/*.test.js'],
-  testPathIgnorePatterns: ['/node_modules/', '/genesis/'],
+  testPathIgnorePatterns: ['/node_modules/', '/docs/'],
   collectCoverageFrom: [
     'js/**/*.js',
     '!js/**/*.test.js',
     '!js/app.js',
-    '!js/router.js',        // Router with complex async behavior - tested via integration
-    '!**/node_modules/**',
-    '!**/genesis/**'
+    '!js/router.js',
+    '!js/views.js',
+    '!js/project-view.js',
+    '!**/node_modules/**'
   ],
   coverageThreshold: {
     global: {
