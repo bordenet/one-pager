@@ -3,8 +3,6 @@
  * Tests the critical logic for detecting same LLM configurations and applying Gemini simulation
  */
 
-import { jest } from '@jest/globals';
-
 // Mock the classes from same_llm_adversarial_implementation.js
 class ConfigurationManager {
     getPhaseConfig(phase) {

@@ -1,4 +1,3 @@
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { renderProjectsList, renderNewProjectForm } from '../js/views.js';
 import { renderProjectView, extractTitleFromMarkdown } from '../js/project-view.js';
 import { createProject, deleteProject, getAllProjects, updatePhase, getProject, updateProject } from '../js/projects.js';

@@ -1,4 +1,3 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
 import { initMockMode, setMockMode, isMockMode, getMockResponse, addMockResponse } from '../js/ai-mock.js';
 
 describe('AI Mock Module', () => {
