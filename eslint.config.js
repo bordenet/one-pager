@@ -42,7 +42,7 @@ export default [
       'node_modules/**',
       'coverage/**',
       'docs/**',
-      'genesis/**',
+      'dist/**',
       '*.min.js',
     ],
   },
