@@ -1,5 +1,9 @@
 // Jest setup file
 import 'fake-indexeddb/auto';
+import { jest } from '@jest/globals';
+
+// Expose jest globally for test files
+global.jest = jest;
 
 // Polyfill structuredClone for Node.js < 17
 if (typeof global.structuredClone === 'undefined') {

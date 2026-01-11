@@ -1,4 +1,3 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
 import { initDB, saveProject, getProject, getAllProjects, deleteProject, generateId } from '../js/storage.js';
 import storage from '../js/storage.js';
 

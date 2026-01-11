@@ -1,4 +1,3 @@
-import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { formatDate, escapeHtml, confirm, showToast, copyToClipboard, showLoading, hideLoading, showPromptModal } from '../js/ui.js';
 
 describe('UI Module', () => {
