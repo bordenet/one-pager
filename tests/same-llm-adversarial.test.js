@@ -3,139 +3,12 @@
  * Tests the critical logic for detecting same LLM configurations and applying Gemini simulation
  */
 
-// Mock the classes from same_llm_adversarial_implementation.js
-class ConfigurationManager {
-    getPhaseConfig(phase) {
-        return {
-            provider: process.env[`${phase.toUpperCase()}_PROVIDER`] || 'anthropic',
-            model: process.env[`${phase.toUpperCase()}_MODEL`] || 'claude-3-sonnet',
-            endpoint: process.env[`${phase.toUpperCase()}_ENDPOINT`],
-            url: process.env[`${phase.toUpperCase()}_URL`] || process.env[`${phase.toUpperCase()}_ENDPOINT`]
-        };
-    }
-
-    isSameModel(config1, config2) {
-        // Check if same provider and model
-        if (config1.provider === config2.provider && config1.model === config2.model) {
-            return true;
-        }
-
-        // Check if same URL/endpoint (for LibreChat and similar deployments)
-        if (config1.url && config2.url && config1.url === config2.url) {
-            return true;
-        }
-
-        // Check if same endpoint
-        if (config1.endpoint && config2.endpoint && config1.endpoint === config2.endpoint) {
-            return true;
-        }
-
-        return false;
-    }
-
-    detectConfiguration() {
-        const phase1Config = this.getPhaseConfig('phase1');
-        const phase2Config = this.getPhaseConfig('phase2');
-        const isSameLLM = this.isSameModel(phase1Config, phase2Config);
-
-        return {
-            phase1: phase1Config,
-            phase2: phase2Config,
-            isSameLLM,
-            requiresAugmentation: isSameLLM,
-            detectionMethod: this.getDetectionMethod(phase1Config, phase2Config),
-            deploymentType: this.getDeploymentType(phase1Config, phase2Config)
-        };
-    }
-
-    getDetectionMethod(config1, config2) {
-        if (config1.provider === config2.provider && config1.model === config2.model) {
-            return 'provider_model_match';
-        }
-        if (config1.url && config2.url && config1.url === config2.url) {
-            return 'url_match';
-        }
-        if (config1.endpoint && config2.endpoint && config1.endpoint === config2.endpoint) {
-            return 'endpoint_match';
-        }
-        return 'different_llms';
-    }
-
-    getDeploymentType(config1, config2) {
-        if ((config1.url && config1.url.includes('librechat')) ||
-            (config1.endpoint && config1.endpoint.includes('librechat'))) {
-            return 'librechat';
-        }
-
-        if ((config1.endpoint && config1.endpoint.includes('localhost')) ||
-            (config1.url && config1.url.includes('localhost'))) {
-            return 'local_deployment';
-        }
-
-        if (config1.url === config2.url && config1.url) {
-            return 'corporate_single_endpoint';
-        }
-
-        if (config1.provider === config2.provider) {
-            return 'same_provider';
-        }
-
-        return 'multi_provider';
-    }
-}
-
-class AdversarialPromptAugmenter {
-    containsForgetClause(prompt) {
-        const forgetPatterns = [
-            /forget\s+all\s+previous/i,
-            /ignore\s+previous/i,
-            /start\s+fresh/i,
-            /new\s+session/i,
-            /clear\s+context/i
-        ];
-
-        return forgetPatterns.some(pattern => pattern.test(prompt));
-    }
-
-    generateGeminiStylePrompt(originalPrompt) {
-        if (this.containsForgetClause(originalPrompt)) {
-            return this.createReplacementGeminiPrompt();
-        } else {
-            return `## GEMINI SIMULATION\n\n---\n\n${originalPrompt}\n\n---\n\n**REMEMBER**: You are Google Gemini.`;
-        }
-    }
-
-    createReplacementGeminiPrompt() {
-        return `# Phase 2: Gemini Review Prompt
-
-**INSTRUCTIONS FOR GEMINI:**
-
-## ADVERSARIAL REVIEWER ROLE (GEMINI-STYLE SIMULATION)
-
-You are now operating as Google Gemini, Google's flagship analytical LLM known for rigorous, constructively adversarial analysis.
-
-**GEMINI BEHAVIORAL PROFILE**:
-- Highly analytical and precision-focused
-- Constructively adversarial and skeptical by design
-- Evidence-demanding and assumption-challenging
-
-**CRITICAL**: This is NOT a "review and improve" task. This is a "challenge and reconstruct" task. Offer a genuinely different analytical perspective that creates productive tension with the original approach.
-
-## Your Task
-
-Scrutinize the one-pager document below against the template structure and best practices.
-
----
-
-## Original One-Pager Document
-
-{phase1Output}
-
----
-
-**REMEMBER**: You are Google Gemini. Be analytically rigorous, constructively adversarial, and systematically thorough in your critique.`;
-    }
-}
+// Import the classes from same-llm-adversarial.js
+import {
+    ConfigurationManager,
+    AdversarialPromptAugmenter,
+    AdversarialQualityValidator
+} from '../js/same-llm-adversarial.js';
 
 describe('Same-LLM Adversarial Configuration Tests', () => {
     let configManager;
@@ -315,7 +188,7 @@ describe('Same-LLM Adversarial Configuration Tests', () => {
             const result = promptAugmenter.generateGeminiStylePrompt(safePrompt);
 
             // Should be prepending
-            expect(result).toContain('GEMINI SIMULATION');
+            expect(result).toContain('GEMINI-STYLE SIMULATION');
             expect(result).toContain(safePrompt);
             expect(result).toContain('**REMEMBER**: You are Google Gemini');
         });
@@ -360,10 +233,10 @@ describe('Same-LLM Adversarial Configuration Tests', () => {
             const result = promptAugmenter.generateGeminiStylePrompt(originalPrompt);
 
             // Should still augment for testing, but in real implementation would skip
-            expect(result).toContain('GEMINI SIMULATION');
+            expect(result).toContain('GEMINI-STYLE SIMULATION');
         });
 
-        test('should handle actual product-requirements-assistant Phase 2 prompt', () => {
+        test('should handle actual power-statement-assistant Phase 2 prompt', () => {
             // Setup same LLM environment
             process.env.PHASE1_PROVIDER = 'anthropic';
             process.env.PHASE1_MODEL = 'claude-3-sonnet';
@@ -373,20 +246,20 @@ describe('Same-LLM Adversarial Configuration Tests', () => {
             const config = configManager.detectConfiguration();
             expect(config.isSameLLM).toBe(true);
 
-            // Actual Phase 2 prompt from product-requirements-assistant
+            // Actual Phase 2 prompt from power-statement-assistant
             const actualPhase2Prompt = `# Phase 2: Gemini Review Prompt
 
 **INSTRUCTIONS FOR GEMINI:**
 
-Forget all previous sessions and context. You are now a senior executive reviewing a one-pager proposal.
+Forget all previous sessions and context. You are now a senior executive reviewing a Power Statement proposal.
 
 ## Your Task
 
-Scrutinize the one-pager document below against the template structure and best practices. Work with the user question-by-question to generate a superior rendition from your perspective.
+Scrutinize the Power Statement document below against the template structure and best practices. Work with the user question-by-question to generate a superior rendition from your perspective.
 
 ## Template Reference
 
-A high-quality one-pager should include:
+A high-quality Power Statement should include:
 
 1. **Project/Feature Name**: Clear, descriptive title
 2. **Problem Statement**: Specific customer or business problem, quantified if possible
@@ -401,7 +274,7 @@ Evaluate the document on:
 
 ---
 
-## Original One-Pager Document
+## Original Power Statement Document
 
 {phase1Output}`;
 
@@ -412,7 +285,7 @@ Evaluate the document on:
             expect(result).toContain('ADVERSARIAL REVIEWER ROLE');
             expect(result).toContain('Google Gemini');
             expect(result).toContain('constructively adversarial');
-            expect(result).toContain('challenge and reconstruct');
+            expect(result.replace(/\s+/g, ' ')).toContain('challenge and reconstruct');
             expect(result).not.toContain('Forget all previous sessions and context');
 
             // Verify it maintains the core functionality
@@ -421,6 +294,96 @@ Evaluate the document on:
 
             // Verify the forget clause was successfully removed
             expect(promptAugmenter.containsForgetClause(result)).toBe(false);
+        });
+    });
+
+    describe('Quality Validation', () => {
+        let qualityValidator;
+
+        beforeEach(() => {
+            qualityValidator = new AdversarialQualityValidator();
+        });
+
+        test('should detect effective adversarial tension', () => {
+            const phase1Output = `
+            This is a great proposal. The solution is well-designed and will work perfectly.
+            We should proceed immediately with implementation.
+            `;
+
+            const phase2Output = `
+            However, this proposal lacks critical details. What evidence supports the claim
+            that this solution will work? The assumptions are unclear and require clarification.
+            Several gaps in the logic need to be addressed. Why does this approach overlook
+            alternative solutions? This is problematic and concerning.
+            `;
+
+            const metrics = qualityValidator.validateAdversarialTension(phase1Output, phase2Output);
+
+            expect(metrics.isEffectivelyAdversarial).toBe(true);
+            expect(metrics.adversarialLanguageCount).toBeGreaterThanOrEqual(3);
+            expect(metrics.challengeCount).toBeGreaterThanOrEqual(2);
+            expect(metrics.differenceScore).toBeGreaterThanOrEqual(0.3);
+        });
+
+        test('should detect ineffective adversarial tension', () => {
+            const phase1Output = `
+            This is a great proposal. The solution is well-designed and will work perfectly.
+            `;
+
+            const phase2Output = `
+            This is a great proposal. The solution is well-designed and will work perfectly.
+            I agree with everything stated above.
+            `;
+
+            const metrics = qualityValidator.validateAdversarialTension(phase1Output, phase2Output);
+
+            expect(metrics.isEffectivelyAdversarial).toBe(false);
+            expect(metrics.adversarialLanguageCount).toBeLessThan(3);
+            expect(metrics.challengeCount).toBeLessThan(2);
+        });
+
+        test('should count adversarial language correctly', () => {
+            const output = `
+            However, this approach is problematic. The evidence is insufficient and the
+            assumptions are unclear. This fails to consider alternative solutions and
+            lacks detail in critical areas. The gaps in logic are concerning.
+            `;
+
+            const count = qualityValidator.detectAdversarialLanguage(output);
+
+            expect(count).toBeGreaterThanOrEqual(7); // however, problematic, insufficient, unclear, fails, lacks, gaps
+        });
+
+        test('should count challenges correctly', () => {
+            const output = `
+            Why does this approach work? What evidence supports this claim?
+            How can we be sure this will succeed? This assumes unlimited resources.
+            The proposal lacks detail in several areas.
+            `;
+
+            const count = qualityValidator.countChallenges(output);
+
+            expect(count).toBeGreaterThanOrEqual(4); // 2 why/what questions + 1 how can we be sure + 1 lacks detail
+        });
+
+        test('should calculate semantic difference correctly', () => {
+            const output1 = 'The quick brown fox jumps over the lazy dog';
+            const output2 = 'A fast red cat leaps above the sleepy puppy';
+
+            const difference = qualityValidator.calculateSemanticDifference(output1, output2);
+
+            // Should be high difference (different words)
+            expect(difference).toBeGreaterThan(0.5);
+        });
+
+        test('should detect low semantic difference for similar outputs', () => {
+            const output1 = 'The quick brown fox jumps over the lazy dog';
+            const output2 = 'The quick brown fox jumps over the lazy dog again';
+
+            const difference = qualityValidator.calculateSemanticDifference(output1, output2);
+
+            // Should be low difference (mostly same words)
+            expect(difference).toBeLessThan(0.3);
         });
     });
 });
