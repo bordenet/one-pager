@@ -2,6 +2,7 @@
  * Same-LLM Adversarial Configuration System
  * Automatically detects when Phase 1 and Phase 2 use the same LLM model
  * and applies Gemini personality simulation to maintain adversarial tension
+ * @module same-llm-adversarial
  *
  * ⚠️ CRITICAL: This file MUST use ES6 modules
  * The browser loads this with <script type="module">

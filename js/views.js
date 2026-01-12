@@ -1,6 +1,7 @@
 /**
  * Views Module
  * Handles rendering different views/screens
+ * @module views
  */
 
 import { getAllProjects, createProject, deleteProject } from './projects.js';

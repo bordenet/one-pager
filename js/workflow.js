@@ -1,8 +1,19 @@
-// workflow.js - 3-phase one-pager workflow engine
+/**
+ * Workflow Module - 3-phase one-pager workflow engine
+ * @module workflow
+ */
 
 import { generateId } from './storage.js';
 
-// Define workflow phases
+/**
+ * @typedef {Object} PhaseConfig
+ * @property {number} number - Phase number
+ * @property {string} name - Phase name
+ * @property {string} ai - AI model name
+ * @property {string} type - Phase type ('mock' or 'manual')
+ */
+
+/** @type {PhaseConfig[]} */
 export const PHASES = [
   { number: 1, name: 'Initial Draft', ai: 'Claude Sonnet 4.5', type: 'mock' },
   { number: 2, name: 'Gemini Review', ai: 'Gemini 2.5 Pro', type: 'manual' },

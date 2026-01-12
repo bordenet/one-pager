@@ -1,6 +1,7 @@
 /**
  * Project Detail View Module
  * Handles rendering the project workflow view
+ * @module project-view
  */
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';

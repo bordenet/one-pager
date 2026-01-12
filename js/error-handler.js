@@ -1,6 +1,7 @@
 /**
  * Error Handler Module
  * Provides user-friendly error messages and recovery hints
+ * @module error-handler
  */
 
 const ERROR_MESSAGES = {
