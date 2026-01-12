@@ -1,12 +1,18 @@
 /**
  * Project Management Module
  * Handles project CRUD operations and business logic
+ * @module projects
  */
 
 import storage from './storage.js';
 
 /**
  * Create a new project
+ * @param {string} title - Project title
+ * @param {string} problemStatement - Problem statement
+ * @param {string} context - Additional context
+ * @param {Partial<import('./types.js').OnePagerFormData>} [formData={}] - Additional form data
+ * @returns {Promise<import('./types.js').Project>}
  */
 export async function createProject(title, problemStatement, context, formData = {}) {
   const trimmedTitle = title.trim();

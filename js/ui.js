@@ -1,10 +1,13 @@
 /**
  * UI Utilities Module
  * Common UI functions and helpers
+ * @module ui
  */
 
 /**
  * Format date for display
+ * @param {string | number | Date} dateString - Date to format
+ * @returns {string} Formatted date string
  */
 export function formatDate(dateString) {
   const date = new Date(dateString);

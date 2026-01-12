@@ -1,6 +1,7 @@
 /**
  * Main Application Module
  * Handles app initialization and global event listeners
+ * @module app
  */
 
 import storage from './storage.js';

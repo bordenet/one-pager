@@ -1,5 +1,9 @@
-// ai-mock.js - Mock AI responses for testing
+/**
+ * AI Mock Module - Mock AI responses for testing
+ * @module ai-mock
+ */
 
+/** @type {Object.<number, string>} */
 // Mock responses for each phase
 const mockResponses = {
   1: `# Phase 1 Analysis

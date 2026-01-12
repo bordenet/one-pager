@@ -1,16 +1,19 @@
 /**
  * Simple Router Module
  * Handles client-side routing and navigation
+ * @module router
  */
 
 import { renderProjectsList, renderNewProjectForm } from './views.js';
 import { renderProjectView } from './project-view.js';
 import storage from './storage.js';
 
+/** @type {string | null} */
 let currentRoute = null;
 
 /**
  * Initialize the router
+ * @returns {void}
  */
 export function initRouter() {
   // Handle browser back/forward buttons
