@@ -11,6 +11,7 @@ readonly GITHUB_PAGES_URL="https://bordenet.github.io/one-pager/"
 readonly REQUIRED_FILES=(
     "index.html" "css/styles.css" "js/app.js" "js/workflow.js" "js/storage.js"
     "js/ai-mock.js" "js/views.js" "js/projects.js" "js/ui.js" "js/router.js"
+    "js/project-view.js"
     "prompts/phase1.md" "prompts/phase2.md" "prompts/phase3.md"
     "templates/one-pager-template.md"
 )
@@ -53,12 +54,17 @@ validate_required_files() {
 clean_deploy_dir() {
     task_start "Cleaning deployment directory"
     if [[ $DRY_RUN -eq 1 ]]; then
-        verbose "Would remove: ${DEPLOY_DIR}"
+        verbose "Would clean web app files in: ${DEPLOY_DIR}"
         task_ok "Clean deployment directory (dry-run)"
         return 0
     fi
-    [[ -d "${DEPLOY_DIR}" ]] && rm -rf "${DEPLOY_DIR}" && verbose "Removed: ${DEPLOY_DIR}"
-    mkdir -p "${DEPLOY_DIR}" && verbose "Created: ${DEPLOY_DIR}"
+    # Remove only web app subdirectories, preserve markdown docs
+    [[ -d "${DEPLOY_DIR}/js" ]] && rm -rf "${DEPLOY_DIR}/js" && verbose "Removed: ${DEPLOY_DIR}/js"
+    [[ -d "${DEPLOY_DIR}/css" ]] && rm -rf "${DEPLOY_DIR}/css" && verbose "Removed: ${DEPLOY_DIR}/css"
+    [[ -d "${DEPLOY_DIR}/prompts" ]] && rm -rf "${DEPLOY_DIR}/prompts" && verbose "Removed: ${DEPLOY_DIR}/prompts"
+    [[ -d "${DEPLOY_DIR}/templates" ]] && rm -rf "${DEPLOY_DIR}/templates" && verbose "Removed: ${DEPLOY_DIR}/templates"
+    [[ -f "${DEPLOY_DIR}/index.html" ]] && rm -f "${DEPLOY_DIR}/index.html" && verbose "Removed: ${DEPLOY_DIR}/index.html"
+    mkdir -p "${DEPLOY_DIR}" && verbose "Ensured: ${DEPLOY_DIR}"
     task_ok "Deployment directory ready"
 }
 
