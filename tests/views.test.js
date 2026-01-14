@@ -330,7 +330,7 @@ describe('Views Module', () => {
       // Should show prominent export button with correct label
       const exportBtn = container.querySelector('#export-btn');
       expect(exportBtn).toBeTruthy();
-      expect(exportBtn.textContent).toContain('Export as Markdown');
+      expect(exportBtn.textContent).toContain('Preview & Copy');
     });
 
     test('should NOT show export CTA on Phase 3 if not completed', async () => {

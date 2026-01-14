@@ -5,8 +5,8 @@
  */
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
-import { getPhaseMetadata, generatePromptForPhase, exportFinalOnePager } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboard, showPromptModal, confirm } from './ui.js';
+import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename } from './workflow.js';
+import { escapeHtml, showToast, copyToClipboard, showPromptModal, confirm, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 
 /**
@@ -55,7 +55,7 @@ export async function renderProjectView(projectId) {
             </button>
             ${project.phases && project.phases[3] && project.phases[3].completed ? `
                 <button id="export-one-pager-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                    ✓ Export as Markdown
+                    📄 Preview & Copy
                 </button>
             ` : ''}
         </div>
@@ -96,7 +96,14 @@ export async function renderProjectView(projectId) {
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
   const exportBtn = document.getElementById('export-one-pager-btn');
   if (exportBtn) {
-    exportBtn.addEventListener('click', () => exportFinalOnePager(project));
+    exportBtn.addEventListener('click', () => {
+      const markdown = getFinalMarkdown(project);
+      if (markdown) {
+        showDocumentPreviewModal(markdown, 'Your One-Pager is Ready', getExportFilename(project));
+      } else {
+        showToast('No one-pager content to export', 'warning');
+      }
+    });
   }
 
   document.querySelectorAll('.phase-tab').forEach(tab => {
@@ -223,13 +230,30 @@ function renderPhaseContent(project, phase) {
                             <span class="mr-2">🎉</span> Your One-Pager is Complete!
                         </h4>
                         <p class="text-green-700 dark:text-green-400 mt-1">
-                            Download your finished one-pager as a Markdown (.md) file.
+                            <strong>Next step:</strong> Copy this into Word or Google Docs so you can edit and share it.
                         </p>
                     </div>
                     <button id="export-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
-                        📄 Export as Markdown
+                        📄 Preview & Copy
                     </button>
                 </div>
+                <!-- Expandable Help Section -->
+                <details class="mt-4">
+                    <summary class="text-sm text-green-700 dark:text-green-400 cursor-pointer hover:text-green-800 dark:hover:text-green-300">
+                        Need help using your document?
+                    </summary>
+                    <div class="mt-3 p-4 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li>Click <strong>"Preview & Copy"</strong> above to see your formatted document</li>
+                            <li>Click <strong>"Copy Formatted Text"</strong> in the preview</li>
+                            <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong></li>
+                            <li>Paste (Ctrl+V / ⌘V) — your headings and bullets will appear automatically</li>
+                        </ol>
+                        <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs">
+                            💡 You can also download the raw file (.md format) if needed.
+                        </p>
+                    </div>
+                </details>
             </div>
             ` : ''}
 
@@ -431,11 +455,16 @@ function attachPhaseEventListeners(project, phase) {
     });
   }
 
-  // Export button (Phase 3 complete)
-  const exportBtn = document.getElementById('export-btn');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', () => {
-      exportFinalOnePager(project);
+  // Export button (Phase 3 complete - Preview & Copy)
+  const exportBtnPhase3 = document.getElementById('export-btn');
+  if (exportBtnPhase3) {
+    exportBtnPhase3.addEventListener('click', () => {
+      const markdown = getFinalMarkdown(project);
+      if (markdown) {
+        showDocumentPreviewModal(markdown, 'Your One-Pager is Ready', getExportFilename(project));
+      } else {
+        showToast('No one-pager content to export', 'warning');
+      }
     });
   }
 }
