@@ -17,12 +17,12 @@ import {
   PHASES
 } from '../js/workflow.js';
 
-// Mock fetch for loading prompt templates
+// Mock fetch for loading prompt templates (uses {{VAR}} double-brace syntax)
 global.fetch = async (url) => {
   const templates = {
-    'prompts/phase1.md': 'Phase 1 prompt template with {projectName} and {problemStatement} and {proposedSolution}',
-    'prompts/phase2.md': 'Phase 2 prompt template with {phase1Output}',
-    'prompts/phase3.md': 'Phase 3 prompt template with {phase1Output} and {phase2Output}'
+    'prompts/phase1.md': 'Phase 1 prompt template with {{PROJECT_NAME}} and {{PROBLEM_STATEMENT}} and {{PROPOSED_SOLUTION}} and {{CONTEXT}} and {{KEY_GOALS}} and {{SCOPE_IN_SCOPE}} and {{SCOPE_OUT_OF_SCOPE}} and {{SUCCESS_METRICS}} and {{KEY_STAKEHOLDERS}} and {{TIMELINE_ESTIMATE}} and {{COST_OF_DOING_NOTHING}}',
+    'prompts/phase2.md': 'Phase 2 prompt template with {{PHASE1_OUTPUT}}',
+    'prompts/phase3.md': 'Phase 3 prompt template with {{PHASE1_OUTPUT}} and {{PHASE2_OUTPUT}}'
   };
 
   return {
@@ -372,22 +372,9 @@ describe('Workflow Module', () => {
   });
 
   describe('generatePromptForPhase', () => {
-    let originalFetch;
-
-    beforeEach(() => {
-      originalFetch = global.fetch;
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        text: () => Promise.resolve('Template for phase {phase1Output} {phase2Output} {projectName} {problemStatement} {context}')
-      });
-    });
-
-    afterEach(() => {
-      global.fetch = originalFetch;
-    });
+    // Note: prompts.js caches templates, so we test behavior not fetch calls
 
     test('should generate phase 1 prompt with object-style phases', async () => {
-      const { generatePromptForPhase } = await import('../js/workflow.js');
       const project = {
         title: 'Test Project',
         problems: 'Test Problems',
@@ -397,17 +384,21 @@ describe('Workflow Module', () => {
           1: { prompt: '', response: '' },
           2: { prompt: '', response: '' },
           3: { prompt: '', response: '' }
+        },
+        formData: {
+          projectName: 'Test Project',
+          problemStatement: 'Test Problems',
+          context: 'Test Context'
         }
       };
 
       const prompt = await generatePromptForPhase(project, 1);
 
       expect(prompt).toBeTruthy();
-      expect(global.fetch).toHaveBeenCalledWith('prompts/phase1.md');
+      expect(prompt).toContain('Phase 1');
     });
 
     test('should generate phase 2 prompt using phase 1 response from object-style phases', async () => {
-      const { generatePromptForPhase } = await import('../js/workflow.js');
       const project = {
         title: 'Test Project',
         phase: 2,
@@ -421,11 +412,10 @@ describe('Workflow Module', () => {
       const prompt = await generatePromptForPhase(project, 2);
 
       expect(prompt).toBeTruthy();
-      expect(global.fetch).toHaveBeenCalledWith('prompts/phase2.md');
+      expect(prompt).toContain('Phase 1 content here');
     });
 
     test('should generate phase 3 prompt using phase 1 and 2 responses from object-style phases', async () => {
-      const { generatePromptForPhase } = await import('../js/workflow.js');
       const project = {
         title: 'Test Project',
         phase: 3,
@@ -439,11 +429,11 @@ describe('Workflow Module', () => {
       const prompt = await generatePromptForPhase(project, 3);
 
       expect(prompt).toBeTruthy();
-      expect(global.fetch).toHaveBeenCalledWith('prompts/phase3.md');
+      expect(prompt).toContain('Phase 1 content');
+      expect(prompt).toContain('Phase 2 content');
     });
 
     test('should generate phase 2 prompt using phase 1 response from array-style phases', async () => {
-      const { generatePromptForPhase } = await import('../js/workflow.js');
       const project = {
         name: 'Test Project',
         currentPhase: 2,
@@ -457,32 +447,32 @@ describe('Workflow Module', () => {
       const prompt = await generatePromptForPhase(project, 2);
 
       expect(prompt).toBeTruthy();
-      expect(global.fetch).toHaveBeenCalledWith('prompts/phase2.md');
+      expect(prompt).toContain('Phase 1 content from array');
     });
 
     test('should fallback to project.currentPhase when phase not provided', async () => {
-      const { generatePromptForPhase } = await import('../js/workflow.js');
       const project = {
         title: 'Test Project',
         currentPhase: 1,
         phases: {
           1: { prompt: '', response: '' }
-        }
+        },
+        formData: { projectName: 'Fallback Test' }
       };
 
       const prompt = await generatePromptForPhase(project);
 
       expect(prompt).toBeTruthy();
-      expect(global.fetch).toHaveBeenCalledWith('prompts/phase1.md');
+      // Should generate phase 1 prompt (includes project name)
+      expect(prompt).toContain('Fallback Test');
     });
 
     test('should fallback to project.phase when currentPhase not provided', async () => {
-      const { generatePromptForPhase } = await import('../js/workflow.js');
       const project = {
         title: 'Test Project',
         phase: 2,
         phases: {
-          1: { response: 'Phase 1 output' },
+          1: { response: 'Phase 1 output for fallback' },
           2: { prompt: '', response: '' }
         }
       };
@@ -490,7 +480,8 @@ describe('Workflow Module', () => {
       const prompt = await generatePromptForPhase(project);
 
       expect(prompt).toBeTruthy();
-      expect(global.fetch).toHaveBeenCalledWith('prompts/phase2.md');
+      // Should generate phase 2 prompt (includes phase 1 output)
+      expect(prompt).toContain('Phase 1 output for fallback');
     });
   });
 
@@ -501,9 +492,9 @@ describe('Workflow Module', () => {
       originalFetch = global.fetch;
       global.fetch = jest.fn((url) => {
         const templates = {
-          'prompts/phase1.md': 'Phase 1: {projectName} - {problemStatement}',
-          'prompts/phase2.md': 'Phase 2 Review: Previous output was: {phase1Output}',
-          'prompts/phase3.md': 'Phase 3 Synthesis: Phase 1: {phase1Output}, Phase 2: {phase2Output}'
+          'prompts/phase1.md': 'Phase 1: {{PROJECT_NAME}} - {{PROBLEM_STATEMENT}}',
+          'prompts/phase2.md': 'Phase 2 Review: Previous output was: {{PHASE1_OUTPUT}}',
+          'prompts/phase3.md': 'Phase 3 Synthesis: Phase 1: {{PHASE1_OUTPUT}}, Phase 2: {{PHASE2_OUTPUT}}'
         };
         return Promise.resolve({
           ok: true,
@@ -529,8 +520,10 @@ describe('Workflow Module', () => {
 
       const prompt = await generatePromptForPhase(project, 2);
 
+      // Phase 1 output should be included in phase 2 prompt
       expect(prompt).toContain('This is the phase 1 output content');
-      expect(prompt).toContain('Phase 2 Review');
+      // Template should be loaded (contains "Phase 2" identifier)
+      expect(prompt).toContain('Phase 2');
     });
 
     test('should include both phase 1 and 2 responses in phase 3 prompt', async () => {
@@ -546,9 +539,11 @@ describe('Workflow Module', () => {
 
       const prompt = await generatePromptForPhase(project, 3);
 
+      // Both phase outputs should be included
       expect(prompt).toContain('Phase 1 final output');
       expect(prompt).toContain('Phase 2 review feedback');
-      expect(prompt).toContain('Phase 3 Synthesis');
+      // Template should be loaded (contains "Phase 3" identifier)
+      expect(prompt).toContain('Phase 3');
     });
 
     test('should handle missing phase 1 response gracefully in phase 2', async () => {
@@ -717,13 +712,13 @@ describe('Workflow Module', () => {
           'prompts/phase1.md': `
 # Phase 1: Initial Draft
 
-**Project:** {projectName}
-**Problem:** {problemStatement}
-**Context:** {context}
-**Solution:** {proposedSolution}
+**Project:** {{PROJECT_NAME}}
+**Problem:** {{PROBLEM_STATEMENT}}
+**Context:** {{CONTEXT}}
+**Solution:** {{PROPOSED_SOLUTION}}
           `,
-          'prompts/phase2.md': 'Phase 2: Review of {phase1Output}',
-          'prompts/phase3.md': 'Phase 3: {phase1Output} and {phase2Output}'
+          'prompts/phase2.md': 'Phase 2: Review of {{PHASE1_OUTPUT}}',
+          'prompts/phase3.md': 'Phase 3: {{PHASE1_OUTPUT}} and {{PHASE2_OUTPUT}}'
         };
         return Promise.resolve({
           ok: true,
@@ -822,20 +817,20 @@ describe('Workflow Module', () => {
       return fs.readFileSync(templatePath, 'utf8');
     }
 
-    test('CRITICAL: phase1.md template MUST contain {context} placeholder', () => {
-      // This test would have caught the missing {context} bug
+    test('CRITICAL: phase1.md template MUST contain {{CONTEXT}} placeholder', () => {
+      // This test would have caught the missing context placeholder bug
       const template = readRealTemplate('phase1.md');
-      expect(template).toContain('{context}');
+      expect(template).toContain('{{CONTEXT}}');
     });
 
     test('CRITICAL: phase1.md template MUST contain all required user input placeholders', () => {
       const template = readRealTemplate('phase1.md');
 
-      // These are the fields the user fills out in the form
+      // These are the fields the user fills out in the form (using {{VAR}} syntax)
       const requiredPlaceholders = [
-        '{projectName}',
-        '{problemStatement}',
-        '{context}'
+        '{{PROJECT_NAME}}',
+        '{{PROBLEM_STATEMENT}}',
+        '{{CONTEXT}}'
       ];
 
       for (const placeholder of requiredPlaceholders) {
@@ -846,18 +841,18 @@ describe('Workflow Module', () => {
     test('CRITICAL: phase1.md template MUST contain all formData placeholders', () => {
       const template = readRealTemplate('phase1.md');
 
-      // All placeholders that generatePromptForPhase populates
+      // All placeholders that generatePromptForPhase populates (using {{VAR}} syntax)
       const allPlaceholders = [
-        '{projectName}',
-        '{problemStatement}',
-        '{proposedSolution}',
-        '{keyGoals}',
-        '{scopeInScope}',
-        '{scopeOutOfScope}',
-        '{successMetrics}',
-        '{keyStakeholders}',
-        '{timelineEstimate}',
-        '{context}'
+        '{{PROJECT_NAME}}',
+        '{{PROBLEM_STATEMENT}}',
+        '{{PROPOSED_SOLUTION}}',
+        '{{KEY_GOALS}}',
+        '{{SCOPE_IN_SCOPE}}',
+        '{{SCOPE_OUT_OF_SCOPE}}',
+        '{{SUCCESS_METRICS}}',
+        '{{KEY_STAKEHOLDERS}}',
+        '{{TIMELINE_ESTIMATE}}',
+        '{{CONTEXT}}'
       ];
 
       for (const placeholder of allPlaceholders) {
@@ -865,15 +860,15 @@ describe('Workflow Module', () => {
       }
     });
 
-    test('CRITICAL: phase2.md template MUST contain {phase1Output} placeholder', () => {
+    test('CRITICAL: phase2.md template MUST contain {{PHASE1_OUTPUT}} placeholder', () => {
       const template = readRealTemplate('phase2.md');
-      expect(template).toContain('{phase1Output}');
+      expect(template).toContain('{{PHASE1_OUTPUT}}');
     });
 
     test('CRITICAL: phase3.md template MUST contain phase output placeholders', () => {
       const template = readRealTemplate('phase3.md');
-      expect(template).toContain('{phase1Output}');
-      expect(template).toContain('{phase2Output}');
+      expect(template).toContain('{{PHASE1_OUTPUT}}');
+      expect(template).toContain('{{PHASE2_OUTPUT}}');
     });
 
     test('E2E: User input flows through REAL template to generated prompt', async () => {
@@ -916,8 +911,9 @@ describe('Workflow Module', () => {
       expect(prompt).toContain('E2E Test Problem');
       expect(prompt).toContain('E2E Test Context');
 
-      // Empty fields should show [Not provided]
-      expect(prompt).toContain('[Not provided]');
+      // Empty fields should be replaced with empty string (not [Not provided])
+      // The {{VAR}} syntax just removes the placeholder when value is empty
+      expect(prompt).not.toContain('{{');
 
       global.fetch = originalFetch;
     });

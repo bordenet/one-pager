@@ -4,21 +4,13 @@
  */
 
 import { generateId } from './storage.js';
+import { WORKFLOW_CONFIG, generatePhase1Prompt, generatePhase2Prompt, generatePhase3Prompt } from './prompts.js';
 
-/**
- * @typedef {Object} PhaseConfig
- * @property {number} number - Phase number
- * @property {string} name - Phase name
- * @property {string} ai - AI model name
- * @property {string} type - Phase type ('mock' or 'manual')
- */
+// Re-export WORKFLOW_CONFIG for backward compatibility
+export { WORKFLOW_CONFIG };
 
-/** @type {PhaseConfig[]} */
-export const PHASES = [
-  { number: 1, name: 'Initial Draft', ai: 'Claude Sonnet 4.5', type: 'mock' },
-  { number: 2, name: 'Gemini Review', ai: 'Gemini 2.5 Pro', type: 'manual' },
-  { number: 3, name: 'Final Synthesis', ai: 'Claude Sonnet 4.5', type: 'mock' }
-];
+// Legacy alias for PHASES (deprecated, use WORKFLOW_CONFIG.phases)
+export const PHASES = WORKFLOW_CONFIG.phases;
 
 /**
  * Helper to get phase data, handling both object and array formats
@@ -78,59 +70,40 @@ export function createProject(name, description) {
 }
 
 /**
- * Load prompt template from markdown file
- */
-async function loadPromptTemplate(phaseNumber) {
-  try {
-    const response = await fetch(`prompts/phase${phaseNumber}.md`);
-    if (!response.ok) {
-      throw new Error(`Failed to load prompt template for phase ${phaseNumber}`);
-    }
-    return await response.text();
-  } catch (error) {
-    console.error('Error loading prompt template:', error);
-    return '';
-  }
-}
-
-/**
- * Replace template variables in prompt
- */
-function replaceTemplateVars(template, vars) {
-  let result = template;
-  for (const [key, value] of Object.entries(vars)) {
-    const regex = new RegExp(`\\{${key}\\}`, 'g');
-    result = result.replace(regex, value || '[Not provided]');
-  }
-  return result;
-}
-
-/**
  * Generate prompt for current phase
+ * Uses prompts.js module for template loading and variable replacement
  */
 export async function generatePrompt(project) {
   const phaseNumber = project.currentPhase || project.phase || 1;
-  const template = await loadPromptTemplate(phaseNumber);
+  const formData = project.formData || {};
+
+  // Build formData with fallbacks to legacy fields
+  const enrichedFormData = {
+    projectName: formData.projectName || project.title || project.name || '',
+    problemStatement: formData.problemStatement || project.problems || project.description || '',
+    costOfDoingNothing: formData.costOfDoingNothing || '',
+    proposedSolution: formData.proposedSolution || '',
+    keyGoals: formData.keyGoals || '',
+    scopeInScope: formData.scopeInScope || '',
+    scopeOutOfScope: formData.scopeOutOfScope || '',
+    successMetrics: formData.successMetrics || '',
+    keyStakeholders: formData.keyStakeholders || '',
+    timelineEstimate: formData.timelineEstimate || '',
+    context: formData.context || project.context || ''
+  };
 
   if (phaseNumber === 1) {
-    // Phase 1: Initial Draft - use form data
-    return replaceTemplateVars(template, project.formData);
+    return generatePhase1Prompt(enrichedFormData);
   } else if (phaseNumber === 2) {
-    // Phase 2: Gemini Review - include Phase 1 output
-    const vars = {
-      phase1Output: getPhaseData(project, 1).response || '[No Phase 1 output]'
-    };
-    return replaceTemplateVars(template, vars);
+    const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output]';
+    return generatePhase2Prompt(phase1Output);
   } else if (phaseNumber === 3) {
-    // Phase 3: Final Synthesis - include both Phase 1 and Phase 2 outputs
-    const vars = {
-      phase1Output: getPhaseData(project, 1).response || '[No Phase 1 output]',
-      phase2Output: getPhaseData(project, 2).response || '[No Phase 2 output]'
-    };
-    return replaceTemplateVars(template, vars);
+    const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output]';
+    const phase2Output = getPhaseData(project, 2).response || '[No Phase 2 output]';
+    return generatePhase3Prompt(phase1Output, phase2Output);
   }
 
-  return template;
+  return '';
 }
 
 /**
@@ -255,63 +228,42 @@ export function getPhaseMetadata(phase) {
 
 /**
  * Generate prompt for a specific phase
+ * Uses prompts.js module for template loading and variable replacement
  * @param {object} project - The project object
  * @param {number} phaseNumber - The phase number (1, 2, or 3)
  */
 export async function generatePromptForPhase(project, phaseNumber) {
   // Handle when phaseNumber is not provided (use currentPhase or phase)
   const phase = phaseNumber || project.currentPhase || project.phase || 1;
-  const template = await loadPromptTemplate(phase);
 
-  // Helper to get phase response, handling both object and array formats
-  const getPhaseResponse = (phaseNum) => {
-    if (project.phases) {
-      // Object format: {1: {response: ''}, 2: {response: ''}, ...}
-      if (project.phases[phaseNum] && project.phases[phaseNum].response) {
-        return project.phases[phaseNum].response;
-      }
-      // Array format: [{response: ''}, {response: ''}, ...]
-      if (Array.isArray(project.phases) && project.phases[phaseNum - 1]) {
-        return project.phases[phaseNum - 1].response || '';
-      }
-    }
-    return '';
+  // Build formData with fallbacks to legacy fields
+  const formData = project.formData || {};
+  const enrichedFormData = {
+    projectName: formData.projectName || project.title || project.name || '',
+    problemStatement: formData.problemStatement || project.problems || project.description || '',
+    costOfDoingNothing: formData.costOfDoingNothing || '',
+    proposedSolution: formData.proposedSolution || '',
+    keyGoals: formData.keyGoals || '',
+    scopeInScope: formData.scopeInScope || '',
+    scopeOutOfScope: formData.scopeOutOfScope || '',
+    successMetrics: formData.successMetrics || '',
+    keyStakeholders: formData.keyStakeholders || '',
+    timelineEstimate: formData.timelineEstimate || '',
+    context: formData.context || project.context || ''
   };
 
   if (phase === 1) {
-    // Phase 1: Initial Draft - use form data with fallback to project fields
-    // Handle legacy projects that may have empty formData
-    const formData = project.formData || {};
-    const vars = {
-      projectName: formData.projectName || project.title || project.name || '',
-      problemStatement: formData.problemStatement || project.problems || project.description || '',
-      costOfDoingNothing: formData.costOfDoingNothing || '',
-      proposedSolution: formData.proposedSolution || '',
-      keyGoals: formData.keyGoals || '',
-      scopeInScope: formData.scopeInScope || '',
-      scopeOutOfScope: formData.scopeOutOfScope || '',
-      successMetrics: formData.successMetrics || '',
-      keyStakeholders: formData.keyStakeholders || '',
-      timelineEstimate: formData.timelineEstimate || '',
-      context: formData.context || project.context || ''
-    };
-    return replaceTemplateVars(template, vars);
+    return generatePhase1Prompt(enrichedFormData);
   } else if (phase === 2) {
-    // Phase 2: Gemini Review - include Phase 1 output
-    const vars = {
-      phase1Output: getPhaseResponse(1) || '[No Phase 1 output yet]'
-    };
-    return replaceTemplateVars(template, vars);
+    const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
+    return generatePhase2Prompt(phase1Output);
   } else if (phase === 3) {
-    // Phase 3: Final Synthesis - include both Phase 1 and Phase 2 outputs
-    const vars = {
-      phase1Output: getPhaseResponse(1) || '[No Phase 1 output yet]',
-      phase2Output: getPhaseResponse(2) || '[No Phase 2 output yet]'
-    };
-    return replaceTemplateVars(template, vars);
+    const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
+    const phase2Output = getPhaseData(project, 2).response || '[No Phase 2 output yet]';
+    return generatePhase3Prompt(phase1Output, phase2Output);
   }
 
-  return template;
+  return '';
 }
 
 /**
