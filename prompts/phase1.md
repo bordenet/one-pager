@@ -6,27 +6,27 @@ You are an expert business analyst helping to create a concise one-pager documen
 
 The user has provided the following information:
 
-**Project/Feature Name:** {projectName}
+**Project/Feature Name:** {{PROJECT_NAME}}
 
-**Problem Statement:** {problemStatement}
+**Problem Statement:** {{PROBLEM_STATEMENT}}
 
-**Cost of Doing Nothing:** {costOfDoingNothing}
+**Cost of Doing Nothing:** {{COST_OF_DOING_NOTHING}}
 
-**Additional Context:** {context}
+**Additional Context:** {{CONTEXT}}
 
-**Proposed Solution:** {proposedSolution}
+**Proposed Solution:** {{PROPOSED_SOLUTION}}
 
-**Key Goals/Benefits:** {keyGoals}
+**Key Goals/Benefits:** {{KEY_GOALS}}
 
-**Scope (In-Scope):** {scopeInScope}
+**Scope (In-Scope):** {{SCOPE_IN_SCOPE}}
 
-**Scope (Out-of-Scope):** {scopeOutOfScope}
+**Scope (Out-of-Scope):** {{SCOPE_OUT_OF_SCOPE}}
 
-**Success Metrics:** {successMetrics}
+**Success Metrics:** {{SUCCESS_METRICS}}
 
-**Key Stakeholders:** {keyStakeholders}
+**Key Stakeholders:** {{KEY_STAKEHOLDERS}}
 
-**Timeline Estimate:** {timelineEstimate}
+**Timeline Estimate:** {{TIMELINE_ESTIMATE}}
 
 ## Your Task
 
