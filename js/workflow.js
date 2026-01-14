@@ -319,6 +319,7 @@ export async function generatePromptForPhase(project, phaseNumber) {
  */
 export function exportFinalOnePager(project) {
   let content = '';
+  const attribution = '\n\n---\n\n*Generated with [One-Pager Assistant](https://bordenet.github.io/one-pager/)*';
 
   // Try phases in order of preference: 3, 1, 2
   const phase3 = getPhaseData(project, 3);
@@ -334,6 +335,8 @@ export function exportFinalOnePager(project) {
   } else {
     content = `# ${project.title || project.name}\n\n${project.problems || project.description}`;
   }
+
+  content += attribution;
 
   const filename = `${(project.title || project.name).replace(/[^a-z0-9]/gi, '-').toLowerCase()}-one-pager.md`;
 
