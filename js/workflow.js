@@ -21,6 +21,27 @@ export const PHASES = [
 ];
 
 /**
+ * Helper to get phase data, handling both object and array formats
+ * @param {Object} project - Project object
+ * @param {number} phaseNum - 1-based phase number
+ * @returns {Object} Phase data object with prompt, response, completed
+ */
+function getPhaseData(project, phaseNum) {
+  const defaultPhase = { prompt: '', response: '', completed: false };
+  if (!project.phases) return defaultPhase;
+
+  // Array format: [{response: ''}, {response: ''}, ...] - check first!
+  if (Array.isArray(project.phases) && project.phases[phaseNum - 1]) {
+    return project.phases[phaseNum - 1];
+  }
+  // Object format: {1: {response: ''}, 2: {response: ''}, ...}
+  if (project.phases[phaseNum] && typeof project.phases[phaseNum] === 'object') {
+    return project.phases[phaseNum];
+  }
+  return defaultPhase;
+}
+
+/**
  * Create new project
  */
 export function createProject(name, description) {
@@ -88,23 +109,23 @@ function replaceTemplateVars(template, vars) {
  * Generate prompt for current phase
  */
 export async function generatePrompt(project) {
-  const phase = project.phases[project.currentPhase - 1];
-  const template = await loadPromptTemplate(phase.number);
+  const phaseNumber = project.currentPhase || project.phase || 1;
+  const template = await loadPromptTemplate(phaseNumber);
 
-  if (phase.number === 1) {
+  if (phaseNumber === 1) {
     // Phase 1: Initial Draft - use form data
     return replaceTemplateVars(template, project.formData);
-  } else if (phase.number === 2) {
+  } else if (phaseNumber === 2) {
     // Phase 2: Gemini Review - include Phase 1 output
     const vars = {
-      phase1Output: project.phases[0].response || '[No Phase 1 output]'
+      phase1Output: getPhaseData(project, 1).response || '[No Phase 1 output]'
     };
     return replaceTemplateVars(template, vars);
-  } else if (phase.number === 3) {
+  } else if (phaseNumber === 3) {
     // Phase 3: Final Synthesis - include both Phase 1 and Phase 2 outputs
     const vars = {
-      phase1Output: project.phases[0].response || '[No Phase 1 output]',
-      phase2Output: project.phases[1].response || '[No Phase 2 output]'
+      phase1Output: getPhaseData(project, 1).response || '[No Phase 1 output]',
+      phase2Output: getPhaseData(project, 2).response || '[No Phase 2 output]'
     };
     return replaceTemplateVars(template, vars);
   }
@@ -124,10 +145,11 @@ export function updateFormData(project, formData) {
  * Validate phase completion
  */
 export function validatePhase(project) {
-  const phase = project.phases[project.currentPhase - 1];
+  const phaseNumber = project.currentPhase || project.phase || 1;
+  const phaseData = getPhaseData(project, phaseNumber);
 
   // Phase 1: Validate form data
-  if (phase.number === 1) {
+  if (phaseNumber === 1) {
     const required = ['projectName', 'problemStatement', 'proposedSolution'];
     for (const field of required) {
       if (!project.formData[field] || project.formData[field].trim() === '') {
@@ -137,7 +159,7 @@ export function validatePhase(project) {
   }
 
   // All phases: Validate response
-  if (!phase.response || phase.response.trim() === '') {
+  if (!phaseData.response || phaseData.response.trim() === '') {
     return { valid: false, error: 'Please paste the AI response' };
   }
 
@@ -148,11 +170,17 @@ export function validatePhase(project) {
  * Complete current phase and advance
  */
 export function advancePhase(project) {
-  const phase = project.phases[project.currentPhase - 1];
-  phase.completed = true;
+  const phaseNumber = project.currentPhase || project.phase || 1;
 
-  if (project.currentPhase < PHASES.length) {
-    project.currentPhase++;
+  // Get the phase data (works with both array and object formats)
+  const phaseData = getPhaseData(project, phaseNumber);
+  if (phaseData) {
+    phaseData.completed = true;
+  }
+
+  if (phaseNumber < PHASES.length) {
+    project.currentPhase = phaseNumber + 1;
+    project.phase = phaseNumber + 1;
   }
 
   return project;
@@ -162,14 +190,19 @@ export function advancePhase(project) {
  * Check if project is complete
  */
 export function isProjectComplete(project) {
-  return project.phases.every(phase => phase.completed);
+  if (Array.isArray(project.phases)) {
+    return project.phases.every(phase => phase.completed);
+  }
+  // Object format
+  return [1, 2, 3].every(num => getPhaseData(project, num).completed);
 }
 
 /**
  * Get current phase
  */
 export function getCurrentPhase(project) {
-  return project.phases[project.currentPhase - 1];
+  const phaseNumber = project.currentPhase || project.phase || 1;
+  return getPhaseData(project, phaseNumber);
 }
 
 /**
@@ -287,15 +320,17 @@ export async function generatePromptForPhase(project, phaseNumber) {
 export function exportFinalOnePager(project) {
   let content = '';
 
-  if (project.phases && project.phases[3] && project.phases[3].response) {
-    // Use Phase 3 response if available
-    content = project.phases[3].response;
-  } else if (project.phases && project.phases[1] && project.phases[1].response) {
-    // Fallback to Phase 1 response
-    content = project.phases[1].response;
-  } else if (project.phases && project.phases.length > 2 && project.phases[2].response) {
-    // Legacy format - use last completed phase
-    content = project.phases[2].response;
+  // Try phases in order of preference: 3, 1, 2
+  const phase3 = getPhaseData(project, 3);
+  const phase1 = getPhaseData(project, 1);
+  const phase2 = getPhaseData(project, 2);
+
+  if (phase3.response) {
+    content = phase3.response;
+  } else if (phase1.response) {
+    content = phase1.response;
+  } else if (phase2.response) {
+    content = phase2.response;
   } else {
     content = `# ${project.title || project.name}\n\n${project.problems || project.description}`;
   }
@@ -317,12 +352,16 @@ export function exportFinalOnePager(project) {
  * @returns {string|null} The markdown content or null if none exists
  */
 export function getFinalMarkdown(project) {
-  if (project.phases && project.phases[3] && project.phases[3].response) {
-    return project.phases[3].response;
-  } else if (project.phases && project.phases[1] && project.phases[1].response) {
-    return project.phases[1].response;
-  } else if (project.phases && project.phases.length > 2 && project.phases[2].response) {
-    return project.phases[2].response;
+  const phase3 = getPhaseData(project, 3);
+  const phase1 = getPhaseData(project, 1);
+  const phase2 = getPhaseData(project, 2);
+
+  if (phase3.response) {
+    return phase3.response;
+  } else if (phase1.response) {
+    return phase1.response;
+  } else if (phase2.response) {
+    return phase2.response;
   }
   return null;
 }
