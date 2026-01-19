@@ -2,7 +2,7 @@
 
 **Project Status**: Production-ready. Live at https://bordenet.github.io/one-pager/
 
-**📐 Design Patterns**: See [DESIGN-PATTERNS.md](../DESIGN-PATTERNS.md) for architecture and coding patterns used across all genesis-tools repos.
+**📐 Design Patterns**: See [DESIGN-PATTERNS.md](./DESIGN-PATTERNS.md) for architecture and coding patterns used across all genesis-tools repos.
 
 ---
 
