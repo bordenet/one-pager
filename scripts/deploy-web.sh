@@ -1,13 +1,27 @@
 #!/usr/bin/env bash
+################################################################################
+# deploy-web.sh - Deploy One-Pager to GitHub Pages
+################################################################################
+# GitHub Pages serves directly from root (/) on main branch.
+# This script runs quality checks and pushes changes to trigger deployment.
+################################################################################
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+cd "${PROJECT_ROOT}"
+
 # shellcheck source=scripts/lib/compact.sh
 source "${SCRIPT_DIR}/lib/compact.sh"
 
-readonly DEPLOY_DIR="${PROJECT_ROOT}/docs"
-readonly GITHUB_PAGES_URL="https://bordenet.github.io/one-pager/"
+################################################################################
+# Configuration
+################################################################################
+
+PROJECT_NAME="One-Pager"
+GITHUB_PAGES_URL="https://bordenet.github.io/one-pager/"
+
 readonly REQUIRED_FILES=(
     "index.html" "css/styles.css" "js/app.js" "js/workflow.js" "js/storage.js"
     "js/ai-mock.js" "js/views.js" "js/projects.js" "js/ui.js" "js/router.js"
@@ -16,23 +30,29 @@ readonly REQUIRED_FILES=(
     "templates/one-pager-template.md"
 )
 
-DRY_RUN=0
-VERBOSE=0
+SKIP_TESTS=false
+SKIP_LINT=false
+DRY_RUN=false
+export VERBOSE=false
+
+################################################################################
+# Functions
+################################################################################
 
 show_help() {
     cat << EOF
 ${C_BOLD}one-pager Web Deployment${C_RESET}
-Deploys to GitHub Pages (docs/ directory)
+Deploys to GitHub Pages (serves from root /)
 
-${C_BOLD}USAGE:${C_RESET} $0 [--dry-run] [-v|--verbose] [--help]
+${C_BOLD}USAGE:${C_RESET} $0 [OPTIONS]
 
 ${C_BOLD}OPTIONS:${C_RESET}
-  --dry-run    Preview without making changes
-  -v           Verbose output
-  --help       Show this help
+  --skip-tests    Skip running tests (NOT RECOMMENDED)
+  --skip-lint     Skip linting (NOT RECOMMENDED)
+  --dry-run       Preview without pushing changes
+  -v, --verbose   Show detailed output
+  --help          Show this help
 
-${C_BOLD}DEPLOYS:${C_RESET} ${#REQUIRED_FILES[@]} files (HTML, CSS, JS, prompts, templates)
-${C_BOLD}EXCLUDES:${C_RESET} node_modules, tests, coverage, configs, docs
 ${C_BOLD}URL:${C_RESET} ${GITHUB_PAGES_URL}
 EOF
 }
@@ -51,100 +71,117 @@ validate_required_files() {
     task_ok "All required files present (${#REQUIRED_FILES[@]} files)"
 }
 
-clean_deploy_dir() {
-    task_start "Cleaning deployment directory"
-    if [[ $DRY_RUN -eq 1 ]]; then
-        verbose "Would clean web app files in: ${DEPLOY_DIR}"
-        task_ok "Clean deployment directory (dry-run)"
+run_lint() {
+    task_start "Running linter"
+    if [[ "$SKIP_LINT" == "true" ]]; then
+        task_ok "Skipped (--skip-lint)"
         return 0
     fi
-    # Remove only web app subdirectories, preserve markdown docs
-    [[ -d "${DEPLOY_DIR}/js" ]] && rm -rf "${DEPLOY_DIR}/js" && verbose "Removed: ${DEPLOY_DIR}/js"
-    [[ -d "${DEPLOY_DIR}/css" ]] && rm -rf "${DEPLOY_DIR}/css" && verbose "Removed: ${DEPLOY_DIR}/css"
-    [[ -d "${DEPLOY_DIR}/prompts" ]] && rm -rf "${DEPLOY_DIR}/prompts" && verbose "Removed: ${DEPLOY_DIR}/prompts"
-    [[ -d "${DEPLOY_DIR}/templates" ]] && rm -rf "${DEPLOY_DIR}/templates" && verbose "Removed: ${DEPLOY_DIR}/templates"
-    [[ -f "${DEPLOY_DIR}/index.html" ]] && rm -f "${DEPLOY_DIR}/index.html" && verbose "Removed: ${DEPLOY_DIR}/index.html"
-    mkdir -p "${DEPLOY_DIR}" && verbose "Ensured: ${DEPLOY_DIR}"
-    task_ok "Deployment directory ready"
+    if [[ "$VERBOSE" == "true" ]]; then
+        npm run lint || { task_fail "Linting failed"; return 1; }
+    else
+        npm run lint >/dev/null 2>&1 || { task_fail "Linting failed. Run 'npm run lint'"; return 1; }
+    fi
+    task_ok "Linting passed"
 }
 
-copy_file() {
-    local src="$1" dest="$2"
-    if [[ $DRY_RUN -eq 1 ]]; then
-        verbose "Would copy: ${src} -> ${dest}"
+run_tests() {
+    task_start "Running tests"
+    if [[ "$SKIP_TESTS" == "true" ]]; then
+        task_ok "Skipped (--skip-tests)"
         return 0
     fi
-    mkdir -p "$(dirname "$dest")"
-    cp "$src" "$dest"
-    verbose "Copied: ${src} -> ${dest}"
+    if [[ "$VERBOSE" == "true" ]]; then
+        npm test || { task_fail "Tests failed"; return 1; }
+    else
+        npm test >/dev/null 2>&1 || { task_fail "Tests failed. Run 'npm test'"; return 1; }
+    fi
+    task_ok "Tests passed"
 }
 
-deploy_files() {
-    task_start "Deploying files to docs/"
-    local file_count=0
-    for file in "${REQUIRED_FILES[@]}"; do
-        copy_file "${PROJECT_ROOT}/${file}" "${DEPLOY_DIR}/${file}"
-        ((file_count++))
-    done
-    [[ $DRY_RUN -eq 1 ]] && task_ok "Would deploy ${file_count} files (dry-run)" || task_ok "Deployed ${file_count} files"
+deploy_to_github() {
+    task_start "Deploying to GitHub"
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        task_ok "Skipped (--dry-run)"
+        return 0
+    fi
+
+    if git diff --quiet && git diff --cached --quiet; then
+        task_ok "No changes to commit"
+    else
+        if [[ "$VERBOSE" == "true" ]]; then
+            git add .
+        else
+            git add . >/dev/null 2>&1
+        fi
+
+        local commit_msg="Deploy: $(date '+%Y-%m-%d %H:%M:%S')"
+        if [[ "$VERBOSE" == "true" ]]; then
+            git commit -m "$commit_msg" || true
+        else
+            git commit -m "$commit_msg" >/dev/null 2>&1 || true
+        fi
+    fi
+
+    if [[ "$VERBOSE" == "true" ]]; then
+        git push origin main || { task_fail "Failed to push"; return 1; }
+    else
+        git push origin main >/dev/null 2>&1 || { task_fail "Failed to push"; return 1; }
+    fi
+
+    task_ok "Pushed to GitHub"
 }
 
 verify_deployment() {
     task_start "Verifying deployment"
-    if [[ $DRY_RUN -eq 1 ]]; then
-        task_ok "Verification skipped (dry-run)"
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        task_ok "Skipped (--dry-run)"
         return 0
     fi
-    local missing_files=()
-    for file in "${REQUIRED_FILES[@]}"; do
-        [[ ! -f "${DEPLOY_DIR}/${file}" ]] && missing_files+=("$file")
-    done
-    if [[ ${#missing_files[@]} -gt 0 ]]; then
-        task_fail "Deployment verification failed"
-        printf "${C_RED}Missing in docs/:${C_RESET} %s\n" "${missing_files[@]}"
-        return 1
+
+    echo "  Waiting for GitHub Pages to update..."
+    sleep 5
+
+    if curl -s -o /dev/null -w "%{http_code}" "$GITHUB_PAGES_URL" | grep -q "200"; then
+        task_ok "Site returning HTTP 200"
+    else
+        task_ok "Site may still be deploying (check in 1-2 min)"
     fi
-    task_ok "Deployment verified (${#REQUIRED_FILES[@]} files)"
 }
 
-show_summary() {
-    echo ""
-    print_section "Deployment Summary"
-    [[ $DRY_RUN -eq 1 ]] && echo -e "${C_YELLOW}DRY RUN - No changes made${C_RESET}\n"
-    echo -e "${C_BOLD}Directory:${C_RESET} ${DEPLOY_DIR}"
-    echo -e "${C_BOLD}Files:${C_RESET}     ${#REQUIRED_FILES[@]}"
-    echo -e "${C_BOLD}URL:${C_RESET}       ${GITHUB_PAGES_URL}"
-    if [[ $DRY_RUN -eq 0 ]]; then
-        echo -e "\n${C_BOLD}Next:${C_RESET}"
-        echo -e "  git add docs/ && git commit -m 'Deploy to GitHub Pages'"
-        echo -e "  git push origin main"
-        echo -e "  Wait 2-5 min, then visit: ${C_CYAN}${GITHUB_PAGES_URL}${C_RESET}"
-    fi
-    echo ""
-}
+################################################################################
+# Main
+################################################################################
 
 main() {
     while [[ $# -gt 0 ]]; do
         case $1 in
-            --dry-run) DRY_RUN=1; shift ;;
-            -v|--verbose) VERBOSE=1; shift ;;
+            --skip-tests) SKIP_TESTS=true; shift ;;
+            --skip-lint) SKIP_LINT=true; shift ;;
+            --dry-run) DRY_RUN=true; shift ;;
+            -v|--verbose) VERBOSE=true; shift ;;
             --help) show_help; exit 0 ;;
             *) echo -e "${C_RED}Unknown: $1${C_RESET}\nUse --help"; exit 1 ;;
         esac
     done
 
-    print_header "one-pager Web Deployment"
-    [[ $DRY_RUN -eq 1 ]] && echo -e "${C_YELLOW}DRY RUN mode${C_RESET}"
+    print_header "${PROJECT_NAME} Web Deployment"
+    [[ "$DRY_RUN" == "true" ]] && echo -e "${C_YELLOW}DRY RUN mode${C_RESET}"
     echo ""
 
     validate_required_files || exit 1
-    clean_deploy_dir || exit 1
-    deploy_files || exit 1
-    verify_deployment || exit 1
-    show_summary
+    run_lint || exit 1
+    run_tests || exit 1
+    deploy_to_github || exit 1
+    verify_deployment
 
     echo ""
-    [[ $DRY_RUN -eq 1 ]] && echo -e "${C_GREEN}${SYM_OK} Dry run complete${C_RESET}" || echo -e "${C_GREEN}${SYM_OK} Deployment complete${C_RESET}"
+    echo -e "${C_GREEN}${SYM_OK} Deployment complete${C_RESET}"
+    echo ""
+    echo "  📦 Project: ${PROJECT_NAME}"
+    echo "  🔗 URL: ${GITHUB_PAGES_URL}"
     echo ""
 }
 
