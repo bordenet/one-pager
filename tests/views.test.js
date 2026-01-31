@@ -596,8 +596,9 @@ describe('Views Module', () => {
       const { updatePhase } = await import('../js/projects.js');
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
 
-      // Complete Phase 1 so we don't get redirected to edit form
+      // Complete Phase 1 and Phase 2 so we can navigate to Phase 3
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
+      await updatePhase(project.id, 2, 'Phase 2 prompt', 'Phase 2 response');
 
       await renderProjectView(project.id);
 
