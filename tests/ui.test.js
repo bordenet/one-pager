@@ -240,18 +240,19 @@ describe('UI Module', () => {
   });
 
   describe('copyToClipboard', () => {
-    test('should copy text to clipboard', async () => {
-      const writeTextMock = jest.fn().mockResolvedValue();
-      navigator.clipboard.writeText = writeTextMock;
+    test('should copy text to clipboard using ClipboardItem pattern', async () => {
+      const writeMock = jest.fn().mockResolvedValue();
+      navigator.clipboard.write = writeMock;
 
       await copyToClipboard('Test text');
 
-      expect(writeTextMock).toHaveBeenCalledWith('Test text');
+      // The new implementation uses clipboard.write with ClipboardItem
+      expect(writeMock).toHaveBeenCalledTimes(1);
     });
 
     test('should complete successfully on successful copy', async () => {
-      const writeTextMock = jest.fn().mockResolvedValue();
-      navigator.clipboard.writeText = writeTextMock;
+      const writeMock = jest.fn().mockResolvedValue();
+      navigator.clipboard.write = writeMock;
 
       // Should not throw - void return
       await expect(copyToClipboard('Test text')).resolves.not.toThrow();
@@ -259,9 +260,10 @@ describe('UI Module', () => {
 
     test('should throw error if both clipboard API and execCommand fail', async () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       // Mock clipboard API to fail
-      navigator.clipboard.writeText = jest.fn().mockImplementation(() => {
+      navigator.clipboard.write = jest.fn().mockImplementation(() => {
         return Promise.reject(new Error('Not allowed'));
       });
 
@@ -271,6 +273,19 @@ describe('UI Module', () => {
       await expect(copyToClipboard('Test text')).rejects.toThrow();
 
       consoleErrorSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
+    });
+
+    test('should fallback to execCommand when Clipboard API unavailable', async () => {
+      // Remove clipboard API
+      Object.defineProperty(navigator, 'clipboard', {
+        value: undefined,
+        writable: true,
+      });
+      document.execCommand = jest.fn().mockReturnValue(true);
+
+      await copyToClipboard('Test text');
+      expect(document.execCommand).toHaveBeenCalledWith('copy');
     });
   });
 

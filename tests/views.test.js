@@ -523,7 +523,8 @@ describe('Views Module', () => {
 
       Object.defineProperty(navigator, 'clipboard', {
         value: {
-          writeText: jest.fn(() => Promise.resolve())
+          writeText: jest.fn(() => Promise.resolve()),
+          write: jest.fn(() => Promise.resolve())
         },
         configurable: true
       });
@@ -548,7 +549,7 @@ describe('Views Module', () => {
       // Wait for async operations
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+      expect(navigator.clipboard.write).toHaveBeenCalled();
     });
 
     test('phase tabs should be clickable', async () => {
