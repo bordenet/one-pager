@@ -240,39 +240,37 @@ describe('UI Module', () => {
   });
 
   describe('copyToClipboard', () => {
-    test('should copy text to clipboard using ClipboardItem pattern', async () => {
-      const writeMock = jest.fn().mockResolvedValue();
-      navigator.clipboard.write = writeMock;
+    test('should copy text to clipboard using writeText first', async () => {
+      const writeTextMock = jest.fn().mockResolvedValue();
+      navigator.clipboard.writeText = writeTextMock;
 
       await copyToClipboard('Test text');
 
-      // The new implementation uses clipboard.write with ClipboardItem
-      expect(writeMock).toHaveBeenCalledTimes(1);
+      // The new implementation tries writeText first (Safari MacOS compatible)
+      expect(writeTextMock).toHaveBeenCalledTimes(1);
+      expect(writeTextMock).toHaveBeenCalledWith('Test text');
     });
 
     test('should complete successfully on successful copy', async () => {
-      const writeMock = jest.fn().mockResolvedValue();
-      navigator.clipboard.write = writeMock;
+      const writeTextMock = jest.fn().mockResolvedValue();
+      navigator.clipboard.writeText = writeTextMock;
 
       // Should not throw - void return
       await expect(copyToClipboard('Test text')).resolves.not.toThrow();
     });
 
-    test('should throw error if both clipboard API and execCommand fail', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    test('should throw error if all clipboard methods fail', async () => {
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      // Mock clipboard API to fail
-      navigator.clipboard.write = jest.fn().mockImplementation(() => {
-        return Promise.reject(new Error('Not allowed'));
-      });
-
+      // Mock writeText to fail
+      navigator.clipboard.writeText = jest.fn().mockRejectedValue(new Error('Not allowed'));
+      // Mock write (ClipboardItem) to also fail
+      navigator.clipboard.write = jest.fn().mockRejectedValue(new Error('Not allowed'));
       // Mock execCommand to also fail
       document.execCommand = jest.fn().mockReturnValue(false);
 
       await expect(copyToClipboard('Test text')).rejects.toThrow();
 
-      consoleErrorSpy.mockRestore();
       consoleWarnSpy.mockRestore();
     });
 

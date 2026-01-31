@@ -549,7 +549,8 @@ describe('Views Module', () => {
       // Wait for async operations
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      expect(navigator.clipboard.write).toHaveBeenCalled();
+      // New clipboard implementation tries writeText first, falls back to write
+      expect(navigator.clipboard.writeText).toHaveBeenCalled();
     });
 
     test('phase tabs should be clickable', async () => {
