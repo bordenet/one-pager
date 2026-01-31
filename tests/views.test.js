@@ -217,10 +217,10 @@ describe('Views Module', () => {
         })
       );
 
-      // Mock clipboard API
+      // Mock clipboard API - uses write() with ClipboardItem for Safari transient activation
       Object.defineProperty(navigator, 'clipboard', {
         value: {
-          writeText: jest.fn(() => Promise.resolve())
+          write: jest.fn(() => Promise.resolve())
         },
         configurable: true
       });
@@ -549,8 +549,8 @@ describe('Views Module', () => {
       // Wait for async operations
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // New clipboard implementation tries writeText first, falls back to write
-      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+      // New clipboard implementation uses write() with ClipboardItem for Safari transient activation
+      expect(navigator.clipboard.write).toHaveBeenCalled();
     });
 
     test('phase tabs should be clickable', async () => {
