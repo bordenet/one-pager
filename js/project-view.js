@@ -6,7 +6,7 @@
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboard, showPromptModal, confirm, showDocumentPreviewModal } from './ui.js';
+import { escapeHtml, showToast, copyToClipboardAsync, showPromptModal, confirm, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
 
@@ -342,16 +342,24 @@ function attachPhaseEventListeners(project, phase) {
     }
   };
 
-  copyPromptBtn.addEventListener('click', async () => {
-    try {
+  // CRITICAL: Safari transient activation fix - call copyToClipboardAsync synchronously
+  copyPromptBtn.addEventListener('click', () => {
+    let generatedPrompt = null;
+    const promptPromise = (async () => {
       const prompt = await generatePromptForPhase(project, phase);
-      await copyToClipboard(prompt);
-      showToast('Prompt copied to clipboard!', 'success');
-      await enableWorkflowProgression(prompt);
-    } catch (error) {
-      console.error('Failed to copy prompt:', error);
-      showToast('Failed to copy to clipboard. Please check browser permissions.', 'error');
-    }
+      generatedPrompt = prompt;
+      return prompt;
+    })();
+
+    copyToClipboardAsync(promptPromise)
+      .then(() => {
+        showToast('Prompt copied to clipboard!', 'success');
+        return enableWorkflowProgression(generatedPrompt);
+      })
+      .catch((error) => {
+        console.error('Failed to copy prompt:', error);
+        showToast('Failed to copy to clipboard. Please check browser permissions.', 'error');
+      });
   });
 
   // View prompt in modal - passes callback to enable workflow when copied from modal
