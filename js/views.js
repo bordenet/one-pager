@@ -19,7 +19,7 @@ export async function renderProjectsList() {
   container.innerHTML = `
         <div class="mb-6 flex items-center justify-between">
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
-                My <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md" target="_blank" rel="noopener" class="text-blue-600 hover:underline">One-Pagers</a>
+                My <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-700 dark:hover:text-blue-300">One-Pagers</a>
             </h2>
             <button id="new-project-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 + New One-Pager
@@ -168,7 +168,7 @@ export function renderNewProjectForm(existingProject = null) {
 
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                    ${isEditing ? 'Edit One-Pager Details' : 'Create New <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md" target="_blank" rel="noopener" class="text-blue-600 hover:underline">One-Pager</a>'}
+                    ${isEditing ? 'Edit One-Pager Details' : 'Create New <a href="https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-700 dark:hover:text-blue-300">One-Pager</a>'}
                 </h2>
                 ${isEditing ? `
                     <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
