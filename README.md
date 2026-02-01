@@ -4,6 +4,8 @@ Write one-page documents with AI. Three phases: draft, review, refine.
 
 **Try it**: [bordenet.github.io/one-pager](https://bordenet.github.io/one-pager/)
 
+> **What is a One-Pager?** A one-pager is a single-page summary that distills a complex topic into its essential points. Used for executive briefings, project proposals, and stakeholder communication, it forces clarity by imposing a strict length constraint.
+
 [![CI](https://github.com/bordenet/one-pager/actions/workflows/ci.yml/badge.svg)](https://github.com/bordenet/one-pager/actions)
 [![codecov](https://codecov.io/gh/bordenet/one-pager/branch/main/graph/badge.svg)](https://codecov.io/gh/bordenet/one-pager)
 
