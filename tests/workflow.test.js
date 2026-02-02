@@ -163,14 +163,24 @@ describe('Workflow Module', () => {
       expect(project.currentPhase).toBe(2);
     });
 
-    test('should not advance beyond last phase', () => {
+    test('should advance from last phase to complete state', () => {
       const project = createProject('Test', 'Description');
       project.currentPhase = PHASES.length;
       project.phases[PHASES.length - 1].response = 'Response';
 
       advancePhase(project);
 
-      expect(project.currentPhase).toBe(PHASES.length);
+      expect(project.currentPhase).toBe(PHASES.length + 1);
+    });
+
+    test('should not advance beyond complete state', () => {
+      const project = createProject('Test', 'Description');
+      project.currentPhase = PHASES.length + 1;
+      project.phases[PHASES.length - 1].response = 'Response';
+
+      advancePhase(project);
+
+      expect(project.currentPhase).toBe(PHASES.length + 1);
     });
   });
 

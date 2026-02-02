@@ -151,7 +151,8 @@ export function advancePhase(project) {
     phaseData.completed = true;
   }
 
-  if (phaseNumber < PHASES.length) {
+  // Allow advancing up to phase 4 (complete state)
+  if (phaseNumber <= PHASES.length) {
     project.currentPhase = phaseNumber + 1;
     project.phase = phaseNumber + 1;
   }
