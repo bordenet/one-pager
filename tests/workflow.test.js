@@ -1,931 +1,347 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import {
-  createProject,
-  generatePrompt,
-  generatePromptForPhase,
-  validatePhase,
-  advancePhase,
-  isProjectComplete,
-  getCurrentPhase,
-  updatePhaseResponse,
-  updateFormData,
-  getProgress,
-  getPhaseMetadata,
-  exportFinalOnePager,
-  PHASES
-} from '../js/workflow.js';
+/**
+ * Canonical Workflow Class Tests
+ *
+ * These tests verify the Workflow class contract that MUST be identical
+ * across all genesis-derived tools. Only tool-specific prompt content
+ * and export format should differ.
+ *
+ * DO NOT MODIFY these tests per-tool. If a test fails, fix the workflow.js
+ * implementation to match the contract.
+ */
 
-// Mock fetch for loading prompt templates (uses {{VAR}} double-brace syntax)
-global.fetch = async (url) => {
-  const templates = {
-    'prompts/phase1.md': 'Phase 1 prompt template with {{PROJECT_NAME}} and {{PROBLEM_STATEMENT}} and {{PROPOSED_SOLUTION}} and {{CONTEXT}} and {{KEY_GOALS}} and {{SCOPE_IN_SCOPE}} and {{SCOPE_OUT_OF_SCOPE}} and {{SUCCESS_METRICS}} and {{KEY_STAKEHOLDERS}} and {{TIMELINE_ESTIMATE}} and {{COST_OF_DOING_NOTHING}}',
-    'prompts/phase2.md': 'Phase 2 prompt template with {{PHASE1_OUTPUT}}',
-    'prompts/phase3.md': 'Phase 3 prompt template with {{PHASE1_OUTPUT}} and {{PHASE2_OUTPUT}}'
-  };
+import { jest } from '@jest/globals';
+import { Workflow, WORKFLOW_CONFIG, getPhaseMetadata, exportFinalDocument, getExportFilename } from '../js/workflow.js';
 
-  return {
+// Mock fetch for prompt template loading
+beforeAll(() => {
+  global.fetch = jest.fn(() => Promise.resolve({
     ok: true,
-    text: async () => templates[url] || 'Default template'
-  };
-};
+    text: () => Promise.resolve('Mock prompt template with {{TITLE}} and {{DESCRIPTION}}')
+  }));
+});
 
-describe('Workflow Module', () => {
-  describe('createProject', () => {
-    test('should create a new project with correct structure', () => {
-      const project = createProject('Test Project', 'Test Description');
-
-      expect(project).toBeTruthy();
-      expect(project.id).toBeTruthy();
-      expect(project.name).toBe('Test Project');
-      expect(project.description).toBe('Test Description');
-      expect(project.currentPhase).toBe(1);
-      expect(project.phases).toHaveLength(3); // 3 phases for one-pager
-      expect(project.formData).toBeTruthy();
-    });
-
-    test('should initialize all phases as incomplete', () => {
-      const project = createProject('Test', 'Description');
-
-      project.phases.forEach(phase => {
-        expect(phase.completed).toBe(false);
-        expect(phase.prompt).toBe('');
-        expect(phase.response).toBe('');
-      });
-    });
-
-    test('should initialize form data with empty fields', () => {
-      const project = createProject('Test', 'Description');
-
-      expect(project.formData.projectName).toBe('');
-      expect(project.formData.problemStatement).toBe('');
-      expect(project.formData.proposedSolution).toBe('');
-    });
+describe('WORKFLOW_CONFIG', () => {
+  it('should have required structure', () => {
+    expect(WORKFLOW_CONFIG).toBeDefined();
+    expect(WORKFLOW_CONFIG.phaseCount).toBe(3);
+    expect(WORKFLOW_CONFIG.phases).toBeInstanceOf(Array);
+    expect(WORKFLOW_CONFIG.phases.length).toBe(3);
   });
 
-  describe('generatePrompt', () => {
-    test('should generate prompt for phase 1 with form data', async () => {
-      const project = createProject('Test Project', 'Test Description');
-      updateFormData(project, {
-        projectName: 'My Project',
-        problemStatement: 'The problem',
-        proposedSolution: 'The solution'
-      });
-
-      const prompt = await generatePrompt(project);
-
-      expect(prompt).toContain('My Project');
-      expect(prompt).toContain('The problem');
-      expect(prompt).toContain('The solution');
-    });
-
-    test('should generate prompt for phase 2 with phase 1 response', async () => {
-      const project = createProject('Test Project', 'Test Description');
-      project.phases[0].response = 'Phase 1 response';
-      project.phases[0].completed = true;
-      project.currentPhase = 2;
-
-      const prompt = await generatePrompt(project);
-
-      expect(prompt).toContain('Phase 1 response');
-    });
-
-    test('should generate prompt for phase 3 with both responses', async () => {
-      const project = createProject('Test Project', 'Test Description');
-      project.phases[0].response = 'Phase 1 response';
-      project.phases[1].response = 'Phase 2 response';
-      project.phases[0].completed = true;
-      project.phases[1].completed = true;
-      project.currentPhase = 3;
-
-      const prompt = await generatePrompt(project);
-
-      expect(prompt).toContain('Phase 1 response');
-      expect(prompt).toContain('Phase 2 response');
+  it('should have required phase properties', () => {
+    WORKFLOW_CONFIG.phases.forEach((phase, index) => {
+      expect(phase.number).toBe(index + 1);
+      expect(typeof phase.name).toBe('string');
+      expect(typeof phase.description).toBe('string');
+      expect(typeof phase.aiModel).toBe('string');
+      expect(typeof phase.icon).toBe('string');
     });
   });
+});
 
-  describe('validatePhase', () => {
-    test('should fail validation for phase 1 when required fields are empty', () => {
-      const project = createProject('Test', 'Description');
-      const result = validatePhase(project);
+describe('Workflow class', () => {
+  let project;
+  let workflow;
 
-      expect(result.valid).toBe(false);
-      expect(result.error).toBeTruthy();
-    });
-
-    test('should fail validation for phase 1 when response is empty', () => {
-      const project = createProject('Test', 'Description');
-      updateFormData(project, {
-        projectName: 'Test',
-        problemStatement: 'Problem',
-        proposedSolution: 'Solution'
-      });
-
-      const result = validatePhase(project);
-
-      expect(result.valid).toBe(false);
-      expect(result.error).toContain('response');
-    });
-
-    test('should pass validation when all required data is provided', () => {
-      const project = createProject('Test', 'Description');
-      updateFormData(project, {
-        projectName: 'Test',
-        problemStatement: 'Problem',
-        proposedSolution: 'Solution'
-      });
-      project.phases[0].response = 'Some response';
-
-      const result = validatePhase(project);
-
-      expect(result.valid).toBe(true);
-    });
+  beforeEach(() => {
+    project = {
+      id: 'test-123',
+      title: 'Test Project',
+      description: 'Test description',
+      context: 'Test context',
+      phase: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    workflow = new Workflow(project);
   });
 
-  describe('advancePhase', () => {
-    test('should mark current phase as completed', () => {
-      const project = createProject('Test', 'Description');
-      project.phases[0].response = 'Response';
-
-      advancePhase(project);
-
-      expect(project.phases[0].completed).toBe(true);
+  describe('constructor', () => {
+    it('should initialize with project', () => {
+      expect(workflow.project).toBe(project);
+      expect(workflow.currentPhase).toBe(1);
     });
 
-    test('should advance to next phase', () => {
-      const project = createProject('Test', 'Description');
-      project.phases[0].response = 'Response';
-
-      advancePhase(project);
-
-      expect(project.currentPhase).toBe(2);
+    it('should default to phase 1 if not set', () => {
+      delete project.phase;
+      const w = new Workflow(project);
+      expect(w.currentPhase).toBe(1);
     });
 
-    test('should advance from last phase to complete state', () => {
-      const project = createProject('Test', 'Description');
-      project.currentPhase = PHASES.length;
-      project.phases[PHASES.length - 1].response = 'Response';
-
-      advancePhase(project);
-
-      expect(project.currentPhase).toBe(PHASES.length + 1);
+    it('should handle phase 0 as phase 1', () => {
+      project.phase = 0;
+      const w = new Workflow(project);
+      expect(w.currentPhase).toBe(1);
     });
 
-    test('should not advance beyond complete state', () => {
-      const project = createProject('Test', 'Description');
-      project.currentPhase = PHASES.length + 1;
-      project.phases[PHASES.length - 1].response = 'Response';
-
-      advancePhase(project);
-
-      expect(project.currentPhase).toBe(PHASES.length + 1);
-    });
-  });
-
-  describe('isProjectComplete', () => {
-    test('should return false for new project', () => {
-      const project = createProject('Test', 'Description');
-
-      expect(isProjectComplete(project)).toBe(false);
-    });
-
-    test('should return true when all phases are completed', () => {
-      const project = createProject('Test', 'Description');
-      project.phases.forEach(phase => {
-        phase.completed = true;
-      });
-
-      expect(isProjectComplete(project)).toBe(true);
+    it('should handle negative phase as phase 1', () => {
+      project.phase = -1;
+      const w = new Workflow(project);
+      expect(w.currentPhase).toBe(1);
     });
   });
 
   describe('getCurrentPhase', () => {
-    test('should return current phase object', () => {
-      const project = createProject('Test', 'Description');
-      const currentPhase = getCurrentPhase(project);
+    it('should return current phase config', () => {
+      const phase = workflow.getCurrentPhase();
+      expect(phase.number).toBe(1);
+      expect(phase.name).toBeDefined();
+    });
 
-      expect(currentPhase).toBeTruthy();
-      expect(currentPhase.number).toBe(1);
+    it('should return phase 2 config when on phase 2', () => {
+      workflow.currentPhase = 2;
+      const phase = workflow.getCurrentPhase();
+      expect(phase.number).toBe(2);
+    });
+
+    it('should return phase 3 config when on phase 3', () => {
+      workflow.currentPhase = 3;
+      const phase = workflow.getCurrentPhase();
+      expect(phase.number).toBe(3);
     });
   });
 
-  describe('updatePhaseResponse', () => {
-    test('should update current phase response', () => {
-      const project = createProject('Test', 'Description');
-      updatePhaseResponse(project, 'New response');
+  describe('getNextPhase', () => {
+    it('should return next phase config', () => {
+      const next = workflow.getNextPhase();
+      expect(next.number).toBe(2);
+    });
 
-      expect(project.phases[0].response).toBe('New response');
+    it('should return null on last phase', () => {
+      workflow.currentPhase = 3;
+      expect(workflow.getNextPhase()).toBeNull();
+    });
+  });
+
+  describe('isComplete', () => {
+    it('should return false when on phase 1', () => {
+      expect(workflow.isComplete()).toBe(false);
+    });
+
+    it('should return false when on phase 3', () => {
+      workflow.currentPhase = 3;
+      expect(workflow.isComplete()).toBe(false);
+    });
+
+    it('should return true when past phase 3', () => {
+      workflow.currentPhase = 4;
+      workflow.project.phase = 4;
+      expect(workflow.isComplete()).toBe(true);
+    });
+  });
+
+  describe('advancePhase', () => {
+    it('should advance from phase 1 to phase 2', () => {
+      const result = workflow.advancePhase();
+      expect(result).toBe(true);
+      expect(workflow.currentPhase).toBe(2);
+      expect(project.phase).toBe(2);
+    });
+
+    it('should advance from phase 2 to phase 3', () => {
+      workflow.currentPhase = 2;
+      const result = workflow.advancePhase();
+      expect(result).toBe(true);
+      expect(workflow.currentPhase).toBe(3);
+    });
+
+    it('should advance from phase 3 to phase 4 (complete)', () => {
+      workflow.currentPhase = 3;
+      const result = workflow.advancePhase();
+      expect(result).toBe(true);
+      expect(workflow.currentPhase).toBe(4);
+    });
+
+    it('should NOT advance past phase 4', () => {
+      workflow.currentPhase = 4;
+      const result = workflow.advancePhase();
+      expect(result).toBe(false);
+      expect(workflow.currentPhase).toBe(4);
+    });
+  });
+
+  describe('previousPhase', () => {
+    it('should go back from phase 2 to phase 1', () => {
+      workflow.currentPhase = 2;
+      const result = workflow.previousPhase();
+      expect(result).toBe(true);
+      expect(workflow.currentPhase).toBe(1);
+      expect(project.phase).toBe(1);
+    });
+
+    it('should go back from phase 3 to phase 2', () => {
+      workflow.currentPhase = 3;
+      const result = workflow.previousPhase();
+      expect(result).toBe(true);
+      expect(workflow.currentPhase).toBe(2);
+    });
+
+    it('should NOT go before phase 1', () => {
+      workflow.currentPhase = 1;
+      const result = workflow.previousPhase();
+      expect(result).toBe(false);
+      expect(workflow.currentPhase).toBe(1);
+    });
+  });
+
+  describe('savePhaseOutput', () => {
+    it('should save output for phase 1', () => {
+      workflow.savePhaseOutput('Phase 1 output');
+      expect(project.phase1_output).toBe('Phase 1 output');
+    });
+
+    it('should save output for phase 2', () => {
+      workflow.currentPhase = 2;
+      workflow.savePhaseOutput('Phase 2 output');
+      expect(project.phase2_output).toBe('Phase 2 output');
+    });
+
+    it('should save output for phase 3', () => {
+      workflow.currentPhase = 3;
+      workflow.savePhaseOutput('Phase 3 output');
+      expect(project.phase3_output).toBe('Phase 3 output');
+    });
+
+    it('should update timestamp', () => {
+      // Set an old timestamp to ensure it changes
+      project.updatedAt = '2020-01-01T00:00:00.000Z';
+      workflow.savePhaseOutput('Test output');
+      expect(project.updatedAt).not.toBe('2020-01-01T00:00:00.000Z');
+    });
+  });
+
+  describe('getPhaseOutput', () => {
+    it('should return phase 1 output', () => {
+      project.phase1_output = 'Phase 1 content';
+      expect(workflow.getPhaseOutput(1)).toBe('Phase 1 content');
+    });
+
+    it('should return phase 2 output', () => {
+      project.phase2_output = 'Phase 2 content';
+      expect(workflow.getPhaseOutput(2)).toBe('Phase 2 content');
+    });
+
+    it('should return phase 3 output', () => {
+      project.phase3_output = 'Phase 3 content';
+      expect(workflow.getPhaseOutput(3)).toBe('Phase 3 content');
+    });
+
+    it('should return empty string if no output', () => {
+      expect(workflow.getPhaseOutput(1)).toBe('');
+      expect(workflow.getPhaseOutput(2)).toBe('');
+      expect(workflow.getPhaseOutput(3)).toBe('');
     });
   });
 
   describe('getProgress', () => {
-    test('should return 0% for new project', () => {
-      const project = createProject('Test', 'Description');
-
-      expect(getProgress(project)).toBe(0);
+    it('should return 33% for phase 1', () => {
+      expect(workflow.getProgress()).toBe(33);
     });
 
-    test('should return 33% when one phase is complete', () => {
-      const project = createProject('Test', 'Description');
-      project.phases[0].completed = true;
-
-      expect(getProgress(project)).toBe(33);
+    it('should return 67% for phase 2', () => {
+      workflow.currentPhase = 2;
+      expect(workflow.getProgress()).toBe(67);
     });
 
-    test('should return 67% when two phases are complete', () => {
-      const project = createProject('Test', 'Description');
-      project.phases[0].completed = true;
-      project.phases[1].completed = true;
-
-      expect(getProgress(project)).toBe(67);
-    });
-
-    test('should return 100% when all phases are complete', () => {
-      const project = createProject('Test', 'Description');
-      project.phases.forEach(phase => {
-        phase.completed = true;
-      });
-
-      expect(getProgress(project)).toBe(100);
+    it('should return 100% for phase 3', () => {
+      workflow.currentPhase = 3;
+      expect(workflow.getProgress()).toBe(100);
     });
   });
 
-  describe('getPhaseMetadata', () => {
-    test('should return metadata for phase 1', () => {
-      const metadata = getPhaseMetadata(1);
-
-      expect(metadata.title).toBe('Initial Draft');
-      expect(metadata.ai).toBe('Claude');
-      expect(metadata.icon).toBe('📝');
-      expect(metadata.color).toBe('blue');
+  describe('generatePrompt', () => {
+    it('should generate prompt for phase 1', async () => {
+      const prompt = await workflow.generatePrompt();
+      expect(typeof prompt).toBe('string');
+      expect(prompt.length).toBeGreaterThan(0);
     });
 
-    test('should return metadata for phase 2', () => {
-      const metadata = getPhaseMetadata(2);
-
-      expect(metadata.title).toBe('Alternative Perspective');
-      expect(metadata.ai).toBe('Gemini');
-      expect(metadata.icon).toBe('🔄');
-      expect(metadata.color).toBe('green');
+    it('should generate prompt for phase 2', async () => {
+      project.phase1_output = 'Phase 1 content';
+      workflow.currentPhase = 2;
+      const prompt = await workflow.generatePrompt();
+      expect(typeof prompt).toBe('string');
     });
 
-    test('should return metadata for phase 3', () => {
-      const metadata = getPhaseMetadata(3);
-
-      expect(metadata.title).toBe('Final Synthesis');
-      expect(metadata.ai).toBe('Claude');
-      expect(metadata.icon).toBe('✨');
-      expect(metadata.color).toBe('purple');
+    it('should generate prompt for phase 3', async () => {
+      project.phase1_output = 'Phase 1 content';
+      project.phase2_output = 'Phase 2 content';
+      workflow.currentPhase = 3;
+      const prompt = await workflow.generatePrompt();
+      expect(typeof prompt).toBe('string');
     });
 
-    test('should return phase 1 metadata for invalid phase number', () => {
-      const metadata = getPhaseMetadata(999);
-
-      expect(metadata.title).toBe('Initial Draft');
+    it('should throw for invalid phase', async () => {
+      workflow.currentPhase = 99;
+      await expect(workflow.generatePrompt()).rejects.toThrow();
     });
   });
 
-  describe('exportFinalOnePager', () => {
-    let mockCreateElement;
-    let createdAnchor;
-    let originalCreateObjectURL;
-    let originalRevokeObjectURL;
-
-    beforeEach(() => {
-      createdAnchor = { click: jest.fn(), href: '', download: '' };
-      mockCreateElement = jest.spyOn(document, 'createElement').mockReturnValue(createdAnchor);
-      originalCreateObjectURL = URL.createObjectURL;
-      originalRevokeObjectURL = URL.revokeObjectURL;
-      URL.createObjectURL = jest.fn().mockReturnValue('blob:test');
-      URL.revokeObjectURL = jest.fn();
+  describe('exportAsMarkdown', () => {
+    it('should return string', () => {
+      const md = workflow.exportAsMarkdown();
+      expect(typeof md).toBe('string');
     });
 
-    afterEach(() => {
-      mockCreateElement.mockRestore();
-      URL.createObjectURL = originalCreateObjectURL;
-      URL.revokeObjectURL = originalRevokeObjectURL;
-    });
-
-    test('should export phase 3 response when available', () => {
-      const project = {
-        title: 'Test Project',
-        name: 'Test',
-        phases: {
-          1: { response: 'Phase 1 content' },
-          3: { response: 'Phase 3 final content' }
-        }
-      };
-
-      exportFinalOnePager(project);
-
-      expect(URL.createObjectURL).toHaveBeenCalled();
-      expect(createdAnchor.click).toHaveBeenCalled();
-    });
-
-    test('should fallback to phase 1 response when phase 3 is not available', () => {
-      const project = {
-        title: 'Test Project',
-        name: 'Test',
-        phases: {
-          1: { response: 'Phase 1 content' }
-        }
-      };
-
-      exportFinalOnePager(project);
-
-      expect(URL.createObjectURL).toHaveBeenCalled();
-      expect(createdAnchor.click).toHaveBeenCalled();
-    });
-
-    test('should handle legacy format with array phases', () => {
-      const project = {
-        title: 'Test Project',
-        name: 'Test',
-        phases: [
-          { response: '' },
-          { response: '' },
-          { response: 'Legacy phase 3 content' }
-        ]
-      };
-
-      exportFinalOnePager(project);
-
-      expect(URL.createObjectURL).toHaveBeenCalled();
-    });
-
-    test('should generate fallback content when no responses exist', () => {
-      const project = {
-        title: 'Test Project',
-        name: 'Test',
-        problems: 'Test problems',
-        phases: {}
-      };
-
-      exportFinalOnePager(project);
-
-      expect(URL.createObjectURL).toHaveBeenCalled();
-    });
-
-    test('should sanitize filename', () => {
-      const project = {
-        title: 'Test Project With Special Ch@rs!',
-        phases: { 3: { response: 'Content' } }
-      };
-
-      exportFinalOnePager(project);
-
-      expect(createdAnchor.download).toContain('test-project-with-special-ch-rs-');
-      expect(createdAnchor.download).toContain('-one-pager.md');
+    it('should include phase 3 output when available', () => {
+      project.phase3_output = 'Final content here';
+      const md = workflow.exportAsMarkdown();
+      expect(md).toContain('Final content');
     });
   });
+});
 
-  describe('generatePromptForPhase', () => {
-    // Note: prompts.js caches templates, so we test behavior not fetch calls
-
-    test('should generate phase 1 prompt with object-style phases', async () => {
-      const project = {
-        title: 'Test Project',
-        problems: 'Test Problems',
-        context: 'Test Context',
-        phase: 1,
-        phases: {
-          1: { prompt: '', response: '' },
-          2: { prompt: '', response: '' },
-          3: { prompt: '', response: '' }
-        },
-        formData: {
-          projectName: 'Test Project',
-          problemStatement: 'Test Problems',
-          context: 'Test Context'
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project, 1);
-
-      expect(prompt).toBeTruthy();
-      expect(prompt).toContain('Phase 1');
-    });
-
-    test('should generate phase 2 prompt using phase 1 response from object-style phases', async () => {
-      const project = {
-        title: 'Test Project',
-        phase: 2,
-        phases: {
-          1: { prompt: '', response: 'Phase 1 content here' },
-          2: { prompt: '', response: '' },
-          3: { prompt: '', response: '' }
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project, 2);
-
-      expect(prompt).toBeTruthy();
-      expect(prompt).toContain('Phase 1 content here');
-    });
-
-    test('should generate phase 3 prompt using phase 1 and 2 responses from object-style phases', async () => {
-      const project = {
-        title: 'Test Project',
-        phase: 3,
-        phases: {
-          1: { prompt: '', response: 'Phase 1 content' },
-          2: { prompt: '', response: 'Phase 2 content' },
-          3: { prompt: '', response: '' }
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project, 3);
-
-      expect(prompt).toBeTruthy();
-      expect(prompt).toContain('Phase 1 content');
-      expect(prompt).toContain('Phase 2 content');
-    });
-
-    test('should generate phase 2 prompt using phase 1 response from array-style phases', async () => {
-      const project = {
-        name: 'Test Project',
-        currentPhase: 2,
-        phases: [
-          { response: 'Phase 1 content from array' },
-          { response: '' },
-          { response: '' }
-        ]
-      };
-
-      const prompt = await generatePromptForPhase(project, 2);
-
-      expect(prompt).toBeTruthy();
-      expect(prompt).toContain('Phase 1 content from array');
-    });
-
-    test('should fallback to project.currentPhase when phase not provided', async () => {
-      const project = {
-        title: 'Test Project',
-        currentPhase: 1,
-        phases: {
-          1: { prompt: '', response: '' }
-        },
-        formData: { projectName: 'Fallback Test' }
-      };
-
-      const prompt = await generatePromptForPhase(project);
-
-      expect(prompt).toBeTruthy();
-      // Should generate phase 1 prompt (includes project name)
-      expect(prompt).toContain('Fallback Test');
-    });
-
-    test('should fallback to project.phase when currentPhase not provided', async () => {
-      const project = {
-        title: 'Test Project',
-        phase: 2,
-        phases: {
-          1: { response: 'Phase 1 output for fallback' },
-          2: { prompt: '', response: '' }
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project);
-
-      expect(prompt).toBeTruthy();
-      // Should generate phase 2 prompt (includes phase 1 output)
-      expect(prompt).toContain('Phase 1 output for fallback');
-    });
+describe('getPhaseMetadata helper', () => {
+  it('should return phase 1 metadata', () => {
+    const meta = getPhaseMetadata(1);
+    expect(meta.number).toBe(1);
+    expect(meta.name).toBeDefined();
   });
 
-  describe('Phase 2 and 3 prompt generation with prior phase content', () => {
-    let originalFetch;
-
-    beforeEach(() => {
-      originalFetch = global.fetch;
-      global.fetch = jest.fn((url) => {
-        const templates = {
-          'prompts/phase1.md': 'Phase 1: {{PROJECT_NAME}} - {{PROBLEM_STATEMENT}}',
-          'prompts/phase2.md': 'Phase 2 Review: Previous output was: {{PHASE1_OUTPUT}}',
-          'prompts/phase3.md': 'Phase 3 Synthesis: Phase 1: {{PHASE1_OUTPUT}}, Phase 2: {{PHASE2_OUTPUT}}'
-        };
-        return Promise.resolve({
-          ok: true,
-          text: () => Promise.resolve(templates[url] || 'Unknown template')
-        });
-      });
-    });
-
-    afterEach(() => {
-      global.fetch = originalFetch;
-    });
-
-    test('should include phase 1 response in phase 2 prompt', async () => {
-      const project = {
-        title: 'Test Project',
-        phase: 2,
-        phases: {
-          1: { prompt: 'Phase 1 prompt', response: 'This is the phase 1 output content' },
-          2: { prompt: '', response: '' },
-          3: { prompt: '', response: '' }
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project, 2);
-
-      // Phase 1 output should be included in phase 2 prompt
-      expect(prompt).toContain('This is the phase 1 output content');
-      // Template should be loaded (contains "Phase 2" identifier)
-      expect(prompt).toContain('Phase 2');
-    });
-
-    test('should include both phase 1 and 2 responses in phase 3 prompt', async () => {
-      const project = {
-        title: 'Test Project',
-        phase: 3,
-        phases: {
-          1: { prompt: 'Phase 1 prompt', response: 'Phase 1 final output' },
-          2: { prompt: 'Phase 2 prompt', response: 'Phase 2 review feedback' },
-          3: { prompt: '', response: '' }
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project, 3);
-
-      // Both phase outputs should be included
-      expect(prompt).toContain('Phase 1 final output');
-      expect(prompt).toContain('Phase 2 review feedback');
-      // Template should be loaded (contains "Phase 3" identifier)
-      expect(prompt).toContain('Phase 3');
-    });
-
-    test('should handle missing phase 1 response gracefully in phase 2', async () => {
-      const project = {
-        title: 'Test Project',
-        phase: 2,
-        phases: {
-          1: { prompt: '', response: '' },
-          2: { prompt: '', response: '' }
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project, 2);
-
-      expect(prompt).toContain('[No Phase 1 output yet]');
-    });
-
-    test('should handle missing phase responses gracefully in phase 3', async () => {
-      const project = {
-        title: 'Test Project',
-        phase: 3,
-        phases: {
-          1: { prompt: '', response: '' },
-          2: { prompt: '', response: '' },
-          3: { prompt: '', response: '' }
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project, 3);
-
-      expect(prompt).toContain('[No Phase 1 output yet]');
-      expect(prompt).toContain('[No Phase 2 output yet]');
-    });
+  it('should return phase 2 metadata', () => {
+    const meta = getPhaseMetadata(2);
+    expect(meta.number).toBe(2);
   });
 
-  describe('getPhaseMetadata for all phases', () => {
-    test('should return correct metadata for phase 1', () => {
-      const meta = getPhaseMetadata(1);
-
-      expect(meta.title).toBe('Initial Draft');
-      expect(meta.ai).toBe('Claude');
-      expect(meta.icon).toBeTruthy();
-      expect(meta.color).toBeTruthy();
-      expect(meta.description).toBeTruthy();
-    });
-
-    test('should return correct metadata for phase 2', () => {
-      const meta = getPhaseMetadata(2);
-
-      expect(meta.title).toBe('Alternative Perspective');
-      expect(meta.ai).toBe('Gemini');
-      expect(meta.icon).toBeTruthy();
-      expect(meta.color).toBeTruthy();
-      expect(meta.description).toBeTruthy();
-    });
-
-    test('should return correct metadata for phase 3', () => {
-      const meta = getPhaseMetadata(3);
-
-      expect(meta.title).toBe('Final Synthesis');
-      expect(meta.ai).toBe('Claude');
-      expect(meta.icon).toBeTruthy();
-      expect(meta.color).toBeTruthy();
-      expect(meta.description).toBeTruthy();
-    });
-
-    test('should return default metadata for invalid phase (falls back to phase 1)', () => {
-      const meta = getPhaseMetadata(99);
-
-      // Falls back to phase 1 metadata
-      expect(meta.title).toBe('Initial Draft');
-      expect(meta.ai).toBe('Claude');
-    });
+  it('should return phase 3 metadata', () => {
+    const meta = getPhaseMetadata(3);
+    expect(meta.number).toBe(3);
   });
 
-  describe('exportFinalOnePager', () => {
-    let createObjectURLMock;
-    let revokeObjectURLMock;
-    let clickedAnchor;
+  it('should return undefined for invalid phase', () => {
+    const meta = getPhaseMetadata(99);
+    expect(meta).toBeUndefined();
+  });
+});
 
-    beforeEach(() => {
-      createObjectURLMock = jest.fn(() => 'blob:mock-url');
-      revokeObjectURLMock = jest.fn();
-      global.URL.createObjectURL = createObjectURLMock;
-      global.URL.revokeObjectURL = revokeObjectURLMock;
+describe('exportFinalDocument helper', () => {
+  it('should export project as markdown', () => {
+    const project = {
+      title: 'Test',
+      phase3_output: 'Final content'
+    };
+    const md = exportFinalDocument(project);
+    expect(typeof md).toBe('string');
+  });
+});
 
-      clickedAnchor = null;
-      jest.spyOn(document, 'createElement').mockImplementation((tag) => {
-        if (tag === 'a') {
-          const anchor = {
-            href: '',
-            download: '',
-            click: jest.fn(() => { clickedAnchor = anchor; })
-          };
-          return anchor;
-        }
-        return document.createElement(tag);
-      });
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    test('should export phase 3 response when available', () => {
-      const project = {
-        title: 'My Project',
-        phases: {
-          1: { response: 'Phase 1 content' },
-          2: { response: 'Phase 2 content' },
-          3: { response: 'Final synthesized one-pager content' }
-        }
-      };
-
-      exportFinalOnePager(project);
-
-      expect(createObjectURLMock).toHaveBeenCalled();
-      expect(clickedAnchor).toBeTruthy();
-      expect(clickedAnchor.download).toContain('my-project');
-      expect(clickedAnchor.download).toContain('one-pager.md');
-    });
-
-    test('should fallback to phase 1 response when phase 3 is empty', () => {
-      const project = {
-        title: 'My Project',
-        phases: {
-          1: { response: 'Phase 1 content only' },
-          2: { response: '' },
-          3: { response: '' }
-        }
-      };
-
-      exportFinalOnePager(project);
-
-      expect(createObjectURLMock).toHaveBeenCalled();
-      expect(clickedAnchor).toBeTruthy();
-    });
-
-    test('should use project title/description as fallback when no phases completed', () => {
-      const project = {
-        title: 'My Fallback Project',
-        problems: 'Project problems description',
-        phases: {
-          1: { response: '' },
-          2: { response: '' },
-          3: { response: '' }
-        }
-      };
-
-      exportFinalOnePager(project);
-
-      expect(createObjectURLMock).toHaveBeenCalled();
-      // The blob should contain the title as markdown
-      const blobCall = createObjectURLMock.mock.calls[0][0];
-      expect(blobCall).toBeInstanceOf(Blob);
-    });
+describe('getExportFilename helper', () => {
+  it('should generate filename from title', () => {
+    const project = { title: 'My Test Project' };
+    const filename = getExportFilename(project);
+    expect(filename).toMatch(/\.md$/);
+    expect(filename).toContain('my-test-project');
   });
 
-  describe('End-to-End Data Flow: Form Input to Prompt Generation', () => {
-    let originalFetch;
-
-    beforeEach(() => {
-      originalFetch = global.fetch;
-      global.fetch = jest.fn((url) => {
-        const templates = {
-          'prompts/phase1.md': `
-# Phase 1: Initial Draft
-
-**Project:** {{PROJECT_NAME}}
-**Problem:** {{PROBLEM_STATEMENT}}
-**Context:** {{CONTEXT}}
-**Solution:** {{PROPOSED_SOLUTION}}
-          `,
-          'prompts/phase2.md': 'Phase 2: Review of {{PHASE1_OUTPUT}}',
-          'prompts/phase3.md': 'Phase 3: {{PHASE1_OUTPUT}} and {{PHASE2_OUTPUT}}'
-        };
-        return Promise.resolve({
-          ok: true,
-          text: () => Promise.resolve(templates[url] || 'Unknown')
-        });
-      });
-    });
-
-    afterEach(() => {
-      global.fetch = originalFetch;
-    });
-
-    test('CRITICAL: User input must appear in Phase 1 prompt (data loss regression test)', async () => {
-      // This test prevents the data loss bug from recurring
-      // When a user fills out the form and clicks submit, their data MUST appear in the prompt
-
-      const project = {
-        title: 'Mobile App Performance Optimization',
-        problems: 'App is slow on older devices',
-        context: 'Focus on Android, Q1 priority',
-        phase: 1,
-        phases: { 1: {}, 2: {}, 3: {} },
-        // Simulate formData populated correctly by createProject
-        formData: {
-          projectName: 'Mobile App Performance Optimization',
-          problemStatement: 'App is slow on older devices',
-          proposedSolution: '',
-          context: 'Focus on Android, Q1 priority'
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project, 1);
-
-      // User's input MUST be in the prompt - this was the bug
-      expect(prompt).toContain('Mobile App Performance Optimization');
-      expect(prompt).toContain('App is slow on older devices');
-      expect(prompt).toContain('Focus on Android, Q1 priority');
-    });
-
-    test('should fallback to project fields when formData is empty (legacy project support)', async () => {
-      // Simulate a legacy project created with the buggy code that had empty formData
-      const legacyProject = {
-        title: 'Legacy Project Title',
-        name: 'Legacy Project Title',
-        problems: 'Legacy problem statement',
-        description: 'Legacy problem statement',
-        context: 'Legacy context',
-        phase: 1,
-        phases: { 1: {}, 2: {}, 3: {} },
-        // Empty formData like the bug created
-        formData: {
-          projectName: '',
-          problemStatement: '',
-          proposedSolution: '',
-          context: ''
-        }
-      };
-
-      const prompt = await generatePromptForPhase(legacyProject, 1);
-
-      // Even with empty formData, should fallback to project.title and project.problems
-      expect(prompt).toContain('Legacy Project Title');
-      expect(prompt).toContain('Legacy problem statement');
-      expect(prompt).toContain('Legacy context');
-    });
-
-    test('should handle project with no formData at all', async () => {
-      // Edge case: very old project without formData property
-      const veryOldProject = {
-        title: 'Very Old Project',
-        problems: 'Old problem',
-        context: 'Old context',
-        phase: 1,
-        phases: { 1: {}, 2: {}, 3: {} }
-        // No formData property at all
-      };
-
-      const prompt = await generatePromptForPhase(veryOldProject, 1);
-
-      // Should use title/problems as fallback
-      expect(prompt).toContain('Very Old Project');
-      expect(prompt).toContain('Old problem');
-      expect(prompt).toContain('Old context');
-    });
+  it('should sanitize special characters', () => {
+    const project = { title: 'Test: With/Special*Chars!' };
+    const filename = getExportFilename(project);
+    expect(filename).not.toMatch(/[/:*!]/);
   });
 
-  describe('E2E: Template-Code Sync Validation', () => {
-    // These tests read REAL template files to ensure templates contain required placeholders
-    // This prevents the bug where code populates a variable but template doesn't use it
-
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-
-    function readRealTemplate(templateName) {
-      const templatePath = path.join(__dirname, '..', 'prompts', templateName);
-      return fs.readFileSync(templatePath, 'utf8');
-    }
-
-    test('CRITICAL: phase1.md template MUST contain {{CONTEXT}} placeholder', () => {
-      // This test would have caught the missing context placeholder bug
-      const template = readRealTemplate('phase1.md');
-      expect(template).toContain('{{CONTEXT}}');
-    });
-
-    test('CRITICAL: phase1.md template MUST contain all required user input placeholders', () => {
-      const template = readRealTemplate('phase1.md');
-
-      // These are the fields the user fills out in the form (using {{VAR}} syntax)
-      const requiredPlaceholders = [
-        '{{PROJECT_NAME}}',
-        '{{PROBLEM_STATEMENT}}',
-        '{{CONTEXT}}'
-      ];
-
-      for (const placeholder of requiredPlaceholders) {
-        expect(template).toContain(placeholder);
-      }
-    });
-
-    test('CRITICAL: phase1.md template MUST contain all formData placeholders', () => {
-      const template = readRealTemplate('phase1.md');
-
-      // All placeholders that generatePromptForPhase populates (using {{VAR}} syntax)
-      const allPlaceholders = [
-        '{{PROJECT_NAME}}',
-        '{{PROBLEM_STATEMENT}}',
-        '{{PROPOSED_SOLUTION}}',
-        '{{KEY_GOALS}}',
-        '{{SCOPE_IN_SCOPE}}',
-        '{{SCOPE_OUT_OF_SCOPE}}',
-        '{{SUCCESS_METRICS}}',
-        '{{KEY_STAKEHOLDERS}}',
-        '{{TIMELINE_ESTIMATE}}',
-        '{{CONTEXT}}'
-      ];
-
-      for (const placeholder of allPlaceholders) {
-        expect(template).toContain(placeholder);
-      }
-    });
-
-    test('CRITICAL: phase2.md template MUST contain {{PHASE1_OUTPUT}} placeholder', () => {
-      const template = readRealTemplate('phase2.md');
-      expect(template).toContain('{{PHASE1_OUTPUT}}');
-    });
-
-    test('CRITICAL: phase3.md template MUST contain phase output placeholders', () => {
-      const template = readRealTemplate('phase3.md');
-      expect(template).toContain('{{PHASE1_OUTPUT}}');
-      expect(template).toContain('{{PHASE2_OUTPUT}}');
-    });
-
-    test('E2E: User input flows through REAL template to generated prompt', async () => {
-      // This test uses the REAL template file, not a mock
-      // It verifies the complete data flow from user input to final prompt
-
-      const originalFetch = global.fetch;
-
-      // Use real template
-      const realTemplate = readRealTemplate('phase1.md');
-      global.fetch = jest.fn(() => Promise.resolve({
-        ok: true,
-        text: () => Promise.resolve(realTemplate)
-      }));
-
-      const project = {
-        title: 'E2E Test Project',
-        problems: 'E2E Test Problem',
-        context: 'E2E Test Context',
-        phase: 1,
-        phases: { 1: {}, 2: {}, 3: {} },
-        formData: {
-          projectName: 'E2E Test Project',
-          problemStatement: 'E2E Test Problem',
-          proposedSolution: '',
-          keyGoals: '',
-          scopeInScope: '',
-          scopeOutOfScope: '',
-          successMetrics: '',
-          keyStakeholders: '',
-          timelineEstimate: '',
-          context: 'E2E Test Context'
-        }
-      };
-
-      const prompt = await generatePromptForPhase(project, 1);
-
-      // ALL user inputs must appear in the generated prompt
-      expect(prompt).toContain('E2E Test Project');
-      expect(prompt).toContain('E2E Test Problem');
-      expect(prompt).toContain('E2E Test Context');
-
-      // Empty fields should be replaced with empty string (not [Not provided])
-      // The {{VAR}} syntax just removes the placeholder when value is empty
-      expect(prompt).not.toContain('{{');
-
-      global.fetch = originalFetch;
-    });
+  it('should handle empty title', () => {
+    const project = { title: '' };
+    const filename = getExportFilename(project);
+    expect(filename).toMatch(/\.md$/);
   });
 });

@@ -13,7 +13,31 @@ export { WORKFLOW_CONFIG };
 export const PHASES = WORKFLOW_CONFIG.phases;
 
 /**
- * Helper to get phase data, handling both object and array formats
+ * Helper to get phase output, handling both flat and nested formats
+ * @param {Object} project - Project object
+ * @param {number} phaseNum - 1-based phase number
+ * @returns {string} Phase output content
+ */
+function getPhaseOutputInternal(project, phaseNum) {
+  // Flat format (canonical) - check first
+  const flatKey = `phase${phaseNum}_output`;
+  if (project[flatKey]) {
+    return project[flatKey];
+  }
+  // Nested format (legacy) - fallback
+  if (project.phases) {
+    if (Array.isArray(project.phases) && project.phases[phaseNum - 1]) {
+      return project.phases[phaseNum - 1].response || '';
+    }
+    if (project.phases[phaseNum] && typeof project.phases[phaseNum] === 'object') {
+      return project.phases[phaseNum].response || '';
+    }
+  }
+  return '';
+}
+
+/**
+ * Helper to get phase data, handling both object and array formats (legacy)
  * @param {Object} project - Project object
  * @param {number} phaseNum - 1-based phase number
  * @returns {Object} Phase data object with prompt, response, completed
@@ -197,34 +221,12 @@ export function getProgress(project) {
 }
 
 /**
- * Get phase metadata for UI display
+ * Get phase metadata from WORKFLOW_CONFIG
+ * @param {number} phaseNumber - Phase number (1-3)
+ * @returns {Object|undefined} Phase metadata with number, name, description, etc.
  */
-export function getPhaseMetadata(phase) {
-  const phases = {
-    1: {
-      title: 'Initial Draft',
-      description: 'Generate the first draft of your one-pager using Claude',
-      ai: 'Claude',
-      icon: '📝',
-      color: 'blue'
-    },
-    2: {
-      title: 'Alternative Perspective',
-      description: 'Get a different perspective and improvements from Gemini',
-      ai: 'Gemini',
-      icon: '🔄',
-      color: 'green'
-    },
-    3: {
-      title: 'Final Synthesis',
-      description: 'Combine the best elements into a polished final version',
-      ai: 'Claude',
-      icon: '✨',
-      color: 'purple'
-    }
-  };
-
-  return phases[phase] || phases[1];
+export function getPhaseMetadata(phaseNumber) {
+  return WORKFLOW_CONFIG.phases.find(p => p.number === phaseNumber);
 }
 
 /**
@@ -308,16 +310,17 @@ export function exportFinalOnePager(project) {
  * @returns {string|null} The markdown content or null if none exists
  */
 export function getFinalMarkdown(project) {
-  const phase3 = getPhaseData(project, 3);
-  const phase1 = getPhaseData(project, 1);
-  const phase2 = getPhaseData(project, 2);
+  const workflow = new Workflow(project);
+  const phase3 = workflow.getPhaseOutput(3);
+  const phase1 = workflow.getPhaseOutput(1);
+  const phase2 = workflow.getPhaseOutput(2);
 
-  if (phase3.response) {
-    return phase3.response;
-  } else if (phase1.response) {
-    return phase1.response;
-  } else if (phase2.response) {
-    return phase2.response;
+  if (phase3) {
+    return phase3;
+  } else if (phase1) {
+    return phase1;
+  } else if (phase2) {
+    return phase2;
   }
   return null;
 }
@@ -328,5 +331,165 @@ export function getFinalMarkdown(project) {
  * @returns {string} Filename with .md extension
  */
 export function getExportFilename(project) {
-  return `${(project.title || project.name).replace(/[^a-z0-9]/gi, '-').toLowerCase()}-one-pager.md`;
+  const title = project.title || project.name || 'one-pager';
+  return `${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-one-pager.md`;
+}
+
+/**
+ * Export final document as markdown (returns the markdown string)
+ * @param {Object} project - Project object
+ * @returns {string} Markdown content
+ */
+export function exportFinalDocument(project) {
+  const workflow = new Workflow(project);
+  return workflow.exportAsMarkdown();
+}
+
+// ============================================================================
+// WORKFLOW CLASS - Canonical implementation matching genesis template
+// ============================================================================
+
+export class Workflow {
+  constructor(project) {
+    this.project = project;
+    // Clamp phase to valid range (1 minimum)
+    const rawPhase = project.phase || project.currentPhase || 1;
+    this.currentPhase = Math.max(1, rawPhase);
+  }
+
+  /**
+   * Get current phase configuration
+   */
+  getCurrentPhase() {
+    if (this.currentPhase > WORKFLOW_CONFIG.phaseCount) {
+      return WORKFLOW_CONFIG.phases[WORKFLOW_CONFIG.phaseCount - 1];
+    }
+    return WORKFLOW_CONFIG.phases.find(p => p.number === this.currentPhase);
+  }
+
+  /**
+   * Get next phase configuration
+   */
+  getNextPhase() {
+    if (this.currentPhase >= WORKFLOW_CONFIG.phaseCount) {
+      return null;
+    }
+    return WORKFLOW_CONFIG.phases.find(p => p.number === this.currentPhase + 1);
+  }
+
+  /**
+   * Check if workflow is complete
+   */
+  isComplete() {
+    return this.currentPhase > WORKFLOW_CONFIG.phaseCount;
+  }
+
+  /**
+   * Advance to next phase
+   */
+  advancePhase() {
+    if (this.currentPhase <= WORKFLOW_CONFIG.phaseCount) {
+      this.currentPhase++;
+      this.project.phase = this.currentPhase;
+      this.project.currentPhase = this.currentPhase;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Go back to previous phase
+   */
+  previousPhase() {
+    if (this.currentPhase > 1) {
+      this.currentPhase--;
+      this.project.phase = this.currentPhase;
+      this.project.currentPhase = this.currentPhase;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Generate prompt for current phase
+   */
+  async generatePrompt() {
+    const formData = this.project.formData || {};
+    const enrichedFormData = {
+      projectName: formData.projectName || this.project.title || this.project.name || '',
+      problemStatement: formData.problemStatement || this.project.problems || this.project.description || '',
+      costOfDoingNothing: formData.costOfDoingNothing || '',
+      proposedSolution: formData.proposedSolution || '',
+      keyGoals: formData.keyGoals || '',
+      scopeInScope: formData.scopeInScope || '',
+      scopeOutOfScope: formData.scopeOutOfScope || '',
+      successMetrics: formData.successMetrics || '',
+      keyStakeholders: formData.keyStakeholders || '',
+      timelineEstimate: formData.timelineEstimate || '',
+      context: formData.context || this.project.context || ''
+    };
+
+    switch (this.currentPhase) {
+    case 1:
+      return await generatePhase1Prompt(enrichedFormData);
+    case 2:
+      return await generatePhase2Prompt(this.getPhaseOutput(1) || '[No Phase 1 output]');
+    case 3:
+      return await generatePhase3Prompt(
+        this.getPhaseOutput(1) || '[No Phase 1 output]',
+        this.getPhaseOutput(2) || '[No Phase 2 output]'
+      );
+    default:
+      throw new Error(`Invalid phase: ${this.currentPhase}`);
+    }
+  }
+
+  /**
+   * Save phase output
+   */
+  savePhaseOutput(output) {
+    const phaseKey = `phase${this.currentPhase}_output`;
+    this.project[phaseKey] = output;
+    this.project.updatedAt = new Date().toISOString();
+    this.project.modified = Date.now();
+  }
+
+  /**
+   * Get phase output
+   */
+  getPhaseOutput(phaseNumber) {
+    return getPhaseOutputInternal(this.project, phaseNumber);
+  }
+
+  /**
+   * Export final output as Markdown
+   */
+  exportAsMarkdown() {
+    const attribution = '\n\n---\n\n*Generated with [One-Pager Assistant](https://bordenet.github.io/one-pager/)*';
+
+    // Try phases in order of preference: 3, 1, 2
+    const phase3 = this.getPhaseOutput(3);
+    const phase1 = this.getPhaseOutput(1);
+    const phase2 = this.getPhaseOutput(2);
+
+    let content = '';
+    if (phase3) {
+      content = phase3;
+    } else if (phase1) {
+      content = phase1;
+    } else if (phase2) {
+      content = phase2;
+    } else {
+      content = `# ${this.project.title || this.project.name}\n\nNo one-pager content generated yet.`;
+    }
+
+    return content + attribution;
+  }
+
+  /**
+   * Get workflow progress percentage
+   */
+  getProgress() {
+    return Math.round((this.currentPhase / WORKFLOW_CONFIG.phaseCount) * 100);
+  }
 }

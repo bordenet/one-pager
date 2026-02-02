@@ -163,19 +163,22 @@ function updatePhaseTabStyles(activePhase) {
 function renderPhaseContent(project, phase) {
   const meta = getPhaseMetadata(phase);
   const phaseData = project.phases && project.phases[phase] ? project.phases[phase] : { prompt: '', response: '', completed: false };
+  // Color mapping for phases (canonical WORKFLOW_CONFIG doesn't include colors)
+  const colorMap = { 1: 'blue', 2: 'green', 3: 'purple' };
+  const color = colorMap[phase] || 'blue';
 
   return `
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="mb-6">
                 <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                    ${meta.icon} ${meta.title}
+                    ${meta.icon} ${meta.name}
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 mb-2">
                     ${meta.description}
                 </p>
-                <div class="inline-flex items-center px-3 py-1 bg-${meta.color}-100 dark:bg-${meta.color}-900/20 text-${meta.color}-800 dark:text-${meta.color}-300 rounded-full text-sm">
+                <div class="inline-flex items-center px-3 py-1 bg-${color}-100 dark:bg-${color}-900/20 text-${color}-800 dark:text-${color}-300 rounded-full text-sm">
                     <span class="mr-2">🤖</span>
-                    Use with ${meta.ai}
+                    Use with ${meta.aiModel}
                 </div>
             </div>
 
@@ -371,7 +374,7 @@ function attachPhaseEventListeners(project, phase) {
     viewGeneratedPromptBtn.addEventListener('click', async () => {
       const prompt = await generatePromptForPhase(project, phase);
       const meta = getPhaseMetadata(phase);
-      showPromptModal(prompt, `Phase ${phase}: ${meta.title} Prompt`, () => enableWorkflowProgression(prompt));
+      showPromptModal(prompt, `Phase ${phase}: ${meta.name} Prompt`, () => enableWorkflowProgression(prompt));
     });
   }
 
@@ -481,7 +484,7 @@ function attachPhaseEventListeners(project, phase) {
         }
       };
 
-      showPromptModal(project.phases[phase].prompt, `Phase ${phase}: ${meta.title} Prompt`, enableWorkflow);
+      showPromptModal(project.phases[phase].prompt, `Phase ${phase}: ${meta.name} Prompt`, enableWorkflow);
     });
   }
 
