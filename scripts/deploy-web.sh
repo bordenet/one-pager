@@ -45,6 +45,13 @@ readonly DEPLOY_ITEMS=(
     "js"
 )
 
+# Files/folders to copy from validator/ to root/validator/ for GitHub Pages
+readonly VALIDATOR_DEPLOY_ITEMS=(
+    "index.html"
+    "css"
+    "js"
+)
+
 SKIP_TESTS=false
 SKIP_LINT=false
 DRY_RUN=false
