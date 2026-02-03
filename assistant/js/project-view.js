@@ -184,7 +184,7 @@ function renderPhaseContent(project, phase) {
                         📄 Preview & Copy
                     </button>
                     <span class="text-gray-500 dark:text-gray-400">then</span>
-                    <a href="https://bordenet.github.io/one-pager-validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline font-medium text-lg">
+                    <a href="https://bordenet.github.io/one-pager/validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline font-medium text-lg">
                         Validate & Score ↗
                     </a>
                 </div>
@@ -199,7 +199,7 @@ function renderPhaseContent(project, phase) {
                         <li>Click <strong>"Preview & Copy"</strong> to see your formatted document</li>
                         <li>Click <strong>"Copy Formatted Text"</strong> in the preview</li>
                         <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong> and paste</li>
-                        <li>Use <strong><a href="https://bordenet.github.io/one-pager-validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">One-Pager Validator</a></strong> to score and improve your document</li>
+                        <li>Use <strong><a href="https://bordenet.github.io/one-pager/validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">One-Pager Validator</a></strong> to score and improve your document</li>
                     </ol>
                     <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs">
                         💡 The validator provides instant feedback and AI-powered suggestions for improvement.
