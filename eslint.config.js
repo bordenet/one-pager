@@ -29,7 +29,7 @@ export default [
 
   // Test files configuration
   {
-    files: ['tests/**/*.js', '**/*.test.js'],
+    files: ['**/tests/**/*.js', '**/*.test.js'],
     languageOptions: {
       globals: {
         ...globals.jest,
@@ -44,7 +44,8 @@ export default [
       'coverage/**',
       'docs/**',
       'dist/**',
-      'js/lib/**',
+      '**/lib/**',
+      '**/core/**',
       '*.min.js',
       '**/*.min.js',
     ],
