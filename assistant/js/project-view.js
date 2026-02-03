@@ -397,32 +397,39 @@ function attachPhaseEventListeners(project, phase) {
   saveResponseBtn.addEventListener('click', async () => {
     const response = responseTextarea.value.trim();
     if (response && response.length >= 3) {
-      await updatePhase(project.id, phase, project.phases && project.phases[phase] ? project.phases[phase].prompt : '', response);
+      try {
+        // Re-fetch project from storage to ensure we have fresh data (not stale closure)
+        const freshProject = await getProject(project.id);
+        const currentPrompt = freshProject.phases?.[phase]?.prompt || '';
 
-      // Auto-advance to next phase if not on final phase
-      if (phase < 3) {
-        showToast('Response saved! Moving to next phase...', 'success');
-        // Re-fetch the updated project and advance
-        const updatedProject = await getProject(project.id);
-        updatedProject.phase = phase + 1;
-        updatedProject.currentPhase = phase + 1;
-        updatePhaseTabStyles(phase + 1);
-        document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
-        attachPhaseEventListeners(updatedProject, phase + 1);
-      } else {
-        // Phase 3 complete - extract and update project title if changed
-        const extractedTitle = extractTitleFromMarkdown(response);
-        if (extractedTitle && extractedTitle !== project.title) {
-          await updateProject(project.id, {
-            title: extractedTitle,
-            name: extractedTitle, // Legacy compatibility
-            formData: { ...project.formData, projectName: extractedTitle }
-          });
-          showToast(`Phase 3 complete! Title updated to "${extractedTitle}"`, 'success');
+        await updatePhase(project.id, phase, currentPrompt, response);
+
+        // Auto-advance to next phase if not on final phase
+        if (phase < 3) {
+          showToast('Response saved! Moving to next phase...', 'success');
+          // Re-fetch the updated project and advance
+          const updatedProject = await getProject(project.id);
+          updatePhaseTabStyles(phase + 1);
+          document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
+          attachPhaseEventListeners(updatedProject, phase + 1);
         } else {
-          showToast('Phase 3 complete! Your one-pager is ready.', 'success');
+          // Phase 3 complete - extract and update project title if changed
+          const extractedTitle = extractTitleFromMarkdown(response);
+          if (extractedTitle && extractedTitle !== freshProject.title) {
+            await updateProject(project.id, {
+              title: extractedTitle,
+              name: extractedTitle, // Legacy compatibility
+              formData: { ...freshProject.formData, projectName: extractedTitle }
+            });
+            showToast(`Phase 3 complete! Title updated to "${extractedTitle}"`, 'success');
+          } else {
+            showToast('Phase 3 complete! Your one-pager is ready.', 'success');
+          }
+          renderProjectView(project.id);
         }
-        renderProjectView(project.id);
+      } catch (error) {
+        console.error('Error saving response:', error);
+        showToast(`Failed to save response: ${error.message}`, 'error');
       }
     } else {
       showToast('Please enter at least 3 characters', 'warning');
