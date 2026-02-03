@@ -236,25 +236,19 @@ main() {
     run_lint || exit 1
     run_tests || exit 1
 
-    # Replace symlinks with real files for GitHub Pages
+    # Ensure real files exist (not symlinks) for GitHub Pages
+    # Note: GitHub Pages cannot follow symlinks, so we keep real files in the repo
     replace_symlinks_with_real_files || exit 1
 
     # Copy assistant/ files to root for GitHub Pages (serves from /)
     copy_assistant_to_root || exit 1
 
-    # Deploy (with trap to cleanup on failure)
-    cleanup_deploy() {
-        remove_root_copies 2>/dev/null || true
-        restore_symlinks 2>/dev/null || true
-    }
-    trap 'cleanup_deploy' EXIT
-
+    # Deploy to GitHub
     deploy_to_github || exit 1
 
-    # Cleanup: remove root copies and restore symlinks
-    remove_root_copies
-    restore_symlinks
-    trap - EXIT
+    # Note: We do NOT remove root copies or restore symlinks after deploy
+    # The repo needs real files (not symlinks) for GitHub Pages to work
+    # Local dev can recreate symlinks with: ./scripts/lib/symlinks.sh --restore
 
     verify_deployment
 
