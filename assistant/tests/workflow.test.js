@@ -10,7 +10,24 @@
  */
 
 import { jest } from '@jest/globals';
-import { Workflow, WORKFLOW_CONFIG, getPhaseMetadata, exportFinalDocument, getExportFilename } from '../js/workflow.js';
+import {
+  Workflow,
+  WORKFLOW_CONFIG,
+  PHASES,
+  getPhaseMetadata,
+  exportFinalDocument,
+  getExportFilename,
+  createProject,
+  updateFormData,
+  validatePhase,
+  advancePhase,
+  isProjectComplete,
+  getCurrentPhase,
+  updatePhaseResponse,
+  getProgress,
+  getFinalMarkdown,
+  generatePrompt
+} from '../js/workflow.js';
 
 // Mock fetch for prompt template loading
 beforeAll(() => {
@@ -343,5 +360,207 @@ describe('getExportFilename helper', () => {
     const project = { title: '' };
     const filename = getExportFilename(project);
     expect(filename).toMatch(/\.md$/);
+  });
+});
+
+// ============================================================================
+// Standalone Function Tests - These test the non-class workflow functions
+// ============================================================================
+
+describe('createProject', () => {
+  it('should create a project with default structure', () => {
+    const project = createProject('Test Project', 'Test description');
+    expect(project.name).toBe('Test Project');
+    expect(project.description).toBe('Test description');
+    expect(project.currentPhase).toBe(1);
+    expect(project.phases).toBeInstanceOf(Array);
+    expect(project.phases.length).toBe(3);
+    expect(project.formData).toBeDefined();
+  });
+
+  it('should have empty form data fields', () => {
+    const project = createProject('Test', 'Desc');
+    expect(project.formData.projectName).toBe('');
+    expect(project.formData.problemStatement).toBe('');
+  });
+});
+
+describe('updateFormData', () => {
+  it('should update form data on project', () => {
+    const project = createProject('Test', 'Desc');
+    updateFormData(project, { projectName: 'Updated Name' });
+    expect(project.formData.projectName).toBe('Updated Name');
+  });
+
+  it('should merge with existing form data', () => {
+    const project = createProject('Test', 'Desc');
+    project.formData.projectName = 'Original';
+    updateFormData(project, { problemStatement: 'Problem' });
+    expect(project.formData.projectName).toBe('Original');
+    expect(project.formData.problemStatement).toBe('Problem');
+  });
+});
+
+describe('validatePhase', () => {
+  it('should validate phase 1 requires form fields', () => {
+    const project = createProject('Test', 'Desc');
+    project.phases[0].response = 'Some response';
+    const result = validatePhase(project);
+    expect(result.valid).toBe(false);
+  });
+
+  it('should validate phase 1 with complete data', () => {
+    const project = createProject('Test', 'Desc');
+    project.formData.projectName = 'Project';
+    project.formData.problemStatement = 'Problem';
+    project.formData.proposedSolution = 'Solution';
+    project.phases[0].response = 'Response';
+    const result = validatePhase(project);
+    expect(result.valid).toBe(true);
+  });
+
+  it('should fail validation when response is empty', () => {
+    const project = createProject('Test', 'Desc');
+    project.formData.projectName = 'Project';
+    project.formData.problemStatement = 'Problem';
+    project.formData.proposedSolution = 'Solution';
+    const result = validatePhase(project);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('response');
+  });
+});
+
+describe('advancePhase', () => {
+  it('should advance from phase 1 to phase 2', () => {
+    const project = createProject('Test', 'Desc');
+    advancePhase(project);
+    expect(project.currentPhase).toBe(2);
+  });
+
+  it('should mark phase as completed', () => {
+    const project = createProject('Test', 'Desc');
+    advancePhase(project);
+    expect(project.phases[0].completed).toBe(true);
+  });
+});
+
+describe('isProjectComplete', () => {
+  it('should return false for new project', () => {
+    const project = createProject('Test', 'Desc');
+    expect(isProjectComplete(project)).toBe(false);
+  });
+
+  it('should return true when all phases are completed', () => {
+    const project = createProject('Test', 'Desc');
+    project.phases.forEach(p => { p.completed = true; });
+    expect(isProjectComplete(project)).toBe(true);
+  });
+
+  it('should handle object format phases', () => {
+    const project = { phases: { 1: { completed: true }, 2: { completed: true }, 3: { completed: true } } };
+    expect(isProjectComplete(project)).toBe(true);
+  });
+});
+
+describe('getCurrentPhase', () => {
+  it('should return phase 1 data by default', () => {
+    const project = createProject('Test', 'Desc');
+    const phase = getCurrentPhase(project);
+    expect(phase.number).toBe(1);
+  });
+
+  it('should return current phase data', () => {
+    const project = createProject('Test', 'Desc');
+    project.currentPhase = 2;
+    const phase = getCurrentPhase(project);
+    expect(phase.number).toBe(2);
+  });
+});
+
+describe('updatePhaseResponse', () => {
+  it('should update current phase response', () => {
+    const project = createProject('Test', 'Desc');
+    updatePhaseResponse(project, 'Test response');
+    expect(project.phases[0].response).toBe('Test response');
+  });
+});
+
+describe('getProgress', () => {
+  it('should return 0 for new project', () => {
+    const project = createProject('Test', 'Desc');
+    expect(getProgress(project)).toBe(0);
+  });
+
+  it('should return 33 when one phase completed', () => {
+    const project = createProject('Test', 'Desc');
+    project.phases[0].completed = true;
+    expect(getProgress(project)).toBe(33);
+  });
+
+  it('should return 100 when all phases completed', () => {
+    const project = createProject('Test', 'Desc');
+    project.phases.forEach(p => { p.completed = true; });
+    expect(getProgress(project)).toBe(100);
+  });
+});
+
+describe('getFinalMarkdown', () => {
+  it('should return null for project with no output', () => {
+    const project = createProject('Test', 'Desc');
+    const result = getFinalMarkdown(project);
+    expect(result).toBeNull();
+  });
+
+  it('should return phase 3 output when available', () => {
+    const project = createProject('Test', 'Desc');
+    project.phase3_output = 'Phase 3 content';
+    const result = getFinalMarkdown(project);
+    expect(result).toBe('Phase 3 content');
+  });
+
+  it('should fall back to phase 1 output', () => {
+    const project = createProject('Test', 'Desc');
+    project.phase1_output = 'Phase 1 content';
+    const result = getFinalMarkdown(project);
+    expect(result).toBe('Phase 1 content');
+  });
+
+  it('should fall back to phase 2 output', () => {
+    const project = createProject('Test', 'Desc');
+    project.phase2_output = 'Phase 2 content';
+    const result = getFinalMarkdown(project);
+    expect(result).toBe('Phase 2 content');
+  });
+});
+
+describe('generatePrompt (standalone)', () => {
+  it('should generate phase 1 prompt', async () => {
+    const project = createProject('Test', 'Desc');
+    project.formData.projectName = 'My Project';
+    const prompt = await generatePrompt(project);
+    expect(typeof prompt).toBe('string');
+  });
+
+  it('should generate phase 2 prompt', async () => {
+    const project = createProject('Test', 'Desc');
+    project.currentPhase = 2;
+    project.phase1_output = 'Phase 1 output';
+    const prompt = await generatePrompt(project);
+    expect(typeof prompt).toBe('string');
+  });
+
+  it('should generate phase 3 prompt', async () => {
+    const project = createProject('Test', 'Desc');
+    project.currentPhase = 3;
+    project.phase1_output = 'Phase 1 output';
+    project.phase2_output = 'Phase 2 output';
+    const prompt = await generatePrompt(project);
+    expect(typeof prompt).toBe('string');
+  });
+});
+
+describe('PHASES constant', () => {
+  it('should be same as WORKFLOW_CONFIG.phases', () => {
+    expect(PHASES).toBe(WORKFLOW_CONFIG.phases);
   });
 });
