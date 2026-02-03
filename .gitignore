@@ -74,3 +74,5 @@ coverage.out
 build/
 dist/
 *.log
+ADOPT-PROMPT.md
+Agents.md.original

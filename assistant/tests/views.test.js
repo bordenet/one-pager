@@ -328,7 +328,7 @@ describe('Views Module', () => {
       expect(container.innerHTML).toContain('Your One-Pager is Complete');
 
       // Should show prominent export button with correct label
-      const exportBtn = container.querySelector('#export-btn');
+      const exportBtn = container.querySelector('#export-complete-btn');
       expect(exportBtn).toBeTruthy();
       expect(exportBtn.textContent).toContain('Preview & Copy');
     });
