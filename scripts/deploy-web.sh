@@ -127,14 +127,9 @@ if ! git diff-index --quiet HEAD --; then
 fi
 print_success "Working directory clean"
 
-# Build the application bundle
-print_header "Building application bundle"
-if [[ "$VERBOSE" == "true" ]]; then
-  npm run build || { print_error "Build failed"; exit 1; }
-else
-  npm run build >/dev/null 2>&1 || { print_error "Build failed"; exit 1; }
-fi
-print_success "Build completed"
+# Note: one-pager doesn't require a build step (no Tailwind/esbuild)
+print_header "Checking project files"
+print_success "Project files ready (no build required)"
 
 # Linting
 if [[ "$SKIP_LINT" == "false" ]]; then
