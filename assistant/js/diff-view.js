@@ -1,5 +1,5 @@
 /**
- * Diff View Module - Visual comparison between phases
+ * Diff View Module - Visual comparison between PRD phases
  * @module diff-view
  */
 
