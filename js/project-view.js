@@ -5,10 +5,11 @@
  */
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
-import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename } from './workflow.js';
+import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename, Workflow } from './workflow.js';
 import { escapeHtml, showToast, copyToClipboard, copyToClipboardAsync, showPromptModal, confirm, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
+import { computeWordDiff, renderDiffHtml, getDiffStats } from './diff-view.js';
 
 /**
  * Extract title from markdown content (looks for # Title at the beginning)
@@ -183,7 +184,10 @@ function renderPhaseContent(project, phase) {
                     <button id="export-complete-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
                         📄 Preview & Copy
                     </button>
-                    <button id="validate-score-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg">
+                    <button id="compare-phases-btn" class="px-4 py-2 border border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors font-medium">
+                        🔄 Compare Phases
+                    </button>
+                    <button id="validate-score-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                         📋 Copy & Validate ↗
                     </button>
                 </div>
@@ -198,7 +202,7 @@ function renderPhaseContent(project, phase) {
                         <li>Click <strong>"Preview & Copy"</strong> to see your formatted document</li>
                         <li>Click <strong>"Copy Formatted Text"</strong> in the preview</li>
                         <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong> and paste</li>
-                        <li>Use <strong><a href="https://bordenet.github.io/one-pager-validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">One-Pager Validator</a></strong> to score and improve your document</li>
+                        <li>Use <strong><a href="https://bordenet.github.io/one-pager/validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">One-Pager Validator</a></strong> to score and improve your document</li>
                     </ol>
                     <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs">
                         💡 The validator provides instant feedback and AI-powered suggestions for improvement.
@@ -268,13 +272,13 @@ function renderPhaseContent(project, phase) {
             <!-- Step B: Paste Response -->
             <div class="mb-6">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    Step B: Paste ${meta.ai}'s Response
+                    Step B: Paste ${meta.aiModel}'s Response
                 </h4>
                 <textarea
                     id="response-textarea"
                     rows="12"
                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-800"
-                    placeholder="Paste ${meta.ai}'s response here..."
+                    placeholder="Paste ${meta.aiModel}'s response here..."
                     ${!phaseData.response ? 'disabled' : ''}
                 >${escapeHtml(phaseData.response || '')}</textarea>
 
@@ -314,6 +318,58 @@ function renderPhaseContent(project, phase) {
             </div>
         </div>
     `;
+}
+
+/**
+ * Show diff modal comparing Phase 1 and Phase 2 outputs
+ * @param {string} phase1 - Phase 1 output
+ * @param {string} phase2 - Phase 2 output
+ */
+function showDiffModal(phase1, phase2) {
+  const diff = computeWordDiff(phase1, phase2);
+  const stats = getDiffStats(diff);
+  const diffHtml = renderDiffHtml(diff);
+
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+  modal.innerHTML = `
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+            🔄 Phase Comparison: Draft → Review
+          </h3>
+          <div class="flex gap-4 mt-2 text-sm">
+            <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded">+${stats.additions} added</span>
+            <span class="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">-${stats.deletions} removed</span>
+            <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">${stats.unchanged} unchanged</span>
+          </div>
+        </div>
+        <button id="close-diff-modal-btn" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto flex-1">
+        <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed">${diffHtml}</div>
+      </div>
+      <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          <span class="bg-green-200 dark:bg-green-900/50 px-1">Green text</span> = added in review |
+          <span class="bg-red-200 dark:bg-red-900/50 px-1 line-through">Red strikethrough</span> = removed from draft
+        </p>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  const closeModal = () => modal.remove();
+  modal.querySelector('#close-diff-modal-btn').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', function handleEscape(e) {
+    if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', handleEscape); }
+  });
 }
 
 /**
@@ -396,32 +452,39 @@ function attachPhaseEventListeners(project, phase) {
   saveResponseBtn.addEventListener('click', async () => {
     const response = responseTextarea.value.trim();
     if (response && response.length >= 3) {
-      await updatePhase(project.id, phase, project.phases && project.phases[phase] ? project.phases[phase].prompt : '', response);
+      try {
+        // Re-fetch project from storage to ensure we have fresh data (not stale closure)
+        const freshProject = await getProject(project.id);
+        const currentPrompt = freshProject.phases?.[phase]?.prompt || '';
 
-      // Auto-advance to next phase if not on final phase
-      if (phase < 3) {
-        showToast('Response saved! Moving to next phase...', 'success');
-        // Re-fetch the updated project and advance
-        const updatedProject = await getProject(project.id);
-        updatedProject.phase = phase + 1;
-        updatedProject.currentPhase = phase + 1;
-        updatePhaseTabStyles(phase + 1);
-        document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
-        attachPhaseEventListeners(updatedProject, phase + 1);
-      } else {
-        // Phase 3 complete - extract and update project title if changed
-        const extractedTitle = extractTitleFromMarkdown(response);
-        if (extractedTitle && extractedTitle !== project.title) {
-          await updateProject(project.id, {
-            title: extractedTitle,
-            name: extractedTitle, // Legacy compatibility
-            formData: { ...project.formData, projectName: extractedTitle }
-          });
-          showToast(`Phase 3 complete! Title updated to "${extractedTitle}"`, 'success');
+        await updatePhase(project.id, phase, currentPrompt, response);
+
+        // Auto-advance to next phase if not on final phase
+        if (phase < 3) {
+          showToast('Response saved! Moving to next phase...', 'success');
+          // Re-fetch the updated project and advance
+          const updatedProject = await getProject(project.id);
+          updatePhaseTabStyles(phase + 1);
+          document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
+          attachPhaseEventListeners(updatedProject, phase + 1);
         } else {
-          showToast('Phase 3 complete! Your one-pager is ready.', 'success');
+          // Phase 3 complete - extract and update project title if changed
+          const extractedTitle = extractTitleFromMarkdown(response);
+          if (extractedTitle && extractedTitle !== freshProject.title) {
+            await updateProject(project.id, {
+              title: extractedTitle,
+              name: extractedTitle, // Legacy compatibility
+              formData: { ...freshProject.formData, projectName: extractedTitle }
+            });
+            showToast(`Phase 3 complete! Title updated to "${extractedTitle}"`, 'success');
+          } else {
+            showToast('Phase 3 complete! Your one-pager is ready.', 'success');
+          }
+          renderProjectView(project.id);
         }
-        renderProjectView(project.id);
+      } catch (error) {
+        console.error('Error saving response:', error);
+        showToast(`Failed to save response: ${error.message}`, 'error');
       }
     } else {
       showToast('Please enter at least 3 characters', 'warning');
@@ -530,7 +593,7 @@ function attachPhaseEventListeners(project, phase) {
         await copyToClipboard(markdown);
         showToast('Document copied! Opening validator...', 'success');
         setTimeout(() => {
-          window.open('https://bordenet.github.io/one-pager-validator/', '_blank', 'noopener,noreferrer');
+          window.open('https://bordenet.github.io/one-pager/validator/', '_blank', 'noopener,noreferrer');
         }, 500);
       } catch {
         showToast('Failed to copy. Please try again.', 'error');
@@ -539,4 +602,19 @@ function attachPhaseEventListeners(project, phase) {
       showToast('No content to copy', 'warning');
     }
   });
+
+  // Compare phases button handler (shows diff between Phase 1 and Phase 2)
+  const comparePhasesBtn = document.getElementById('compare-phases-btn');
+  if (comparePhasesBtn) {
+    comparePhasesBtn.addEventListener('click', () => {
+      const workflow = new Workflow(project);
+      const phase1Output = workflow.getPhaseOutput(1);
+      const phase2Output = workflow.getPhaseOutput(2);
+      if (!phase1Output || !phase2Output) {
+        showToast('Both Phase 1 and Phase 2 must be completed to compare', 'warning');
+        return;
+      }
+      showDiffModal(phase1Output, phase2Output);
+    });
+  }
 }
