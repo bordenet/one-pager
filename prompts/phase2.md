@@ -22,6 +22,29 @@ A high-quality one-pager should include:
 8. **Key Stakeholders**: Owners, approvers, key contributors
 9. **Timeline**: High-level milestones
 
+## ⚠️ CRITICAL: AI Slop Detection Checklist
+
+**Flag these issues in the Phase 1 draft:**
+
+### Vague Language (deduct points)
+- [ ] "improve/enhance/optimize" without specific metrics
+- [ ] "efficient/scalable" without quantification
+- [ ] "significant/substantial" without numbers
+- [ ] "better/faster/easier" without baseline → target
+
+### Filler Phrases (recommend deletion)
+- [ ] "It's important to note..."
+- [ ] "In today's world..."
+- [ ] "Let's explore..."
+- [ ] "First and foremost..."
+
+### Buzzwords (require plain language)
+- [ ] leverage, utilize, synergy
+- [ ] cutting-edge, game-changing
+- [ ] robust, seamless, comprehensive (without specifics)
+
+---
+
 ## Review Criteria
 
 Evaluate the document on:
@@ -31,6 +54,7 @@ Evaluate the document on:
 3. **Impact (1-10)**: Are benefits compelling and measurable?
 4. **Feasibility (1-10)**: Are next steps and timeline realistic?
 5. **Completeness (1-10)**: Does it answer all key questions?
+6. **AI Slop Score (1-10)**: Zero vague terms, filler, or buzzwords?
 
 ## Your Process
 

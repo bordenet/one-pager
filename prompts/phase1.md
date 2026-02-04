@@ -70,6 +70,42 @@ Generate a crisp, professional one-pager document based on the information provi
 - **Launch**: {Date}
 ```
 
+## ⚠️ CRITICAL: AI Slop Prevention Rules
+
+### Banned Vague Language
+
+❌ **NEVER use these without specific quantification:**
+
+| Banned Term | Replace With |
+|-------------|--------------|
+| "improve" | "increase from X to Y" or "reduce from X to Y" |
+| "enhance" | specific capability added |
+| "optimize" | exact metric and improvement amount |
+| "efficient" | "process N items in <X seconds" |
+| "better/faster/easier" | specific baseline → target |
+| "significant/substantial" | exact percentage or number |
+
+### Banned Filler Phrases
+
+❌ **DELETE these entirely:**
+- "It's important to note that..."
+- "In today's fast-paced world..."
+- "Let's dive in / Let's explore..."
+- "First and foremost..."
+- "Needless to say..."
+
+### Banned Buzzwords
+
+❌ **Replace with plain language:**
+- leverage → use
+- utilize → use
+- synergy → combined benefit
+- cutting-edge → (name the specific technology)
+- game-changing → (quantify the change)
+- robust/seamless/comprehensive → (describe specific capabilities)
+
+---
+
 ## Guidelines
 
 1. **Be Ruthlessly Concise**: Maximum 1 page (500-700 words)
@@ -78,6 +114,7 @@ Generate a crisp, professional one-pager document based on the information provi
 4. **Quantify When Possible**: Use numbers, percentages, timeframes (especially in Cost of Doing Nothing)
 5. **Distinguish Features from Benefits**: Focus on outcomes, not just capabilities
 6. **Cost of Doing Nothing**: This section is critical—it creates urgency and justifies the effort. Include business impact, revenue loss, customer churn, productivity loss, or other measurable consequences.
+7. **Zero AI Slop**: No vague terms, no filler phrases, no buzzwords
 
 ## Interactive Refinement
 

@@ -19,6 +19,30 @@ Compare the two versions below and create a final, polished one-pager that:
 4. **Refine**: Ensure the final version is crisp, clear, and compelling
 5. **Validate**: Confirm with the user that the synthesis captures their intent
 
+## ⚠️ FINAL AI Slop Sweep
+
+Before finalizing, eliminate ALL remaining slop:
+
+### Zero Tolerance Patterns
+
+**These MUST NOT appear in final output:**
+
+| Category | Banned Examples |
+|----------|-----------------|
+| Vague metrics | "improve", "enhance", "optimize" (without numbers) |
+| Filler phrases | "It's important to note", "Let's explore" |
+| Buzzwords | "leverage", "synergy", "cutting-edge", "game-changing" |
+| Hedges | "could potentially", "it depends", "generally speaking" |
+
+### Required Patterns
+
+**These MUST appear in final output:**
+- All metrics: **Baseline → Target → Timeline**
+- All benefits: **Quantified outcomes, not vague claims**
+- Cost of Doing Nothing: **Specific dollar amounts or percentages**
+
+---
+
 ## Guidelines
 
 - **Favor Specificity**: Choose the more specific, measurable version
@@ -26,6 +50,7 @@ Compare the two versions below and create a final, polished one-pager that:
 - **Maintain Conciseness**: Keep it to one page (500-700 words)
 - **Ensure Consistency**: Make sure all sections align and support each other
 - **Ask When Uncertain**: If both versions have merit but conflict, ask the user to choose
+- **Zero AI Slop**: Final document must have no vague terms, filler, or buzzwords
 
 ## Output Format
 
