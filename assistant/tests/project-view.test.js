@@ -57,7 +57,7 @@ describe('Project View Module', () => {
       expect(container.innerHTML).toContain('Copy Prompt');
     });
 
-    test('should render delete button', async () => {
+    test('should render More actions button (overflow menu)', async () => {
       const project = await createProject(
         'Test One-Pager',
         'Test problem statement',
@@ -67,7 +67,9 @@ describe('Project View Module', () => {
       await renderProjectView(project.id);
 
       const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Delete');
+      // Delete is now in the overflow "More" menu
+      expect(container.querySelector('#more-actions-btn')).toBeTruthy();
+      expect(container.innerHTML).toContain('More');
     });
 
     test('should render phase content area', async () => {

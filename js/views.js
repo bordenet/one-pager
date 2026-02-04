@@ -361,6 +361,33 @@ export function renderNewProjectForm(existingProject = null) {
     };
   };
 
+  // Helper function to check if form data has changed from original
+  const hasChanges = (formData) => {
+    if (!isEditing) return false;
+    const orig = existingProject.formData || {};
+    return (
+      formData.title !== (existingProject.title || '') ||
+      formData.problemStatement !== (existingProject.problems || '') ||
+      formData.context !== (existingProject.context || '') ||
+      formData.costOfDoingNothing !== (orig.costOfDoingNothing || '') ||
+      formData.proposedSolution !== (orig.proposedSolution || '') ||
+      formData.keyGoals !== (orig.keyGoals || '') ||
+      formData.scopeInScope !== (orig.scopeInScope || '') ||
+      formData.scopeOutOfScope !== (orig.scopeOutOfScope || '') ||
+      formData.successMetrics !== (orig.successMetrics || '') ||
+      formData.keyStakeholders !== (orig.keyStakeholders || '') ||
+      formData.timelineEstimate !== (orig.timelineEstimate || '')
+    );
+  };
+
+  // Helper function to check if project has any phase content
+  const hasPhaseContent = () => {
+    if (!isEditing || !existingProject.phases) return false;
+    return [1, 2, 3].some(p =>
+      existingProject.phases[p]?.response || existingProject.phases[p]?.prompt
+    );
+  };
+
   // Helper function to save project
   const saveProject = async (navigateAfter = false) => {
     const formData = getFormData();
@@ -371,8 +398,24 @@ export function renderNewProjectForm(existingProject = null) {
     }
 
     if (isEditing) {
+      const changed = hasChanges(formData);
+      const hasContent = hasPhaseContent();
+
+      // If changes were made and there's existing phase content, confirm reset
+      if (changed && hasContent) {
+        const confirmed = await confirm(
+          'You\'ve changed the project details. This will reset all phases and clear any AI-generated content. Continue?',
+          'Reset Phases'
+        );
+        if (!confirmed) {
+          return null;
+        }
+      }
+
       const { updateProject } = await import('./projects.js');
-      await updateProject(existingProject.id, {
+
+      // Build update object
+      const updates = {
         title: formData.title,
         name: formData.title,
         problems: formData.problemStatement,
@@ -391,8 +434,25 @@ export function renderNewProjectForm(existingProject = null) {
           keyStakeholders: formData.keyStakeholders,
           timelineEstimate: formData.timelineEstimate
         }
-      });
-      showToast('One-Pager saved!', 'success');
+      };
+
+      // If changes were made, reset to Phase 1 and clear phase content
+      if (changed) {
+        updates.phase = 1;
+        updates.currentPhase = 1;
+        updates.phases = {
+          1: { prompt: '', response: '', completed: false },
+          2: { prompt: '', response: '', completed: false },
+          3: { prompt: '', response: '', completed: false }
+        };
+        // Clear legacy phase fields
+        updates.phase1_output = '';
+        updates.phase2_output = '';
+        updates.phase3_output = '';
+      }
+
+      await updateProject(existingProject.id, updates);
+      showToast(changed ? 'Details updated - starting fresh from Phase 1' : 'One-Pager saved!', 'success');
       if (navigateAfter) {
         navigateTo('project/' + existingProject.id);
       }

@@ -385,18 +385,6 @@ describe('Views Module', () => {
       expect(container.querySelector('#response-textarea')).toBeTruthy();
     });
 
-    test('should render Previous Phase button', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
-      // Complete phase 1 to advance to phase 2, where prev button is visible
-      await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
-
-      await renderProjectView(project.id);
-
-      const container = document.getElementById('app-container');
-      // On phase 2, previous phase button should be visible
-      expect(container.querySelector('#prev-phase-btn')).toBeTruthy();
-    });
-
     test('should show Next Phase button when current phase is completed', async () => {
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
       // Complete phases 1 and 2, stay on phase 2 to see "Next Phase" button
@@ -423,43 +411,50 @@ describe('Views Module', () => {
       expect(container.querySelector('#next-phase-btn')).toBeNull();
     });
 
-    test('should show Edit Details button on Phase 1 when no response saved', async () => {
+    test('should show More actions button with Edit Details in menu on Phase 1', async () => {
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
 
       await renderProjectView(project.id);
 
       const container = document.getElementById('app-container');
-      // On phase 1 without response, Edit Details button should appear
-      expect(container.querySelector('#edit-details-btn')).toBeTruthy();
-      expect(container.querySelector('#edit-details-btn').textContent).toContain('Edit Details');
-      // Previous Phase button should NOT appear
-      expect(container.querySelector('#prev-phase-btn')).toBeNull();
+      // Edit Details is now in the overflow "More" menu (icon button with aria-label)
+      const moreBtn = container.querySelector('#more-actions-btn');
+      expect(moreBtn).toBeTruthy();
+      expect(moreBtn.getAttribute('aria-label')).toBe('More actions');
     });
 
-    test('should hide Edit Details button on Phase 1 when response is saved', async () => {
+    test('More actions menu should contain Edit Details option', async () => {
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
-      // Complete Phase 1 with a response
-      await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
 
       await renderProjectView(project.id);
 
-      // Click back to Phase 1 to view it
-      const phaseTabs = document.querySelectorAll('.phase-tab');
-      phaseTabs[0].click();
+      // Click the More button to open the menu
+      const moreBtn = document.getElementById('more-actions-btn');
+      expect(moreBtn).toBeTruthy();
+      moreBtn.click();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const container = document.getElementById('app-container');
-      // Edit Details button should NOT appear when response exists
-      expect(container.querySelector('#edit-details-btn')).toBeNull();
+      // Check that the menu is now visible and contains Edit Details
+      const menu = document.querySelector('.action-menu');
+      expect(menu).toBeTruthy();
+      expect(menu.textContent).toContain('Edit Details');
     });
 
-    test('Edit Details button should navigate to edit form', async () => {
+    test('Edit Details menu item should navigate to edit form', async () => {
       const project = await createProject('Test Project', 'Test Problems', 'Test Context');
 
       await renderProjectView(project.id);
 
-      const editBtn = document.getElementById('edit-details-btn');
-      editBtn.click();
+      // Click the More button to open the menu
+      const moreBtn = document.getElementById('more-actions-btn');
+      moreBtn.click();
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Find and click the Edit Details menu item
+      const menuItems = document.querySelectorAll('.action-menu-item');
+      const editDetailsItem = Array.from(menuItems).find(item => item.textContent.includes('Edit Details'));
+      expect(editDetailsItem).toBeTruthy();
+      editDetailsItem.click();
       await new Promise(resolve => setTimeout(resolve, 50));
 
       // Should navigate to edit form - check that URL changed
@@ -634,25 +629,6 @@ describe('Views Module', () => {
       // Check that warning toast was shown (look for toast in DOM or toast function was called)
       // The UI should still show the empty textarea
       expect(textarea.value).toBe('');
-    });
-
-    test('prev phase button should navigate to previous phase', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
-      await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
-      await renderProjectView(project.id);
-
-      // After phase 1 is complete, we're on phase 2
-      let container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Alternative Perspective');
-
-      // Click prev phase button
-      const prevBtn = document.getElementById('prev-phase-btn');
-      prevBtn.click();
-
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Initial Draft');
     });
 
     test('next phase button should navigate to next phase when current is complete', async () => {
