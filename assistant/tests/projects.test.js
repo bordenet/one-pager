@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import {
   createProject,
   getAllProjects,
@@ -232,31 +233,122 @@ describe('Projects Module', () => {
   });
 
   describe('exportAllProjects', () => {
+    let mockCreateObjectURL;
+    let mockRevokeObjectURL;
+    let mockClick;
+    let capturedBlob;
+    let capturedDownloadName;
+    let originalCreateElement;
+
     beforeEach(() => {
-      global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
-      global.URL.revokeObjectURL = jest.fn();
+      capturedBlob = null;
+      capturedDownloadName = null;
+      mockClick = jest.fn();
+
+      mockCreateObjectURL = jest.fn((blob) => {
+        capturedBlob = blob;
+        return 'blob:mock-url';
+      });
+      mockRevokeObjectURL = jest.fn();
+
+      global.URL.createObjectURL = mockCreateObjectURL;
+      global.URL.revokeObjectURL = mockRevokeObjectURL;
+
+      // Store original before spying
+      originalCreateElement = document.createElement.bind(document);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
     });
 
     test('should export all projects as backup JSON', async () => {
       await createProject('Project 1', 'Problems 1', 'Context 1');
       await createProject('Project 2', 'Problems 2', 'Context 2');
 
-      const clickSpy = jest.fn();
-      document.createElement = jest.fn((tag) => {
+      jest.spyOn(document, 'createElement').mockImplementation((tag) => {
         if (tag === 'a') {
           return {
             href: '',
             download: '',
-            click: clickSpy
+            click: mockClick,
+            set download(value) { capturedDownloadName = value; },
+            get download() { return capturedDownloadName; }
           };
         }
-        return document.createElement.wrappedMethod(tag);
+        return originalCreateElement(tag);
       });
-      document.createElement.wrappedMethod = Object.getPrototypeOf(document).createElement;
 
       await exportAllProjects();
 
-      expect(clickSpy).toHaveBeenCalled();
+      expect(mockCreateObjectURL).toHaveBeenCalled();
+      expect(mockClick).toHaveBeenCalled();
+      expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+      expect(capturedBlob).toBeInstanceOf(Blob);
+      expect(capturedBlob.type).toBe('application/json');
+
+      // Verify backup structure using FileReader
+      const blobText = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(capturedBlob);
+      });
+      const backup = JSON.parse(blobText);
+      expect(backup.version).toBe('1.0');
+      expect(backup.exportedAt).toBeTruthy();
+      expect(backup.projectCount).toBe(2);
+      expect(backup.projects).toHaveLength(2);
+    });
+
+    test('should export empty backup when no projects exist', async () => {
+      jest.spyOn(document, 'createElement').mockImplementation((tag) => {
+        if (tag === 'a') {
+          return {
+            href: '',
+            download: '',
+            click: mockClick,
+            set download(value) { capturedDownloadName = value; },
+            get download() { return capturedDownloadName; }
+          };
+        }
+        return originalCreateElement(tag);
+      });
+
+      await exportAllProjects();
+
+      expect(mockCreateObjectURL).toHaveBeenCalled();
+      expect(capturedBlob).toBeInstanceOf(Blob);
+
+      // Verify backup structure using FileReader
+      const blobText = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(capturedBlob);
+      });
+      const backup = JSON.parse(blobText);
+      expect(backup.projectCount).toBe(0);
+      expect(backup.projects).toHaveLength(0);
+    });
+
+    test('should include correct filename with date', async () => {
+      jest.spyOn(document, 'createElement').mockImplementation((tag) => {
+        if (tag === 'a') {
+          return {
+            href: '',
+            download: '',
+            click: mockClick,
+            set download(value) { capturedDownloadName = value; },
+            get download() { return capturedDownloadName; }
+          };
+        }
+        return originalCreateElement(tag);
+      });
+
+      await exportAllProjects();
+
+      expect(capturedDownloadName).toMatch(/^one-pager-backup-\d{4}-\d{2}-\d{2}\.json$/);
     });
   });
 
@@ -309,6 +401,20 @@ describe('Projects Module', () => {
       const file = new File(['not valid json'], 'invalid.json', { type: 'application/json' });
 
       await expect(importProjects(file)).rejects.toThrow();
+    });
+
+    test('should handle empty backup file', async () => {
+      const backup = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        projectCount: 0,
+        projects: []
+      };
+
+      const file = new File([JSON.stringify(backup)], 'empty-backup.json', { type: 'application/json' });
+
+      const importedCount = await importProjects(file);
+      expect(importedCount).toBe(0);
     });
   });
 
