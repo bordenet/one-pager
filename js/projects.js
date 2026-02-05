@@ -51,16 +51,13 @@ function extractTitleFromMarkdown(markdown) {
 
 /**
  * Create a new project
- * @param {string} title - Project title
- * @param {string} problemStatement - Problem statement
- * @param {string} context - Additional context
- * @param {Partial<import('./types.js').OnePagerFormData>} [formData={}] - Additional form data
+ * @param {import('./types.js').OnePagerFormData} formData - Project form data
  * @returns {Promise<import('./types.js').Project>}
  */
-export async function createProject(title, problemStatement, context, formData = {}) {
-  const trimmedTitle = title.trim();
-  const trimmedProblemStatement = problemStatement.trim();
-  const trimmedContext = context.trim();
+export async function createProject(formData) {
+  const trimmedTitle = (formData.title || '').trim();
+  const trimmedProblemStatement = (formData.problemStatement || '').trim();
+  const trimmedContext = (formData.context || '').trim();
 
   const project = {
     id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

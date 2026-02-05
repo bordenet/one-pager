@@ -27,7 +27,7 @@ describe('Projects Module', () => {
 
   describe('createProject', () => {
     test('should create a new project with all required fields', async () => {
-      const project = await createProject('Test Project', 'Test problems', 'Test context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test problems', context: 'Test context' });
 
       expect(project.id).toBeTruthy();
       expect(project.title).toBe('Test Project');
@@ -39,7 +39,7 @@ describe('Projects Module', () => {
     });
 
     test('should initialize phases correctly', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
 
       expect(project.phases).toBeTruthy();
       expect(project.phases[1]).toEqual({ prompt: '', response: '', completed: false });
@@ -48,7 +48,7 @@ describe('Projects Module', () => {
     });
 
     test('should include legacy fields for backward compatibility', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
 
       expect(project.name).toBe('Test');
       expect(project.description).toBe('Problems');
@@ -59,7 +59,7 @@ describe('Projects Module', () => {
     });
 
     test('should populate formData with input values for prompt generation', async () => {
-      const project = await createProject('My Project Title', 'The main problem to solve', 'Additional context here');
+      const project = await createProject({ title: 'My Project Title', problemStatement: 'The main problem to solve', context: 'Additional context here' });
 
       // Critical: formData must contain the input values for Phase 1 prompt generation
       expect(project.formData.projectName).toBe('My Project Title');
@@ -68,7 +68,7 @@ describe('Projects Module', () => {
     });
 
     test('should NOT initialize formData with empty strings (data loss bug)', async () => {
-      const project = await createProject('Test Project', 'Test Problem', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problem', context: 'Test Context' });
 
       // Regression test: formData should never be empty when inputs are provided
       expect(project.formData.projectName).not.toBe('');
@@ -76,7 +76,7 @@ describe('Projects Module', () => {
     });
 
     test('should trim whitespace from inputs', async () => {
-      const project = await createProject('  Test  ', '  Problems  ', '  Context  ');
+      const project = await createProject({ title: '  Test  ', problemStatement: '  Problems  ', context: '  Context  ' });
 
       expect(project.title).toBe('Test');
       expect(project.problems).toBe('Problems');
@@ -84,7 +84,7 @@ describe('Projects Module', () => {
     });
 
     test('should save project to storage', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
       const retrieved = await storage.getProject(project.id);
 
       expect(retrieved).toBeTruthy();
@@ -99,8 +99,8 @@ describe('Projects Module', () => {
     });
 
     test('should return all projects', async () => {
-      await createProject('Project 1', 'Problems 1', 'Context 1');
-      await createProject('Project 2', 'Problems 2', 'Context 2');
+      await createProject({ title: 'Project 1', problemStatement: 'Problems 1', context: 'Context 1' });
+      await createProject({ title: 'Project 2', problemStatement: 'Problems 2', context: 'Context 2' });
 
       const projects = await getAllProjects();
       expect(projects.length).toBe(2);
@@ -109,7 +109,7 @@ describe('Projects Module', () => {
 
   describe('getProject', () => {
     test('should retrieve a project by id', async () => {
-      const created = await createProject('Test', 'Problems', 'Context');
+      const created = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
       const retrieved = await getProject(created.id);
 
       expect(retrieved).toBeTruthy();
@@ -125,7 +125,7 @@ describe('Projects Module', () => {
 
   describe('updatePhase', () => {
     test('should update phase data', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
 
       const updated = await updatePhase(project.id, 1, 'Test prompt', 'Test response');
 
@@ -135,7 +135,7 @@ describe('Projects Module', () => {
     });
 
     test('should auto-advance to next phase when response is provided', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
 
       const updated = await updatePhase(project.id, 1, 'Prompt', 'Response');
 
@@ -144,7 +144,7 @@ describe('Projects Module', () => {
     });
 
     test('should not advance past phase 3', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
 
       // Advance through phases 1 and 2
       await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
@@ -157,7 +157,7 @@ describe('Projects Module', () => {
     });
 
     test('should not advance if no response provided', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
 
       const updated = await updatePhase(project.id, 1, 'Prompt', '');
 
@@ -173,7 +173,7 @@ describe('Projects Module', () => {
 
   describe('updateProject', () => {
     test('should update project metadata', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
 
       const updated = await updateProject(project.id, { title: 'Updated Title' });
 
@@ -188,7 +188,7 @@ describe('Projects Module', () => {
 
   describe('deleteProject', () => {
     test('should delete a project', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problemStatement: 'Problems', context: 'Context' });
 
       await deleteProject(project.id);
 
@@ -204,7 +204,7 @@ describe('Projects Module', () => {
     });
 
     test('should export project as JSON file', async () => {
-      const project = await createProject('Test Project', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Problems', context: 'Context' });
 
       const clickSpy = jest.fn();
       document.createElement = jest.fn((tag) => {
@@ -263,8 +263,8 @@ describe('Projects Module', () => {
     });
 
     test('should export all projects as backup JSON', async () => {
-      await createProject('Project 1', 'Problems 1', 'Context 1');
-      await createProject('Project 2', 'Problems 2', 'Context 2');
+      await createProject({ title: 'Project 1', problemStatement: 'Problems 1', context: 'Context 1' });
+      await createProject({ title: 'Project 2', problemStatement: 'Problems 2', context: 'Context 2' });
 
       jest.spyOn(document, 'createElement').mockImplementation((tag) => {
         if (tag === 'a') {
@@ -426,7 +426,7 @@ describe('Projects Module', () => {
       const userContext = 'Focus on Android devices, Q1 priority';
 
       // Step 1: Create project (simulates form submission)
-      const project = await createProject(userTitle, userProblems, userContext);
+      const project = await createProject({ title: userTitle, problemStatement: userProblems, context: userContext });
 
       // Step 2: Verify data is stored correctly in project
       expect(project.title).toBe(userTitle);

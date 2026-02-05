@@ -30,8 +30,8 @@ describe('Views Module', () => {
 
     test('should render projects list when projects exist', async () => {
       // Create test projects
-      await createProject('Test Project 1', 'Problems 1', 'Context 1');
-      await createProject('Test Project 2', 'Problems 2', 'Context 2');
+      await createProject({ title: 'Test Project 1', problemStatement: 'Problems 1', context: 'Context 1' });
+      await createProject({ title: 'Test Project 2', problemStatement: 'Problems 2', context: 'Context 2' });
 
       await renderProjectsList();
 
@@ -51,7 +51,7 @@ describe('Views Module', () => {
     });
 
     test('should render project cards with phase information', async () => {
-      await createProject('Test Project', 'Problems', 'Context');
+      await createProject({ title: 'Test Project', problemStatement: 'Problems', context: 'Context' });
 
       await renderProjectsList();
 
@@ -61,7 +61,7 @@ describe('Views Module', () => {
     });
 
     test('should render delete buttons for each project', async () => {
-      await createProject('Test Project', 'Problems', 'Context');
+      await createProject({ title: 'Test Project', problemStatement: 'Problems', context: 'Context' });
 
       await renderProjectsList();
 
@@ -71,7 +71,7 @@ describe('Views Module', () => {
     });
 
     test('should render project cards with data attributes', async () => {
-      const project = await createProject('Test Project', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Problems', context: 'Context' });
 
       await renderProjectsList();
 
@@ -81,7 +81,7 @@ describe('Views Module', () => {
     });
 
     test('should render updated date for projects', async () => {
-      await createProject('Test Project', 'Problems', 'Context');
+      await createProject({ title: 'Test Project', problemStatement: 'Problems', context: 'Context' });
 
       await renderProjectsList();
 
@@ -139,7 +139,7 @@ describe('Views Module', () => {
 
   describe('Project card click handlers', () => {
     test('should navigate when clicking project card (not delete button)', async () => {
-      const project = await createProject('Test Project', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Problems', context: 'Context' });
       await renderProjectsList();
 
       const container = document.getElementById('app-container');
@@ -154,7 +154,7 @@ describe('Views Module', () => {
     });
 
     test('should not navigate when clicking delete button', async () => {
-      const project = await createProject('Test Project', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Problems', context: 'Context' });
       await renderProjectsList();
 
       const container = document.getElementById('app-container');
@@ -231,7 +231,7 @@ describe('Views Module', () => {
     });
 
     test('should show edit form when Phase 1 is not completed', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Render the edit form directly (simulating the redirect)
       const { renderNewProjectForm } = await import('../js/views.js');
@@ -248,7 +248,7 @@ describe('Views Module', () => {
 
     test('should render project view with phase tabs', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -274,7 +274,7 @@ describe('Views Module', () => {
 
     test('should render back button', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -287,7 +287,7 @@ describe('Views Module', () => {
 
     test('should only show header export button when Phase 3 is completed', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -307,7 +307,7 @@ describe('Views Module', () => {
 
     test('should show prominent export CTA when Phase 3 is completed', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete all phases
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -335,7 +335,7 @@ describe('Views Module', () => {
 
     test('should NOT show export CTA on Phase 3 if not completed', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 and 2, but not Phase 3
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -358,7 +358,7 @@ describe('Views Module', () => {
 
     test('should render copy prompt button', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -373,7 +373,7 @@ describe('Views Module', () => {
 
     test('should render save response button and textarea', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -386,7 +386,7 @@ describe('Views Module', () => {
     });
 
     test('should show Next Phase button when current phase is completed', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
       // Complete phases 1 and 2, stay on phase 2 to see "Next Phase" button
       await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
       await updatePhase(project.id, 2, 'Prompt 2', 'Response 2');
@@ -402,7 +402,7 @@ describe('Views Module', () => {
     });
 
     test('should hide Next Phase button when current phase is not completed', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       await renderProjectView(project.id);
 
@@ -412,7 +412,7 @@ describe('Views Module', () => {
     });
 
     test('should show More actions button with Edit Details in menu on Phase 1', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       await renderProjectView(project.id);
 
@@ -424,7 +424,7 @@ describe('Views Module', () => {
     });
 
     test('More actions menu should contain Edit Details option', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       await renderProjectView(project.id);
 
@@ -441,7 +441,7 @@ describe('Views Module', () => {
     });
 
     test('Edit Details menu item should navigate to edit form', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       await renderProjectView(project.id);
 
@@ -462,7 +462,7 @@ describe('Views Module', () => {
     });
 
     test('should show completed checkmark for completed phases', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
       await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
 
       await renderProjectView(project.id);
@@ -473,7 +473,7 @@ describe('Views Module', () => {
     });
 
     test('should display existing response in textarea when viewing that phase', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
       // Update phase 1 with a response
       await updatePhase(project.id, 1, 'Test Prompt', 'Existing response content');
 
@@ -491,7 +491,7 @@ describe('Views Module', () => {
 
     test('should display phase metadata (title, description, AI)', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -531,7 +531,7 @@ describe('Views Module', () => {
 
     test('copy prompt button should trigger clipboard write', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -550,7 +550,7 @@ describe('Views Module', () => {
 
     test('phase tabs should be clickable', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -572,7 +572,7 @@ describe('Views Module', () => {
 
     test('phase 2 tab should show Gemini as the AI', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -590,7 +590,7 @@ describe('Views Module', () => {
 
     test('phase 3 tab should show Final Synthesis', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 and Phase 2 so we can navigate to Phase 3
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -610,7 +610,7 @@ describe('Views Module', () => {
 
     test('save response should show warning when textarea is empty', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -632,7 +632,7 @@ describe('Views Module', () => {
     });
 
     test('next phase button should navigate to next phase when current is complete', async () => {
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
       await updatePhase(project.id, 1, 'Prompt 1', 'Response 1');
       await renderProjectView(project.id);
 
@@ -653,7 +653,7 @@ describe('Views Module', () => {
 
     test('save response should update phase and re-render', async () => {
       const { updatePhase } = await import('../js/projects.js');
-      const project = await createProject('Test Project', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
@@ -720,8 +720,8 @@ describe('Views Module', () => {
 
     test('should show correct project count after creating projects', async () => {
       // Create 2 projects
-      await createProject('Project 1', 'Description 1', 'Context');
-      await createProject('Project 2', 'Description 2', 'Context');
+      await createProject({ title: 'Project 1', problemStatement: 'Description 1', context: 'Context' });
+      await createProject({ title: 'Project 2', problemStatement: 'Description 2', context: 'Context' });
 
       await updateStorageInfo();
 
@@ -731,8 +731,8 @@ describe('Views Module', () => {
 
     test('should update count after deleting a project', async () => {
       // Create 2 projects
-      const project1 = await createProject('Project 1', 'Description 1', 'Context');
-      await createProject('Project 2', 'Description 2', 'Context');
+      const project1 = await createProject({ title: 'Project 1', problemStatement: 'Description 1', context: 'Context' });
+      await createProject({ title: 'Project 2', problemStatement: 'Description 2', context: 'Context' });
 
       // Delete one
       await deleteProject(project1.id);
@@ -750,7 +750,7 @@ describe('Views Module', () => {
       expect(storageInfo.textContent).toContain('0 projects');
 
       // Create a project
-      await createProject('New Project', 'Description', 'Context');
+      await createProject({ title: 'New Project', problemStatement: 'Description', context: 'Context' });
 
       // Update footer - should immediately show 1 project (no page refresh)
       await updateStorageInfo();

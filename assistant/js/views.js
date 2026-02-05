@@ -458,7 +458,7 @@ export function renderNewProjectForm(existingProject = null) {
       }
       return existingProject;
     } else {
-      const project = await createProject(formData.title, formData.problemStatement, formData.context, formData);
+      const project = await createProject(formData);
       showToast('One-Pager created!', 'success');
       if (navigateAfter) {
         navigateTo('project/' + project.id);
