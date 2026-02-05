@@ -123,23 +123,6 @@ Object.defineProperty(window, 'isSecureContext', {
 // Mock document.execCommand for fallback clipboard operations
 document.execCommand = jest.fn(() => true);
 
-// Mock fetch for prompt template loading (used by prompts.js)
-global.fetch = jest.fn((url) => {
-  // Return a mock response for prompt templates
-  if (url && url.includes('prompts/phase')) {
-    return Promise.resolve({
-      ok: true,
-      text: () => Promise.resolve('Mock prompt template for testing: {projectName}')
-    });
-  }
-  // Default mock response
-  return Promise.resolve({
-    ok: true,
-    text: () => Promise.resolve(''),
-    json: () => Promise.resolve({})
-  });
-});
-
 // Reset mocks before each test
 beforeEach(() => {
   localStorage.clear();

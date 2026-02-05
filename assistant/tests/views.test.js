@@ -536,6 +536,9 @@ describe('Views Module', () => {
       // Complete Phase 1 so we don't get redirected to edit form
       await updatePhase(project.id, 1, 'Phase 1 prompt', 'Phase 1 response');
 
+      // Skip the external AI warning modal
+      localStorage.setItem('external-ai-warning-acknowledged', 'true');
+
       await renderProjectView(project.id);
 
       const copyBtn = document.getElementById('copy-prompt-btn');
