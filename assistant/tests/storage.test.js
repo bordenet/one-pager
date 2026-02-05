@@ -215,4 +215,85 @@ describe('Storage Module', () => {
       expect(estimate === null || typeof estimate === 'object').toBe(true);
     });
   });
+
+  describe('init', () => {
+    test('should initialize database successfully', async () => {
+      await initDB();
+      expect(storage.db).toBeTruthy();
+    });
+
+    test('should create required object stores', async () => {
+      await initDB();
+      expect(storage.db.objectStoreNames.contains('projects')).toBe(true);
+    });
+  });
+
+  describe('exportAll', () => {
+    test('should export all projects', async () => {
+      const project1 = {
+        id: generateId(),
+        name: 'Export 1',
+        created: Date.now(),
+        modified: Date.now(),
+        currentPhase: 1,
+        phases: []
+      };
+      const project2 = {
+        id: generateId(),
+        name: 'Export 2',
+        created: Date.now(),
+        modified: Date.now(),
+        currentPhase: 1,
+        phases: []
+      };
+
+      await saveProject(project1);
+      await saveProject(project2);
+
+      const exported = await storage.exportAll();
+      expect(exported.projects.length).toBeGreaterThanOrEqual(2);
+      expect(exported.projectCount).toBeGreaterThanOrEqual(2);
+      expect(exported.exportDate).toBeDefined();
+      expect(exported.version).toBeDefined();
+    });
+
+    test('should export empty backup when no projects', async () => {
+      // Clear all projects first
+      const projects = await getAllProjects();
+      for (const p of projects) {
+        await deleteProject(p.id);
+      }
+
+      const exported = await storage.exportAll();
+      expect(exported.projects).toEqual([]);
+      expect(exported.projectCount).toBe(0);
+    });
+  });
+
+  describe('importAll', () => {
+    test('should import all projects from export data', async () => {
+      const project1 = { id: generateId(), name: 'Import 1', created: Date.now(), modified: Date.now(), currentPhase: 1, phases: [] };
+      const project2 = { id: generateId(), name: 'Import 2', created: Date.now(), modified: Date.now(), currentPhase: 1, phases: [] };
+
+      const importData = {
+        version: 1,
+        exportDate: new Date().toISOString(),
+        projectCount: 2,
+        projects: [project1, project2]
+      };
+
+      const count = await storage.importAll(importData);
+      expect(count).toBe(2);
+
+      const retrieved1 = await getProject(project1.id);
+      const retrieved2 = await getProject(project2.id);
+      expect(retrieved1).toBeTruthy();
+      expect(retrieved2).toBeTruthy();
+    });
+
+    test('should throw on invalid import data', async () => {
+      await expect(storage.importAll({})).rejects.toThrow('Invalid import data');
+      await expect(storage.importAll({ projects: 'not-array' })).rejects.toThrow('Invalid import data');
+    });
+  });
 });
