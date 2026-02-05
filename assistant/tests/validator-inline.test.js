@@ -1,12 +1,12 @@
 /**
  * Tests for validator-inline.js
  */
-import { validateOnePager, getScoreColor, getScoreLabel } from '../js/validator-inline.js';
+import { validateDocument, getScoreColor, getScoreLabel } from '../js/validator-inline.js';
 
 describe('Inline One-Pager Validator', () => {
-  describe('validateOnePager', () => {
+  describe('validateDocument', () => {
     test('should return zero scores for empty content', () => {
-      const result = validateOnePager('');
+      const result = validateDocument('');
       expect(result.totalScore).toBe(0);
       expect(result.problemClarity.score).toBe(0);
       expect(result.solution.score).toBe(0);
@@ -15,12 +15,12 @@ describe('Inline One-Pager Validator', () => {
     });
 
     test('should return zero scores for short content', () => {
-      const result = validateOnePager('Too short');
+      const result = validateDocument('Too short');
       expect(result.totalScore).toBe(0);
     });
 
     test('should return zero scores for null', () => {
-      const result = validateOnePager(null);
+      const result = validateDocument(null);
       expect(result.totalScore).toBe(0);
     });
 
@@ -64,7 +64,7 @@ Our approach delivers measurable goals including faster processing and fewer err
 - Phase 2 (Q2): Development and testing
 - Milestone: Production launch by end of Q2
       `;
-      const result = validateOnePager(goodOnePager);
+      const result = validateDocument(goodOnePager);
       expect(result.totalScore).toBeGreaterThan(60);
       expect(result.problemClarity.score).toBeGreaterThan(15);
       expect(result.solution.score).toBeGreaterThanOrEqual(10);
@@ -78,7 +78,7 @@ We will build something great.
 ## Scope
 - In scope: Everything good
       `.repeat(2);
-      const result = validateOnePager(noProblem);
+      const result = validateDocument(noProblem);
       expect(result.problemClarity.issues.some(i => i.toLowerCase().includes('problem'))).toBe(true);
     });
 
@@ -91,7 +91,7 @@ There is a big problem affecting our users and costing the business money.
 - In scope: We will do good things
 - We will deliver value
       `.repeat(2);
-      const result = validateOnePager(noOutOfScope);
+      const result = validateDocument(noOutOfScope);
       expect(result.scope.issues.some(i => i.toLowerCase().includes('out-of-scope'))).toBe(true);
     });
   });

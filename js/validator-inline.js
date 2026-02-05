@@ -147,11 +147,11 @@ function scoreCompleteness(text) {
 }
 
 /**
- * Validate a one-pager and return inline scoring results
- * @param {string} text - One-pager content
+ * Validate a document and return inline scoring results
+ * @param {string} text - Document content
  * @returns {Object} Validation results with total score and category breakdowns
  */
-export function validateOnePager(text) {
+export function validateDocument(text) {
   if (!text || typeof text !== 'string' || text.trim().length < 50) {
     return {
       totalScore: 0,
