@@ -30,11 +30,11 @@ describe('Project View Module', () => {
 
   describe('renderProjectView', () => {
     test('should render project view with phase tabs', async () => {
-      const project = await createProject(
-        'Test One-Pager',
-        'Test problem statement',
-        'Test context'
-      );
+      const project = await createProject({
+        title: 'Test One-Pager',
+        problemStatement: 'Test problem statement',
+        context: 'Test context'
+      });
 
       await renderProjectView(project.id);
 
@@ -45,11 +45,11 @@ describe('Project View Module', () => {
     });
 
     test('should render copy prompt button', async () => {
-      const project = await createProject(
-        'Test One-Pager',
-        'Test problem statement',
-        'Test context'
-      );
+      const project = await createProject({
+        title: 'Test One-Pager',
+        problemStatement: 'Test problem statement',
+        context: 'Test context'
+      });
 
       await renderProjectView(project.id);
 
@@ -58,11 +58,11 @@ describe('Project View Module', () => {
     });
 
     test('should render More actions button (overflow menu)', async () => {
-      const project = await createProject(
-        'Test One-Pager',
-        'Test problem statement',
-        'Test context'
-      );
+      const project = await createProject({
+        title: 'Test One-Pager',
+        problemStatement: 'Test problem statement',
+        context: 'Test context'
+      });
 
       await renderProjectView(project.id);
 
@@ -73,11 +73,11 @@ describe('Project View Module', () => {
     });
 
     test('should render phase content area', async () => {
-      const project = await createProject(
-        'Test One-Pager',
-        'Test problem statement',
-        'Test context'
-      );
+      const project = await createProject({
+        title: 'Test One-Pager',
+        problemStatement: 'Test problem statement',
+        context: 'Test context'
+      });
 
       await renderProjectView(project.id);
 
@@ -86,11 +86,11 @@ describe('Project View Module', () => {
     });
 
     test('should render response textarea', async () => {
-      const project = await createProject(
-        'Test One-Pager',
-        'Test problem statement',
-        'Test context'
-      );
+      const project = await createProject({
+        title: 'Test One-Pager',
+        problemStatement: 'Test problem statement',
+        context: 'Test context'
+      });
 
       await renderProjectView(project.id);
 
@@ -99,11 +99,11 @@ describe('Project View Module', () => {
     });
 
     test('should render Open AI link', async () => {
-      const project = await createProject(
-        'Test One-Pager',
-        'Test problem statement',
-        'Test context'
-      );
+      const project = await createProject({
+        title: 'Test One-Pager',
+        problemStatement: 'Test problem statement',
+        context: 'Test context'
+      });
 
       await renderProjectView(project.id);
 
@@ -114,11 +114,11 @@ describe('Project View Module', () => {
     });
 
     test('should render phase 1 as active by default', async () => {
-      const project = await createProject(
-        'Test One-Pager',
-        'Test problem statement',
-        'Test context'
-      );
+      const project = await createProject({
+        title: 'Test One-Pager',
+        problemStatement: 'Test problem statement',
+        context: 'Test context'
+      });
 
       await renderProjectView(project.id);
 

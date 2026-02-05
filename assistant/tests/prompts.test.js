@@ -83,16 +83,31 @@ describe('prompt generation', () => {
     expect(typeof preloadPromptTemplates).toBe('function');
   });
 
-  test('generatePhase1Prompt should reject when fetch unavailable', async () => {
-    const formData = { projectName: 'Test', problemStatement: 'Test problem' };
-    await expect(generatePhase1Prompt(formData)).rejects.toThrow();
-  });
+  describe('when fetch is unavailable', () => {
+    let originalFetch;
 
-  test('generatePhase2Prompt should reject when fetch unavailable', async () => {
-    await expect(generatePhase2Prompt('phase 1 output')).rejects.toThrow();
-  });
+    beforeEach(() => {
+      // Remove global fetch to simulate unavailability
+      originalFetch = global.fetch;
+      delete global.fetch;
+    });
 
-  test('generatePhase3Prompt should reject when fetch unavailable', async () => {
-    await expect(generatePhase3Prompt('phase 1', 'phase 2')).rejects.toThrow();
+    afterEach(() => {
+      // Restore global fetch
+      global.fetch = originalFetch;
+    });
+
+    test('generatePhase1Prompt should reject when fetch unavailable', async () => {
+      const formData = { projectName: 'Test', problemStatement: 'Test problem' };
+      await expect(generatePhase1Prompt(formData)).rejects.toThrow();
+    });
+
+    test('generatePhase2Prompt should reject when fetch unavailable', async () => {
+      await expect(generatePhase2Prompt('phase 1 output')).rejects.toThrow();
+    });
+
+    test('generatePhase3Prompt should reject when fetch unavailable', async () => {
+      await expect(generatePhase3Prompt('phase 1', 'phase 2')).rejects.toThrow();
+    });
   });
 });
