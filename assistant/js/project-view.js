@@ -6,10 +6,11 @@
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename, Workflow, detectPromptPaste } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboard, copyToClipboardAsync, showPromptModal, confirm, showDocumentPreviewModal, createActionMenu } from './ui.js';
+import { escapeHtml, showToast, copyToClipboard, copyToClipboardAsync, showPromptModal, confirm, confirmWithRemember, showDocumentPreviewModal, createActionMenu } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
 import { computeWordDiff, renderDiffHtml, getDiffStats } from './diff-view.js';
+import { validateOnePager, getScoreColor, getScoreLabel } from './validator-inline.js';
 
 /**
  * Extract title from markdown content (looks for # Title at the beginning)
@@ -169,7 +170,22 @@ function renderPhaseContent(project, phase) {
   const color = colorMap[phase] || 'blue';
 
   // Completion banner shown above Phase 3 content when phase is complete
-  const completionBanner = phase === 3 && phaseData.completed ? `
+  let completionBanner = '';
+  if (phase === 3 && phaseData.completed) {
+    const onePagerContent = phaseData.response || '';
+    const validationResult = validateOnePager(onePagerContent);
+    const scoreColor = getScoreColor(validationResult.totalScore);
+    const scoreLabel = getScoreLabel(validationResult.totalScore);
+
+    // Collect all issues for display
+    const allIssues = [
+      ...validationResult.problemClarity.issues,
+      ...validationResult.solution.issues,
+      ...validationResult.scope.issues,
+      ...validationResult.completeness.issues
+    ];
+
+    completionBanner = `
         <div class="mb-6 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <div class="flex items-center justify-between flex-wrap gap-4">
                 <div>
@@ -184,11 +200,61 @@ function renderPhaseContent(project, phase) {
                     <button id="export-complete-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
                         📄 Preview & Copy
                     </button>
-                    <button id="validate-score-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg">
-                        📋 Copy & Validate ↗
-                    </button>
+                    <a href="../validator/" target="_blank" rel="noopener noreferrer" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg">
+                        📋 Full Validation ↗
+                    </a>
                 </div>
             </div>
+
+            <!-- Inline Quality Score -->
+            <div class="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between mb-3">
+                    <h5 class="font-semibold text-gray-900 dark:text-white flex items-center">
+                        📊 One-Pager Quality Score
+                    </h5>
+                    <div class="flex items-center gap-2">
+                        <span class="text-3xl font-bold text-${scoreColor}-600 dark:text-${scoreColor}-400">${validationResult.totalScore}</span>
+                        <span class="text-gray-500 dark:text-gray-400">/100</span>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-${scoreColor}-100 dark:bg-${scoreColor}-900/30 text-${scoreColor}-700 dark:text-${scoreColor}-300">${scoreLabel}</span>
+                    </div>
+                </div>
+
+                <!-- Score Breakdown -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50">
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">Problem Clarity</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">${validationResult.problemClarity.score}/${validationResult.problemClarity.maxScore}</div>
+                    </div>
+                    <div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50">
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">Solution Quality</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">${validationResult.solution.score}/${validationResult.solution.maxScore}</div>
+                    </div>
+                    <div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50">
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">Scope Discipline</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">${validationResult.scope.score}/${validationResult.scope.maxScore}</div>
+                    </div>
+                    <div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50">
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">Completeness</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">${validationResult.completeness.score}/${validationResult.completeness.maxScore}</div>
+                    </div>
+                </div>
+
+                ${allIssues.length > 0 && validationResult.totalScore < 70 ? `
+                <!-- Improvement Suggestions -->
+                <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                    <details>
+                        <summary class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer hover:text-gray-900 dark:hover:text-white">
+                            💡 ${allIssues.length} suggestion${allIssues.length > 1 ? 's' : ''} to improve your score
+                        </summary>
+                        <ul class="mt-2 text-xs text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
+                            ${allIssues.slice(0, 5).map(issue => `<li>${escapeHtml(issue)}</li>`).join('')}
+                            ${allIssues.length > 5 ? `<li class="text-gray-400 dark:text-gray-500">...and ${allIssues.length - 5} more</li>` : ''}
+                        </ul>
+                    </details>
+                </div>
+                ` : ''}
+            </div>
+
             <!-- Expandable Help Section -->
             <details class="mt-4">
                 <summary class="text-sm text-green-700 dark:text-green-400 cursor-pointer hover:text-green-800 dark:hover:text-green-300">
@@ -199,7 +265,7 @@ function renderPhaseContent(project, phase) {
                         <li>Click <strong>"Preview & Copy"</strong> to see your formatted document</li>
                         <li>Click <strong>"Copy Formatted Text"</strong> in the preview</li>
                         <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong> and paste</li>
-                        <li>Use <strong><a href="https://bordenet.github.io/one-pager/validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">One-Pager Validator</a></strong> to score and improve your document</li>
+                        <li>Use <strong><a href="../validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">One-Pager Validator</a></strong> to score and improve your document</li>
                     </ol>
                     <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs">
                         💡 The validator provides instant feedback and AI-powered suggestions for improvement.
@@ -207,7 +273,8 @@ function renderPhaseContent(project, phase) {
                 </div>
             </details>
         </div>
-  ` : '';
+    `;
+  }
 
   return `
         ${completionBanner}
@@ -443,7 +510,32 @@ function attachPhaseEventListeners(project, phase) {
   };
 
   // CRITICAL: Safari transient activation fix - call copyToClipboardAsync synchronously
-  copyPromptBtn.addEventListener('click', () => {
+  copyPromptBtn.addEventListener('click', async () => {
+    // Check if warning was previously acknowledged
+    const warningAcknowledged = localStorage.getItem('external-ai-warning-acknowledged');
+
+    if (!warningAcknowledged) {
+      const result = await confirmWithRemember(
+        'You are about to copy a prompt that may contain proprietary data.\n\n' +
+                '• This prompt will be pasted into an external AI service (Claude/Gemini)\n' +
+                '• Data sent to these services is processed on third-party servers\n' +
+                '• For sensitive documents, use an internal tool like LibreGPT instead\n\n' +
+                'Do you want to continue?',
+        'External AI Warning',
+        { confirmText: 'Copy Prompt', cancelText: 'Cancel' }
+      );
+
+      if (!result.confirmed) {
+        showToast('Copy cancelled', 'info');
+        return;
+      }
+
+      // Remember the choice permanently if checkbox was checked
+      if (result.remember) {
+        localStorage.setItem('external-ai-warning-acknowledged', 'true');
+      }
+    }
+
     let generatedPrompt = null;
     const promptPromise = (async () => {
       const prompt = await generatePromptForPhase(project, phase);
