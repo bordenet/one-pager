@@ -10,6 +10,11 @@
  * 4. Completeness (20 pts) - Required sections, stakeholders, timeline
  */
 
+import { getSlopPenalty, calculateSlopScore } from './slop-detection.js';
+
+// Re-export for direct access
+export { calculateSlopScore };
+
 // Problem detection patterns
 const PROBLEM_PATTERNS = {
   section: /^#+\s*(problem|challenge|pain.?point|context|why)/im,
@@ -167,14 +172,33 @@ export function validateDocument(text) {
   const scope = scoreScopeDiscipline(text);
   const completeness = scoreCompleteness(text);
 
-  const totalScore = problemClarity.score + solution.score + scope.score + completeness.score;
+  // AI slop detection
+  const slopPenalty = getSlopPenalty(text);
+  let slopDeduction = 0;
+  const slopIssues = [];
+
+  if (slopPenalty.penalty > 0) {
+    slopDeduction = Math.min(5, Math.floor(slopPenalty.penalty * 0.6));
+    if (slopPenalty.issues.length > 0) {
+      slopIssues.push(...slopPenalty.issues.slice(0, 2));
+    }
+  }
+
+  const totalScore = Math.max(0,
+    problemClarity.score + solution.score + scope.score + completeness.score - slopDeduction
+  );
 
   return {
     totalScore,
     problemClarity,
     solution,
     scope,
-    completeness
+    completeness,
+    slopDetection: {
+      ...slopPenalty,
+      deduction: slopDeduction,
+      issues: slopIssues
+    }
   };
 }
 
