@@ -8,6 +8,7 @@ import { getAllProjects, createProject, deleteProject } from './projects.js';
 import { formatDate, escapeHtml, confirm, showToast, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 import { getFinalMarkdown, getExportFilename } from './workflow.js';
+import { getAllTemplates, getTemplate } from './document-specific-templates.js';
 
 /**
  * Render the projects list view
@@ -176,6 +177,26 @@ export function renderNewProjectForm(existingProject = null) {
                             💡 Update your project details below. Changes will be saved when you continue to Phase 1.
                         </p>
                     </div>
+                ` : ''}
+
+                <!-- Template Selector (only show when creating new) -->
+                ${!isEditing ? `
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        Choose a Template
+                    </label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="template-selector">
+                        ${getAllTemplates().map(t => `
+                            <button type="button"
+                                class="template-btn p-3 border-2 rounded-lg text-center transition-all hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 ${t.id === 'blank' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600'}"
+                                data-template-id="${t.id}">
+                                <span class="text-2xl block mb-1">${t.icon}</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white block">${t.name}</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">${t.description}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
                 ` : ''}
 
                 <form id="new-project-form" class="space-y-6">
@@ -469,6 +490,38 @@ export function renderNewProjectForm(existingProject = null) {
 
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
+
+  // Template selector event handlers (only when creating new)
+  if (!isEditing) {
+    document.querySelectorAll('.template-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const templateId = btn.dataset.templateId;
+        const template = getTemplate(templateId);
+
+        if (template) {
+          // Update selection UI
+          document.querySelectorAll('.template-btn').forEach(b => {
+            b.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
+            b.classList.add('border-gray-200', 'dark:border-gray-600');
+          });
+          btn.classList.remove('border-gray-200', 'dark:border-gray-600');
+          btn.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
+
+          // Populate form fields with template content
+          document.getElementById('problemStatement').value = template.problemStatement;
+          document.getElementById('costOfDoingNothing').value = template.costOfDoingNothing;
+          document.getElementById('context').value = template.context;
+          document.getElementById('proposedSolution').value = template.proposedSolution;
+          document.getElementById('keyGoals').value = template.keyGoals;
+          document.getElementById('scopeInScope').value = template.scopeInScope;
+          document.getElementById('scopeOutOfScope').value = template.scopeOutOfScope;
+          document.getElementById('successMetrics').value = template.successMetrics;
+          document.getElementById('keyStakeholders').value = template.keyStakeholders;
+          document.getElementById('timelineEstimate').value = template.timelineEstimate;
+        }
+      });
+    });
+  }
 
   // Next Phase button - saves and navigates to Phase 1
   document.getElementById('next-phase-btn').addEventListener('click', async () => {
