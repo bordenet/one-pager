@@ -8,8 +8,8 @@
 import { DOCUMENT_TEMPLATES, getTemplate, getAllTemplates } from '../../shared/js/document-specific-templates.js';
 
 describe('DOCUMENT_TEMPLATES', () => {
-  test('should have 5 templates defined', () => {
-    expect(Object.keys(DOCUMENT_TEMPLATES)).toHaveLength(5);
+  test('should have 4 templates defined', () => {
+    expect(Object.keys(DOCUMENT_TEMPLATES)).toHaveLength(4);
   });
 
   test('should have blank template', () => {
@@ -41,12 +41,7 @@ describe('DOCUMENT_TEMPLATES', () => {
     expect(DOCUMENT_TEMPLATES.budgetAsk.icon).toBe('💰');
   });
 
-  test('should have incidentRetro template', () => {
-    expect(DOCUMENT_TEMPLATES.incidentRetro).toBeDefined();
-    expect(DOCUMENT_TEMPLATES.incidentRetro.id).toBe('incidentRetro');
-    expect(DOCUMENT_TEMPLATES.incidentRetro.name).toBe('Incident Retro');
-    expect(DOCUMENT_TEMPLATES.incidentRetro.icon).toBe('⚠️');
-  });
+
 
   test('all templates should have required fields', () => {
     const requiredFields = [
@@ -96,7 +91,7 @@ describe('getAllTemplates', () => {
   test('should return array of all templates', () => {
     const templates = getAllTemplates();
     expect(Array.isArray(templates)).toBe(true);
-    expect(templates).toHaveLength(5);
+    expect(templates).toHaveLength(4);
   });
 
   test('should include all template objects', () => {
@@ -106,7 +101,6 @@ describe('getAllTemplates', () => {
     expect(ids).toContain('statusUpdate');
     expect(ids).toContain('featurePitch');
     expect(ids).toContain('budgetAsk');
-    expect(ids).toContain('incidentRetro');
   });
 
   test('each template should have name and icon', () => {

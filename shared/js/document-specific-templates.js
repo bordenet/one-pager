@@ -87,22 +87,6 @@ export const DOCUMENT_TEMPLATES = {
     successMetrics: 'ROI: [X]% in [timeframe]\nPayback period: [months]\nCapacity increase: [Y]%',
     keyStakeholders: 'Requestor: [Name]\nApprover: [Finance/Exec]\nBeneficiary: [Team]',
     timelineEstimate: 'Decision needed: [Date]\nOnboarding/setup: [Duration]\nFull productivity: [Date]'
-  },
-  incidentRetro: {
-    id: 'incidentRetro',
-    name: 'Incident Retro',
-    icon: '⚠️',
-    description: 'Post-incident summary',
-    problemStatement: '[Incident ID]: [Brief description of what happened]\nImpact: [X] customers affected for [duration]',
-    costOfDoingNothing: 'Risk of recurrence: [High/Medium/Low]\nPotential impact: [Describe worst case]\nReputation damage: [Describe]',
-    context: 'Timeline:\n- [Time]: Issue detected\n- [Time]: Investigation began\n- [Time]: Root cause identified\n- [Time]: Resolution deployed',
-    proposedSolution: 'Immediate fixes:\n- [Fix 1]\n- [Fix 2]\n\nLong-term prevention:\n- [Action 1]\n- [Action 2]',
-    keyGoals: '- Prevent recurrence\n- Reduce MTTR by [X]%\n- Improve detection capabilities',
-    scopeInScope: 'This incident\'s root cause and direct contributing factors',
-    scopeOutOfScope: 'Unrelated system improvements\nBroader architectural changes (separate initiative)',
-    successMetrics: '- MTTR reduced to [X] minutes\n- Similar incidents: 0 in next [period]\n- Detection time: [target]',
-    keyStakeholders: 'Incident Commander: [Name]\nOn-call: [Names]\nReview Board: [Names]',
-    timelineEstimate: 'Immediate actions: [X] days\nFollow-up items: [Y] weeks\nRetro review: [Date]'
   }
 };
 
