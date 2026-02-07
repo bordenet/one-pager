@@ -1,7 +1,30 @@
 /**
- * Tests for validator-inline.js
+ * Tests for validator-inline.js - One-Pager Assistant
+ *
+ * Comprehensive tests for all scoring functions:
+ * - Problem Clarity (30 pts)
+ * - Solution Quality (25 pts)
+ * - Scope Discipline (25 pts)
+ * - Completeness (20 pts)
  */
-import { validateDocument, getScoreColor, getScoreLabel } from '../../shared/js/validator-inline.js';
+
+import {
+  validateDocument,
+  getScoreColor,
+  getScoreLabel,
+  scoreProblemClarity,
+  scoreSolutionQuality,
+  scoreScopeDiscipline,
+  scoreCompleteness,
+  detectProblemStatement,
+  detectCostOfInaction,
+  detectSolution,
+  detectMeasurableGoals,
+  detectScope,
+  detectSuccessMetrics,
+  detectStakeholders,
+  detectTimeline
+} from '../../shared/js/validator-inline.js';
 
 describe('Inline One-Pager Validator', () => {
   describe('validateDocument', () => {
@@ -144,6 +167,269 @@ There is a big problem affecting our users and costing the business money.
     test('should return Incomplete for scores < 30', () => {
       expect(getScoreLabel(0)).toBe('Incomplete');
       expect(getScoreLabel(29)).toBe('Incomplete');
+    });
+  });
+});
+
+// ============================================================================
+// Problem Clarity Tests (30 pts)
+// ============================================================================
+
+describe('scoreProblemClarity', () => {
+  test('should detect problem section', () => {
+    const content = `
+# Problem Statement
+Users are frustrated with slow load times.
+`.repeat(3);
+    const result = scoreProblemClarity(content);
+    expect(result.score).toBeGreaterThan(0);
+  });
+
+  test('should detect cost of inaction', () => {
+    const content = `
+# Problem
+The cost of not addressing this is $100,000 per year.
+Without action, we risk losing 20% of customers.
+`.repeat(2);
+    const result = scoreProblemClarity(content);
+    expect(result.score).toBeGreaterThan(5);
+  });
+
+  test('should detect quantified problems', () => {
+    const content = `
+# Problem
+This affects 10,000 users daily.
+We lose $50,000 per month due to this issue.
+`.repeat(2);
+    const result = scoreProblemClarity(content);
+    expect(result.score).toBeGreaterThan(5);
+  });
+
+  test('should return issues for missing problem section', () => {
+    const content = `
+# Solution
+We will build something great.
+`.repeat(3);
+    const result = scoreProblemClarity(content);
+    expect(result.issues.length).toBeGreaterThan(0);
+  });
+});
+
+// ============================================================================
+// Solution Quality Tests (25 pts)
+// ============================================================================
+
+describe('scoreSolutionQuality', () => {
+  test('should detect solution section', () => {
+    const content = `
+# Solution
+We will implement an automated workflow system.
+`.repeat(3);
+    const result = scoreSolutionQuality(content);
+    expect(result.score).toBeGreaterThan(0);
+  });
+
+  test('should detect measurable goals', () => {
+    const content = `
+# Solution
+We will measure success by tracking KPIs.
+Our target is to achieve 95% accuracy.
+`.repeat(2);
+    const result = scoreSolutionQuality(content);
+    expect(result.score).toBeGreaterThan(5);
+  });
+
+  test('should return issues for missing solution', () => {
+    const content = `
+# Problem
+There is a problem.
+`.repeat(3);
+    const result = scoreSolutionQuality(content);
+    expect(result.issues.length).toBeGreaterThan(0);
+  });
+});
+
+// ============================================================================
+// Scope Discipline Tests (25 pts)
+// ============================================================================
+
+describe('scoreScopeDiscipline', () => {
+  test('should detect in-scope items', () => {
+    const content = `
+# Scope
+## In Scope
+- We will build the core feature
+- We will provide documentation
+`.repeat(2);
+    const result = scoreScopeDiscipline(content);
+    expect(result.score).toBeGreaterThan(0);
+  });
+
+  test('should detect out-of-scope items', () => {
+    const content = `
+# Scope
+## Out of Scope
+- We will not build mobile app
+- Phase 2: Advanced features
+`.repeat(2);
+    const result = scoreScopeDiscipline(content);
+    expect(result.score).toBeGreaterThan(5);
+  });
+
+  test('should return issues for missing scope', () => {
+    const content = `
+# Problem
+There is a problem.
+# Solution
+Here is a solution.
+`.repeat(3);
+    const result = scoreScopeDiscipline(content);
+    expect(result.issues.length).toBeGreaterThan(0);
+  });
+});
+
+// ============================================================================
+// Completeness Tests (20 pts)
+// ============================================================================
+
+describe('scoreCompleteness', () => {
+  test('should detect required sections', () => {
+    const content = `
+# Problem Statement
+The problem is significant.
+
+# Solution
+We will solve it.
+
+# Goals
+Improve efficiency.
+`.repeat(2);
+    const result = scoreCompleteness(content);
+    expect(result.score).toBeGreaterThan(0);
+  });
+
+  test('should detect stakeholders', () => {
+    const content = `
+# Stakeholders
+- Product Owner: Jane Doe (responsible)
+- Engineering Lead: John Smith (accountable)
+`.repeat(2);
+    const result = scoreCompleteness(content);
+    expect(result.score).toBeGreaterThan(0);
+  });
+
+  test('should detect timeline', () => {
+    const content = `
+# Timeline
+- Phase 1 (Q1): Design
+- Phase 2 (Q2): Development
+`.repeat(2);
+    const result = scoreCompleteness(content);
+    expect(result.score).toBeGreaterThan(0);
+  });
+});
+
+
+// ============================================================================
+// Detection Function Tests
+// ============================================================================
+
+describe('Detection Functions', () => {
+  describe('detectProblemStatement', () => {
+    test('should detect problem section', () => {
+      const content = '# Problem\nThere is a challenge.';
+      const result = detectProblemStatement(content);
+      expect(result.hasProblemSection).toBe(true);
+    });
+
+    test('should detect problem language', () => {
+      const content = 'Users struggle with this issue and face challenges daily.';
+      const result = detectProblemStatement(content);
+      expect(result.hasProblemLanguage).toBe(true);
+    });
+  });
+
+  describe('detectCostOfInaction', () => {
+    test('should detect cost language', () => {
+      const content = 'The cost of not acting is $100,000. Without this, we risk failure.';
+      const result = detectCostOfInaction(content);
+      expect(result.hasCostLanguage).toBe(true);
+    });
+
+    test('should detect quantified costs', () => {
+      const content = 'We lose 500 hours per month and $50,000 annually.';
+      const result = detectCostOfInaction(content);
+      expect(result.isQuantified).toBe(true);
+    });
+  });
+
+  describe('detectSolution', () => {
+    test('should detect solution section', () => {
+      const content = '# Solution\nWe will implement a new system.';
+      const result = detectSolution(content);
+      expect(result.hasSolutionSection).toBe(true);
+    });
+
+    test('should detect solution language', () => {
+      const content = 'We will build and implement a solution to deliver value.';
+      const result = detectSolution(content);
+      expect(result.hasSolutionLanguage).toBe(true);
+    });
+  });
+
+  describe('detectScope', () => {
+    test('should detect in-scope items', () => {
+      const content = 'In scope: We will build the API. We will provide docs.';
+      const result = detectScope(content);
+      expect(result.hasInScope).toBe(true);
+    });
+
+    test('should detect out-of-scope items', () => {
+      const content = 'Out of scope: Mobile app. We will not build legacy support.';
+      const result = detectScope(content);
+      expect(result.hasOutOfScope).toBe(true);
+    });
+  });
+
+  describe('detectSuccessMetrics', () => {
+    test('should detect metrics section', () => {
+      const content = '# Success Metrics\n- 99% uptime';
+      const result = detectSuccessMetrics(content);
+      expect(result.hasMetricsSection).toBe(true);
+    });
+
+    test('should detect quantified metrics', () => {
+      const content = 'Target: 95% accuracy, 200ms response time, 1000 users.';
+      const result = detectSuccessMetrics(content);
+      expect(result.hasQuantified).toBe(true);
+    });
+  });
+
+  describe('detectStakeholders', () => {
+    test('should detect stakeholder section', () => {
+      const content = '# Stakeholders\n- Owner: Jane';
+      const result = detectStakeholders(content);
+      expect(result.hasStakeholderSection).toBe(true);
+    });
+
+    test('should detect RACI', () => {
+      const content = 'Responsible: Jane. Accountable: John. RACI defined.';
+      const result = detectStakeholders(content);
+      expect(result.hasRoles).toBe(true);
+    });
+  });
+
+  describe('detectTimeline', () => {
+    test('should detect timeline section', () => {
+      const content = '# Timeline\n- Phase 1: Q1';
+      const result = detectTimeline(content);
+      expect(result.hasTimelineSection).toBe(true);
+    });
+
+    test('should detect phases', () => {
+      const content = 'Phase 1 in Q1, Phase 2 in Q2, Sprint 1 starts next week.';
+      const result = detectTimeline(content);
+      expect(result.hasPhasing).toBe(true);
     });
   });
 });
