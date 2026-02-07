@@ -15,35 +15,51 @@ Score this One-Pager using the following rubric (0-100 points total):
 ## SCORING RUBRIC
 
 ### 1. Problem Clarity (30 points)
-- **Problem Statement (10 pts)**: Clear, specific problem definition with dedicated section
-- **Cost of Inaction (10 pts)**: Quantified impact of not solving this problem
+- **Problem Statement (10 pts)**: Clear ROOT CAUSE, not just symptoms. Not circular.
+- **Cost of Doing Nothing (10 pts)**: REQUIRED. Quantified impact with specific $ or %
 - **Business Focus (10 pts)**: Problem tied to customer/business value, not just technical
 
 ### 2. Solution Quality (25 points)
-- **Addresses Problem (10 pts)**: Solution clearly maps to stated problem
-- **Measurable Goals (10 pts)**: Goals are specific and measurable, not vague
-- **High-Level (5 pts)**: Solution stays at appropriate level, no implementation details
+- **Logical Bridge (10 pts)**: Solution addresses root cause. NOT just inverse of problem.
+- **Measurable Goals (10 pts)**: Goals in [Baseline] → [Target] format, not vague
+- **Alternatives Considered (5 pts)**: Why this over "do nothing" or Solution B?
 
-### 3. Scope Discipline (25 points)
-- **In-Scope (8 pts)**: Clear definition of what WILL be done
-- **Out-of-Scope (9 pts)**: Explicit definition of what WON'T be done
-- **SMART Metrics (8 pts)**: Success metrics are Specific, Measurable, Achievable, Relevant, Time-bound
+### 3. Investment Logic (20 points)
+- **The Ask (10 pts)**: Clear effort + cost required (headcount, budget, time)
+- **ROI Evidence (10 pts)**: Does the Investment justify the Cost of Doing Nothing?
 
-### 4. Completeness (20 points)
-- **Required Sections (8 pts)**: Problem, Solution, Goals, Scope, Metrics, Stakeholders, Timeline
-- **Stakeholders (6 pts)**: Clear identification of who's involved and their roles
-- **Timeline (6 pts)**: Realistic milestones and phased approach
+### 4. Risks & Assumptions (15 points)
+- **Key Assumptions (7 pts)**: What must be true for this to work?
+- **Top Risks (8 pts)**: What could kill this project? Mitigation identified?
+
+### 5. Scope & Metrics (10 points)
+- **Scope Discipline (5 pts)**: In-scope AND out-of-scope clearly defined (brief, not padded)
+- **SMART Metrics (5 pts)**: [Current] → [Target] by [Date]
+
+## ⚠️ CRITICAL: LOGICAL BRIDGE CHECK
+
+**Before scoring, answer this question:**
+> Is the solution simply the inverse of the problem?
+> Example: Problem: "We don't have a dashboard" → Solution: "Build a dashboard"
+
+If YES, this is CIRCULAR LOGIC. Cap total score at 50 maximum regardless of other scores.
+
+A valid solution addresses the ROOT CAUSE:
+> Problem: "Support tickets increased 40% due to lack of visibility into order status"
+> Solution: "Provide real-time order tracking to reduce support burden by 30%"
 
 ## CALIBRATION GUIDANCE
 - Be HARSH. Most one-pagers score 40-60. Only exceptional ones score 80+.
 - A score of 70+ means ready for executive decision-making.
-- One-pagers should fit on ONE PAGE - deduct points for verbosity.
-- Deduct points for EVERY vague qualifier without metrics.
+- One-pagers should fit on ONE PAGE (450 words max) - deduct points for verbosity.
+- Deduct points for EVERY vague qualifier without [Baseline] → [Target] metrics.
 - Deduct points for weasel words ("should be able to", "might", "could potentially").
 - Deduct points for marketing fluff ("best-in-class", "cutting-edge", "world-class").
-- Reward explicit scope boundaries (both in AND out).
-- Reward quantified metrics and business impact.
-- Deduct points for missing required sections.
+- Deduct points for superlative adjectives ("revolutionary", "seamless", "groundbreaking").
+- Reward explicit scope boundaries (brief, not padded for points).
+- Reward quantified metrics with baselines AND targets.
+- Deduct points for missing Cost of Doing Nothing (REQUIRED section).
+- Deduct points for missing Investment/The Ask section.
 
 ## ONE-PAGER TO EVALUATE
 
@@ -55,19 +71,25 @@ ${onePagerContent}
 
 Provide your evaluation in this exact format:
 
+**LOGICAL BRIDGE CHECK: [PASS/FAIL]**
+[If FAIL: "Solution is inverse of problem - score capped at 50"]
+
 **TOTAL SCORE: [X]/100**
 
 ### Problem Clarity: [X]/30
-[2-3 sentence justification]
+[2-3 sentence justification. Does it have REQUIRED Cost of Doing Nothing with specific $ or %?]
 
 ### Solution Quality: [X]/25
-[2-3 sentence justification]
+[2-3 sentence justification. Does solution address root cause? Goals in [Baseline] → [Target] format?]
 
-### Scope Discipline: [X]/25
-[2-3 sentence justification]
+### Investment Logic: [X]/20
+[2-3 sentence justification. Clear effort/cost? Does ROI make sense?]
 
-### Completeness: [X]/20
-[2-3 sentence justification]
+### Risks & Assumptions: [X]/15
+[2-3 sentence justification. Key assumptions identified? Top risks with mitigations?]
+
+### Scope & Metrics: [X]/10
+[2-3 sentence justification. Brief scope? SMART metrics with baselines?]
 
 ### Top 3 Issues
 1. [Most critical issue]
@@ -100,8 +122,9 @@ export function generateCritiquePrompt(onePagerContent, currentResult) {
 Total Score: ${currentResult.totalScore}/100
 - Problem Clarity: ${currentResult.problemClarity?.score || 0}/30
 - Solution Quality: ${currentResult.solution?.score || 0}/25
-- Scope Discipline: ${currentResult.scope?.score || 0}/25
-- Completeness: ${currentResult.completeness?.score || 0}/20
+- Investment Logic: ${currentResult.investmentLogic?.score || 0}/20
+- Risks & Assumptions: ${currentResult.risksAssumptions?.score || 0}/15
+- Scope & Metrics: ${currentResult.scopeMetrics?.score || 0}/10
 
 Key issues detected:
 ${issuesList || '- None detected by automated scan'}
@@ -114,7 +137,11 @@ ${onePagerContent}
 
 ## YOUR TASK
 
-Provide:
+First, perform the LOGICAL BRIDGE CHECK:
+> Is the solution simply the inverse of the problem? (e.g., "No dashboard" → "Build dashboard")
+> If YES, this is the primary issue to fix.
+
+Then provide:
 1. **Executive Summary** (2-3 sentences on overall one-pager quality)
 2. **Detailed Critique** by dimension:
    - What works well
@@ -122,7 +149,7 @@ Provide:
    - Specific suggestions with examples
 3. **Revised One-Pager** - A complete rewrite addressing all issues
 
-Be specific. Show exact rewrites. Keep it to ONE PAGE. Make it ready for executive decision-making.`;
+Be specific. Show exact rewrites. Keep it to 450 words max. Make it ready for executive decision-making.`;
 }
 
 /**
@@ -145,16 +172,23 @@ ${onePagerContent}
 ## REWRITE REQUIREMENTS
 
 Create a complete, polished One-Pager that:
-1. Fits on ONE PAGE (concise, executive-focused)
-2. Has all required sections (Problem, Cost of Inaction, Solution, Goals, Scope, Metrics, Stakeholders, Timeline)
-3. Includes explicit "In Scope" AND "Out of Scope" definitions
-4. Has specific, quantified metrics (numbers, percentages, timeframes)
-5. Clearly ties problem to business/customer value
-6. Includes measurable goals tied to the problem
-7. Defines stakeholders and their roles
-8. Provides realistic timeline with phases/milestones
-9. Avoids vague qualifiers, weasel words, and marketing fluff
-10. Stays high-level (no implementation details)
+1. Fits in 450 words max (concise, executive-focused)
+2. Has all required sections:
+   - Problem Statement (root cause, not symptoms)
+   - Cost of Doing Nothing (REQUIRED - specific $ or %)
+   - Proposed Solution & Alternatives (why this over alternatives?)
+   - Key Goals/Benefits (outcomes in [Baseline] → [Target] format)
+   - The Investment (effort + cost)
+   - Risks & Assumptions (key assumption + top risk with mitigation)
+   - Scope (brief in-scope AND out-of-scope)
+   - Success Metrics ([Current] → [Target] by [Date])
+   - Key Stakeholders (owner + approvers)
+   - Timeline (milestones with dates)
+3. Passes LOGICAL BRIDGE CHECK - solution addresses root cause, not inverse of problem
+4. Passes ROI SANITY CHECK - Investment proportional to Cost of Doing Nothing
+5. All metrics have [Baseline] → [Target] → [Timeline]
+6. No vague qualifiers, weasel words, marketing fluff, or superlative adjectives
+7. Stays high-level (no implementation details)
 
 Output ONLY the rewritten One-Pager in markdown format. No commentary.`;
 }

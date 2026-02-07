@@ -47,8 +47,10 @@ Before finalizing, eliminate ALL remaining slop:
 
 - **Favor Specificity**: Choose the more specific, measurable version
 - **Prefer Clarity**: Choose the clearer, more accessible language
-- **Maintain Conciseness**: Keep it to one page (500-700 words)
+- **Maintain Conciseness**: Keep it to 450 words maximum. Density is a proxy for clarity.
 - **Ensure Consistency**: Make sure all sections align and support each other
+- **Validate Logic**: Solution must address root cause, not just be inverse of problem
+- **ROI Sanity Check**: Does Investment justify Cost of Doing Nothing?
 - **Ask When Uncertain**: If both versions have merit but conflict, ask the user to choose
 - **Zero AI Slop**: Final document must have no vague terms, filler, or buzzwords
 
@@ -62,30 +64,43 @@ Provide the final synthesized one-pager in this format:
 # {Project/Feature Name}
 
 ## Problem Statement
-{Synthesized version combining best of both}
+{Root cause, not symptoms. 2-3 sentences.}
 
 ## Cost of Doing Nothing
-[OPTIONAL - Only include this section if present in both versions. Omit entirely if not needed. Do not write "N/A"]
-{Synthesized version combining best of both}
+{REQUIRED. Synthesized version with specific $ or %. Never omit this section.}
 
-## Proposed Solution
-{Synthesized version combining best of both}
+## Proposed Solution & Alternatives
+{Synthesized high-level solution}
+**Why this over alternatives?** {Why not "do nothing" or Solution B?}
 
 ## Key Goals/Benefits
-{Synthesized version combining best of both}
+{Apply "So What?" test—outcomes, not features}
+- {Outcome 1}: [Baseline] → [Target]
+- {Outcome 2}: [Baseline] → [Target]
+
+## The Investment
+- **Effort**: {Synthesized version}
+- **Cost**: {Synthesized version}
+
+## Risks & Assumptions
+- **Key Assumption**: {What must be true?}
+- **Top Risk**: {What could kill this?} → **Mitigation**: {How we address it}
 
 ## Scope
-**In Scope:** {Synthesized version combining best of both}
-**Out of Scope:** {Synthesized version combining best of both}
+**In Scope:** {Brief, synthesized}
+**Out of Scope:** {Brief, no padding}
 
 ## Success Metrics
-{Synthesized version combining best of both}
+- {Metric 1}: [Current: X] → [Target: Y] by [Date]
+- {Metric 2}: [Current: X] → [Target: Y] by [Date]
 
 ## Key Stakeholders
-{Synthesized version combining best of both}
+- **Owner**: {Name}
+- **Approvers**: {Names}
 
 ## Timeline
-{Synthesized version combining best of both}
+- {Milestone 1} - {Date}
+- {Launch/Completion} - {Date}
 ```
 
 ---
