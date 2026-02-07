@@ -56,7 +56,19 @@ Before finalizing, eliminate ALL remaining slop:
 
 ## Output Format
 
-**IMPORTANT**: Do NOT provide the final markdown document until all clarifying questions have been answered and the user confirms they are satisfied with the synthesis. Only after the Q&A process is complete should you output the final synthesized one-pager in markdown format.
+**IMPORTANT**: Do NOT provide the final markdown document until all clarifying questions have been answered and the user confirms they are satisfied with the synthesis.
+
+**CRITICAL: Copy-Paste Ready Output Only**
+
+When ready, your final document MUST be:
+1. **Clean markdown only** — No code fences wrapping the document
+2. **No preamble** — Do NOT start with "Here's...", "Sure...", "I've created..."
+3. **No commentary** — Do NOT explain what you did or why
+4. **No sign-off** — Do NOT end with "Let me know if...", "Would you like me to...", "Feel free to..."
+5. **Start immediately** — Begin with the document title (# Project Name)
+6. **Maximum 450 words**
+
+The user will copy your ENTIRE response and paste it directly into the tool. Any extra text breaks this workflow.
 
 Provide the final synthesized one-pager in this format:
 
