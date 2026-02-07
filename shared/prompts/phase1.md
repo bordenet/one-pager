@@ -54,50 +54,21 @@ Flag these issues BEFORE drafting:
 
 ### Document Structure (When Ready to Draft)
 
-```markdown
-# {Project/Feature Name}
+**Required Sections (in order):**
 
-## Problem Statement
-{2-3 sentences clearly articulating the ROOT CAUSE, not just symptoms}
-
-## Cost of Doing Nothing
-{REQUIRED. Business impact if this problem is not solved: revenue loss, customer churn, productivity loss, technical debt. Must include specific numbers or percentages.}
-
-## Proposed Solution & Alternatives
-{2-3 sentences describing the high-level solution}
-**Why this over alternatives?** {1 sentence on why "do nothing" or "Solution B" was rejected}
-
-## Key Goals/Benefits
-{Apply the "So What?" test—outcomes, not features}
-- {Outcome 1}: [Baseline] → [Target]
-- {Outcome 2}: [Baseline] → [Target]
-
-## The Investment
-{What resources are required? Be specific.}
-- **Effort**: {e.g., "2 engineers for 3 sprints"}
-- **Cost**: {e.g., "$15k licensing" or "No additional budget"}
-
-## Risks & Assumptions
-- **Key Assumption**: {What must be true for this to work?}
-- **Top Risk**: {What could kill this project?} → **Mitigation**: {How we address it}
-
-## Scope
-**In Scope:** {What is explicitly included—keep brief}
-**Out of Scope:** {What is explicitly excluded—keep brief, no padding}
-
-## Success Metrics
-{All metrics must include baseline → target → timeline}
-- {Metric 1}: [Current: X] → [Target: Y] by [Date]
-- {Metric 2}: [Current: X] → [Target: Y] by [Date]
-
-## Key Stakeholders
-- **Owner**: {Name}
-- **Approvers**: {Names}
-
-## Timeline
-- {Milestone 1} - {Date}
-- {Launch/Completion} - {Date}
-```
+| Section | Content | Format |
+|---------|---------|--------|
+| # Project/Feature Name | Clear, descriptive title | H1 heading |
+| ## Problem Statement | ROOT CAUSE, not symptoms | 2-3 sentences |
+| ## Cost of Doing Nothing | REQUIRED. Revenue loss, churn, productivity loss | Specific $ or % |
+| ## Proposed Solution & Alternatives | High-level solution + "Why this over alternatives?" | 2-3 sentences + rationale |
+| ## Key Goals/Benefits | Outcomes, not features (apply "So What?" test) | [Baseline] → [Target] bullets |
+| ## The Investment | Effort + Cost | e.g., "2 engineers, 3 sprints, $15k" |
+| ## Risks & Assumptions | Key assumption + Top risk with mitigation | Bullets |
+| ## Scope | In-scope AND Out-of-scope | Brief, no padding |
+| ## Success Metrics | All with baseline → target → timeline | [Current: X] → [Target: Y] by [Date] |
+| ## Key Stakeholders | Owner + Approvers | Names |
+| ## Timeline | Milestones with dates | Phased bullets |
 
 ## ⚠️ CRITICAL: AI Slop Prevention Rules
 
@@ -169,14 +140,12 @@ Work with the user iteratively until all gaps are closed.
 2. The user has provided specific data (not vague descriptions)
 3. You have validated the logical connection between Problem → Solution → Metrics
 
-**CRITICAL: Copy-Paste Ready Output Only**
-
-When ready, your final document MUST be:
-1. **Clean markdown only** — No code fences wrapping the document
-2. **No preamble** — Do NOT start with "Here's...", "Sure...", "I've created..."
-3. **No commentary** — Do NOT explain what you did or why
-4. **No sign-off** — Do NOT end with "Let me know if...", "Would you like me to...", "Feel free to..."
-5. **Start immediately** — Begin with the document title (# Project Name)
-6. **Maximum 450 words**
-
-The user will copy your ENTIRE response and paste it directly into the tool. Any extra text breaks this workflow.
+<output_rules>
+CRITICAL - Your final document must be COPY-PASTE READY:
+- Start IMMEDIATELY with "# [Project Name]" (no preamble like "Here's the one-pager...")
+- End after the Timeline section (no sign-off like "Let me know if...")
+- NO markdown code fences (```markdown) wrapping the output
+- NO explanations of what you did or why
+- Maximum 450 words
+- The user will paste your ENTIRE response directly into the tool
+</output_rules>

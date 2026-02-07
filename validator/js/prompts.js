@@ -1,5 +1,11 @@
 /**
  * Prompt generation for LLM-based One-Pager scoring
+ *
+ * IMPORTANT: Scoring categories MUST match validator.js exactly:
+ * - Problem Clarity (30 pts)
+ * - Solution Quality (25 pts)
+ * - Scope Discipline (25 pts)
+ * - Completeness (20 pts)
  */
 
 /**
@@ -10,31 +16,29 @@
 export function generateLLMScoringPrompt(onePagerContent) {
   return `You are an expert Product Manager evaluating a One-Pager document.
 
-Score this One-Pager using the following rubric (0-100 points total):
+Score this One-Pager using the following rubric (0-100 points total).
 
-## SCORING RUBRIC
+## SCORING RUBRIC (Must match JavaScript validator exactly)
 
 ### 1. Problem Clarity (30 points)
-- **Problem Statement (10 pts)**: Clear ROOT CAUSE, not just symptoms. Not circular.
-- **Cost of Doing Nothing (10 pts)**: REQUIRED. Quantified impact with specific $ or %
-- **Business Focus (10 pts)**: Problem tied to customer/business value, not just technical
+- **Problem Statement (10 pts)**: Dedicated problem section with clear ROOT CAUSE, not just symptoms
+- **Cost of Doing Nothing (10 pts)**: REQUIRED. Quantified impact with specific $ or % numbers
+- **Business Focus (10 pts)**: Problem tied to customer/business value (keywords: customer, user, revenue, market, strategic)
 
 ### 2. Solution Quality (25 points)
-- **Logical Bridge (10 pts)**: Solution addresses root cause. NOT just inverse of problem.
-- **Measurable Goals (10 pts)**: Goals in [Baseline] → [Target] format, not vague
-- **Alternatives Considered (5 pts)**: Why this over "do nothing" or Solution B?
+- **Solution Addresses Problem (10 pts)**: Dedicated solution section that bridges to stated problem
+- **Measurable Goals (10 pts)**: Goals with [Baseline] → [Target] format, not vague claims
+- **High-Level Approach (5 pts)**: Solution stays strategic (no implementation details like code, API, database)
 
-### 3. Investment Logic (20 points)
-- **The Ask (10 pts)**: Clear effort + cost required (headcount, budget, time)
-- **ROI Evidence (10 pts)**: Does the Investment justify the Cost of Doing Nothing?
+### 3. Scope Discipline (25 points)
+- **In-Scope Defined (8 pts)**: Explicit "in-scope" or "we will" statements with dedicated section
+- **Out-of-Scope Defined (9 pts)**: Explicit "out-of-scope" or "we will not" statements
+- **SMART Metrics (8 pts)**: Success metrics with [Current] → [Target] by [Date] format
 
-### 4. Risks & Assumptions (15 points)
-- **Key Assumptions (7 pts)**: What must be true for this to work?
-- **Top Risks (8 pts)**: What could kill this project? Mitigation identified?
-
-### 5. Scope & Metrics (10 points)
-- **Scope Discipline (5 pts)**: In-scope AND out-of-scope clearly defined (brief, not padded)
-- **SMART Metrics (5 pts)**: [Current] → [Target] by [Date]
+### 4. Completeness (20 points)
+- **Required Sections (8 pts)**: Problem, Solution, Goals, Scope, Metrics, Stakeholders, Timeline sections present
+- **Stakeholders Identified (6 pts)**: Owner, approvers, RACI roles defined
+- **Timeline Phased (6 pts)**: Milestones with dates, phased approach
 
 ## ⚠️ CRITICAL: LOGICAL BRIDGE CHECK
 
@@ -59,7 +63,6 @@ A valid solution addresses the ROOT CAUSE:
 - Reward explicit scope boundaries (brief, not padded for points).
 - Reward quantified metrics with baselines AND targets.
 - Deduct points for missing Cost of Doing Nothing (REQUIRED section).
-- Deduct points for missing Investment/The Ask section.
 
 ## ONE-PAGER TO EVALUATE
 
@@ -67,9 +70,14 @@ A valid solution addresses the ROOT CAUSE:
 ${onePagerContent}
 \`\`\`
 
-## REQUIRED OUTPUT FORMAT
+<output_rules>
+Your response must be EXACTLY in this format - no deviations:
+- Start with "**LOGICAL BRIDGE CHECK:**" (no preamble)
+- End after "Top 3 Strengths" (no sign-off)
+- NO markdown code fences wrapping your response
+</output_rules>
 
-Provide your evaluation in this exact format:
+## REQUIRED OUTPUT FORMAT
 
 **LOGICAL BRIDGE CHECK: [PASS/FAIL]**
 [If FAIL: "Solution is inverse of problem - score capped at 50"]
@@ -82,14 +90,11 @@ Provide your evaluation in this exact format:
 ### Solution Quality: [X]/25
 [2-3 sentence justification. Does solution address root cause? Goals in [Baseline] → [Target] format?]
 
-### Investment Logic: [X]/20
-[2-3 sentence justification. Clear effort/cost? Does ROI make sense?]
+### Scope Discipline: [X]/25
+[2-3 sentence justification. In-scope AND out-of-scope defined? SMART metrics with baselines?]
 
-### Risks & Assumptions: [X]/15
-[2-3 sentence justification. Key assumptions identified? Top risks with mitigations?]
-
-### Scope & Metrics: [X]/10
-[2-3 sentence justification. Brief scope? SMART metrics with baselines?]
+### Completeness: [X]/20
+[2-3 sentence justification. All sections present? Stakeholders and timeline defined?]
 
 ### Top 3 Issues
 1. [Most critical issue]
@@ -122,9 +127,8 @@ export function generateCritiquePrompt(onePagerContent, currentResult) {
 Total Score: ${currentResult.totalScore}/100
 - Problem Clarity: ${currentResult.problemClarity?.score || 0}/30
 - Solution Quality: ${currentResult.solution?.score || 0}/25
-- Investment Logic: ${currentResult.investmentLogic?.score || 0}/20
-- Risks & Assumptions: ${currentResult.risksAssumptions?.score || 0}/15
-- Scope & Metrics: ${currentResult.scopeMetrics?.score || 0}/10
+- Scope Discipline: ${currentResult.scope?.score || 0}/25
+- Completeness: ${currentResult.completeness?.score || 0}/20
 
 Key issues detected:
 ${issuesList || '- None detected by automated scan'}
@@ -144,10 +148,18 @@ First, perform the LOGICAL BRIDGE CHECK:
 Then provide:
 1. **Executive Summary** (2-3 sentences on overall one-pager quality)
 2. **Detailed Critique** by dimension:
-   - What works well
-   - What needs improvement
-   - Specific suggestions with examples
+   - Problem Clarity: Is the root cause clear? Cost of Doing Nothing quantified?
+   - Solution Quality: Does it address root cause? Measurable goals?
+   - Scope Discipline: In-scope AND out-of-scope defined? SMART metrics?
+   - Completeness: All sections present? Stakeholders and timeline?
 3. **Revised One-Pager** - A complete rewrite addressing all issues
+
+<output_rules>
+- Start with "## Executive Summary" (no preamble)
+- End with the revised one-pager (no sign-off)
+- NO markdown code fences wrapping the output
+- Revised one-pager must be ready to paste
+</output_rules>
 
 Be specific. Show exact rewrites. Keep it to 450 words max. Make it ready for executive decision-making.`;
 }
@@ -171,26 +183,39 @@ ${onePagerContent}
 
 ## REWRITE REQUIREMENTS
 
-Create a complete, polished One-Pager that:
-1. Fits in 450 words max (concise, executive-focused)
-2. Has all required sections:
-   - Problem Statement (root cause, not symptoms)
-   - Cost of Doing Nothing (REQUIRED - specific $ or %)
-   - Proposed Solution & Alternatives (why this over alternatives?)
-   - Key Goals/Benefits (outcomes in [Baseline] → [Target] format)
-   - The Investment (effort + cost)
-   - Risks & Assumptions (key assumption + top risk with mitigation)
-   - Scope (brief in-scope AND out-of-scope)
-   - Success Metrics ([Current] → [Target] by [Date])
-   - Key Stakeholders (owner + approvers)
-   - Timeline (milestones with dates)
-3. Passes LOGICAL BRIDGE CHECK - solution addresses root cause, not inverse of problem
-4. Passes ROI SANITY CHECK - Investment proportional to Cost of Doing Nothing
-5. All metrics have [Baseline] → [Target] → [Timeline]
-6. No vague qualifiers, weasel words, marketing fluff, or superlative adjectives
-7. Stays high-level (no implementation details)
+Create a complete, polished One-Pager that scores 85+ across all dimensions:
 
-Output ONLY the rewritten One-Pager in markdown format. No commentary.`;
+**Problem Clarity (30 pts):**
+- Root cause problem statement (not symptoms)
+- Cost of Doing Nothing with specific $ or % (REQUIRED)
+- Business/customer focus
+
+**Solution Quality (25 pts):**
+- Solution addresses root cause (not inverse of problem)
+- Measurable goals in [Baseline] → [Target] format
+- High-level approach (no implementation details)
+
+**Scope Discipline (25 pts):**
+- In-scope AND out-of-scope explicitly defined
+- SMART metrics: [Current] → [Target] by [Date]
+
+**Completeness (20 pts):**
+- All sections: Problem, Solution, Goals, Scope, Metrics, Stakeholders, Timeline
+- Owner and approvers identified
+- Phased timeline with milestones
+
+**Additional Requirements:**
+- Maximum 450 words
+- No vague qualifiers, weasel words, marketing fluff
+- Passes LOGICAL BRIDGE CHECK (solution ≠ inverse of problem)
+
+<output_rules>
+- Output ONLY the rewritten One-Pager
+- Start with "# [Project Name]" (no preamble)
+- End after Timeline section (no sign-off)
+- NO markdown code fences wrapping the output
+- Ready to paste directly
+</output_rules>`;
 }
 
 /**

@@ -571,6 +571,11 @@ export function validateOnePager(text) {
     solution,
     scope,
     completeness,
+    // Dimension mappings for app.js compatibility
+    dimension1: problemClarity,
+    dimension2: solution,
+    dimension3: scope,
+    dimension4: completeness,
     slopDetection: {
       ...slopPenalty,
       deduction: slopDeduction,

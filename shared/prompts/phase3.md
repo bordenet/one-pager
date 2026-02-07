@@ -58,62 +58,30 @@ Before finalizing, eliminate ALL remaining slop:
 
 **IMPORTANT**: Do NOT provide the final markdown document until all clarifying questions have been answered and the user confirms they are satisfied with the synthesis.
 
-**CRITICAL: Copy-Paste Ready Output Only**
+<output_rules>
+CRITICAL - Your final document must be COPY-PASTE READY:
+- Start IMMEDIATELY with "# [Project Name]" (no preamble like "Here's the synthesized one-pager...")
+- End after the Timeline section (no sign-off like "Let me know if...")
+- NO markdown code fences (```markdown) wrapping the output
+- NO explanations of what you did or why
+- Maximum 450 words
+- The user will paste your ENTIRE response directly into the tool
+</output_rules>
 
-When ready, your final document MUST be:
-1. **Clean markdown only** — No code fences wrapping the document
-2. **No preamble** — Do NOT start with "Here's...", "Sure...", "I've created..."
-3. **No commentary** — Do NOT explain what you did or why
-4. **No sign-off** — Do NOT end with "Let me know if...", "Would you like me to...", "Feel free to..."
-5. **Start immediately** — Begin with the document title (# Project Name)
-6. **Maximum 450 words**
+### Required Sections (Synthesize Best from Both Versions)
 
-The user will copy your ENTIRE response and paste it directly into the tool. Any extra text breaks this workflow.
-
-Provide the final synthesized one-pager in this format:
-
-```markdown
-# {Project/Feature Name}
-
-## Problem Statement
-{Root cause, not symptoms. 2-3 sentences.}
-
-## Cost of Doing Nothing
-{REQUIRED. Synthesized version with specific $ or %. Never omit this section.}
-
-## Proposed Solution & Alternatives
-{Synthesized high-level solution}
-**Why this over alternatives?** {Why not "do nothing" or Solution B?}
-
-## Key Goals/Benefits
-{Apply "So What?" test—outcomes, not features}
-- {Outcome 1}: [Baseline] → [Target]
-- {Outcome 2}: [Baseline] → [Target]
-
-## The Investment
-- **Effort**: {Synthesized version}
-- **Cost**: {Synthesized version}
-
-## Risks & Assumptions
-- **Key Assumption**: {What must be true?}
-- **Top Risk**: {What could kill this?} → **Mitigation**: {How we address it}
-
-## Scope
-**In Scope:** {Brief, synthesized}
-**Out of Scope:** {Brief, no padding}
-
-## Success Metrics
-- {Metric 1}: [Current: X] → [Target: Y] by [Date]
-- {Metric 2}: [Current: X] → [Target: Y] by [Date]
-
-## Key Stakeholders
-- **Owner**: {Name}
-- **Approvers**: {Names}
-
-## Timeline
-- {Milestone 1} - {Date}
-- {Launch/Completion} - {Date}
-```
+| Section | Synthesis Guidance | Format |
+|---------|-------------------|--------|
+| Problem Statement | Choose clearer root cause articulation | 2-3 sentences |
+| Cost of Doing Nothing | REQUIRED. Combine specific $ or % from both | Quantified impact |
+| Proposed Solution | Merge high-level approaches, add alternatives rationale | Strategic, no impl details |
+| Key Goals/Benefits | Select more measurable outcomes | [Baseline] → [Target] |
+| The Investment | Use more specific effort + cost | Quantified |
+| Risks & Assumptions | Combine key assumptions and risks | Bullets with mitigations |
+| Scope | Merge in-scope AND out-of-scope | Brief, no padding |
+| Success Metrics | Keep SMART metrics with timelines | [Current] → [Target] by [Date] |
+| Key Stakeholders | Complete owner + approvers | Names |
+| Timeline | Most detailed milestones | Phased with dates |
 
 ---
 
@@ -131,4 +99,4 @@ Provide the final synthesized one-pager in this format:
 
 ## Your Synthesis
 
-{Work with the user to create the final version}
+Work with the user to create the final version. Prioritize Phase 2 improvements where they add clarity.

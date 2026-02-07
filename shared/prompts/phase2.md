@@ -45,31 +45,29 @@ Scrutinize the one-pager document below for **logical soundness** and **decision
 
 ---
 
-## Review Criteria (Aligned with Validator)
+## Review Criteria (Aligned with JavaScript Validator)
 
-Score the document on these dimensions:
+Score the document on these 4 dimensions (MUST match validator.js exactly):
 
 ### 1. Problem Clarity (30 points)
-- **Problem Statement (10 pts)**: Root cause clearly articulated, not just symptoms
+- **Problem Statement (10 pts)**: Dedicated problem section with root cause, not symptoms
 - **Cost of Doing Nothing (10 pts)**: Quantified impact—specific $ or %. REQUIRED.
-- **Business Focus (10 pts)**: Tied to customer/business value, not just technical
+- **Business Focus (10 pts)**: Tied to customer/business value (keywords: customer, user, revenue, market, strategic)
 
 ### 2. Solution Quality (25 points)
-- **Logical Bridge (10 pts)**: Solution addresses root cause, not inverse of problem
-- **Measurable Goals (10 pts)**: Goals in [Baseline] → [Target] format
-- **Alternatives Considered (5 pts)**: Why this over "do nothing" or Solution B?
+- **Solution Addresses Problem (10 pts)**: Dedicated solution section that bridges to stated problem
+- **Measurable Goals (10 pts)**: Goals in [Baseline] → [Target] format, not vague claims
+- **High-Level Approach (5 pts)**: Solution stays strategic (no implementation details like code, API, database)
 
-### 3. Investment Logic (20 points)
-- **The Ask (10 pts)**: Clear effort + cost required
-- **ROI Sanity Check (10 pts)**: Does Investment justify Cost of Doing Nothing?
+### 3. Scope Discipline (25 points)
+- **In-Scope Defined (8 pts)**: Explicit "in-scope" or "we will" statements with dedicated section
+- **Out-of-Scope Defined (9 pts)**: Explicit "out-of-scope" or "we will not" statements
+- **SMART Metrics (8 pts)**: Success metrics with [Current] → [Target] by [Date] format
 
-### 4. Risk Awareness (15 points)
-- **Key Assumptions (7 pts)**: What must be true for this to work?
-- **Top Risks (8 pts)**: What could kill this? Mitigation identified?
-
-### 5. Scope & Metrics (10 points)
-- **Scope Discipline (5 pts)**: In-scope and out-of-scope are brief, not padded
-- **SMART Metrics (5 pts)**: [Current] → [Target] by [Date]
+### 4. Completeness (20 points)
+- **Required Sections (8 pts)**: Problem, Solution, Goals, Scope, Metrics, Stakeholders, Timeline present
+- **Stakeholders Identified (6 pts)**: Owner, approvers, RACI roles defined
+- **Timeline Phased (6 pts)**: Milestones with dates, phased approach
 
 ## Calibration Guidance
 
@@ -89,52 +87,32 @@ Score the document on these dimensions:
 
 ## Output Format
 
-**IMPORTANT**: Do NOT provide the final markdown document until all clarifying questions have been answered and the user confirms they are satisfied with the improvements. Only after the Q&A process is complete should you output the improved one-pager in markdown format.
+**IMPORTANT**: Do NOT provide the final markdown document until all clarifying questions have been answered and the user confirms they are satisfied with the improvements.
 
-When ready, provide your improved version in this format:
+<output_rules>
+CRITICAL - Your final document must be COPY-PASTE READY:
+- Start IMMEDIATELY with "# [Project Name]" (no preamble like "Here's the improved one-pager...")
+- End after the Timeline section (no sign-off like "Let me know if...")
+- NO markdown code fences (```markdown) wrapping the output
+- NO explanations of what you did or why
+- Maximum 450 words
+- The user will paste your ENTIRE response directly into the tool
+</output_rules>
 
-```markdown
-# {Project/Feature Name}
+### Required Sections (in order)
 
-## Problem Statement
-{Root cause, not symptoms. 2-3 sentences.}
-
-## Cost of Doing Nothing
-{REQUIRED. Specific $ or %. What happens if we don't act?}
-
-## Proposed Solution & Alternatives
-{High-level solution}
-**Why this over alternatives?** {Why not "do nothing" or Solution B?}
-
-## Key Goals/Benefits
-{Outcomes, not features. Apply "So What?" test.}
-- {Outcome 1}: [Baseline] → [Target]
-- {Outcome 2}: [Baseline] → [Target]
-
-## The Investment
-- **Effort**: {e.g., "2 engineers for 3 sprints"}
-- **Cost**: {e.g., "$15k licensing" or "No additional budget"}
-
-## Risks & Assumptions
-- **Key Assumption**: {What must be true?}
-- **Top Risk**: {What could kill this?} → **Mitigation**: {How we address it}
-
-## Scope
-**In Scope:** {Brief}
-**Out of Scope:** {Brief, no padding}
-
-## Success Metrics
-- {Metric 1}: [Current: X] → [Target: Y] by [Date]
-- {Metric 2}: [Current: X] → [Target: Y] by [Date]
-
-## Key Stakeholders
-- **Owner**: {Name}
-- **Approvers**: {Names}
-
-## Timeline
-- {Milestone 1} - {Date}
-- {Launch/Completion} - {Date}
-```
+| Section | Content | Format |
+|---------|---------|--------|
+| Problem Statement | Root cause, not symptoms | 2-3 sentences |
+| Cost of Doing Nothing | REQUIRED. Specific $ or % | Quantified impact |
+| Proposed Solution | High-level + why over alternatives | Strategic, no implementation details |
+| Key Goals/Benefits | Outcomes with So What test | [Baseline] → [Target] |
+| The Investment | Effort + Cost | e.g., "2 engineers, 3 sprints" |
+| Risks & Assumptions | Key assumption + Top risk with mitigation | Bullets |
+| Scope | In-scope AND Out-of-scope | Brief, no padding |
+| Success Metrics | [Current] → [Target] by [Date] | 2-3 SMART metrics |
+| Key Stakeholders | Owner + Approvers | Names |
+| Timeline | Milestones with dates | Phased approach |
 
 ---
 
