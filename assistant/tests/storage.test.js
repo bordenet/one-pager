@@ -1,5 +1,5 @@
-import { initDB, saveProject, getProject, getAllProjects, deleteProject, generateId } from '../js/storage.js';
-import storage from '../js/storage.js';
+import { initDB, saveProject, getProject, getAllProjects, deleteProject, generateId } from '../../shared/js/storage.js';
+import storage from '../../shared/js/storage.js';
 
 describe('Storage Module', () => {
   beforeEach(async () => {

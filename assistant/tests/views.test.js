@@ -1,8 +1,8 @@
-import { renderProjectsList, renderNewProjectForm } from '../js/views.js';
-import { renderProjectView, extractTitleFromMarkdown } from '../js/project-view.js';
-import { createProject, deleteProject, getAllProjects, updatePhase, getProject, updateProject } from '../js/projects.js';
-import { initDB } from '../js/storage.js';
-import { updateStorageInfo } from '../js/router.js';
+import { renderProjectsList, renderNewProjectForm } from '../../shared/js/views.js';
+import { renderProjectView, extractTitleFromMarkdown } from '../../shared/js/project-view.js';
+import { createProject, deleteProject, getAllProjects, updatePhase, getProject, updateProject } from '../../shared/js/projects.js';
+import { initDB } from '../../shared/js/storage.js';
+import { updateStorageInfo } from '../../shared/js/router.js';
 
 describe('Views Module', () => {
   beforeEach(async () => {
@@ -50,14 +50,16 @@ describe('Views Module', () => {
       expect(newProjectBtn.textContent).toContain('New One-Pager');
     });
 
-    test('should render project cards with phase information', async () => {
+    test('should render project cards with phase progress segments', async () => {
       await createProject({ title: 'Test Project', problemStatement: 'Problems', context: 'Context' });
 
       await renderProjectsList();
 
       const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Phase');
+      // New compact UX: segments + "X/3" label (no "Phase" prefix)
       expect(container.innerHTML).toContain('/3');
+      // Check for progress segments (3 bars)
+      expect(container.innerHTML).toContain('bg-gray-300');
     });
 
     test('should render delete buttons for each project', async () => {
@@ -234,7 +236,7 @@ describe('Views Module', () => {
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Render the edit form directly (simulating the redirect)
-      const { renderNewProjectForm } = await import('../js/views.js');
+      const { renderNewProjectForm } = await import('../../shared/js/views.js');
       renderNewProjectForm(project);
 
       const container = document.getElementById('app-container');
@@ -247,7 +249,7 @@ describe('Views Module', () => {
     });
 
     test('should render project view with phase tabs', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -273,7 +275,7 @@ describe('Views Module', () => {
     });
 
     test('should render back button', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -286,7 +288,7 @@ describe('Views Module', () => {
     });
 
     test('should only show header export button when Phase 3 is completed', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -306,7 +308,7 @@ describe('Views Module', () => {
     });
 
     test('should show prominent export CTA when Phase 3 is completed', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete all phases
@@ -334,7 +336,7 @@ describe('Views Module', () => {
     });
 
     test('should NOT show export CTA on Phase 3 if not completed', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 and 2, but not Phase 3
@@ -357,7 +359,7 @@ describe('Views Module', () => {
     });
 
     test('should render copy prompt button', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -372,7 +374,7 @@ describe('Views Module', () => {
     });
 
     test('should render save response button and textarea', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -490,7 +492,7 @@ describe('Views Module', () => {
     });
 
     test('should display phase metadata (title, description, AI)', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -530,7 +532,7 @@ describe('Views Module', () => {
     });
 
     test('copy prompt button should trigger clipboard write', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -552,7 +554,7 @@ describe('Views Module', () => {
     });
 
     test('phase tabs should be clickable', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -574,7 +576,7 @@ describe('Views Module', () => {
     });
 
     test('phase 2 tab should show Gemini as the AI', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -592,7 +594,7 @@ describe('Views Module', () => {
     });
 
     test('phase 3 tab should show Final Synthesis', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 and Phase 2 so we can navigate to Phase 3
@@ -612,7 +614,7 @@ describe('Views Module', () => {
     });
 
     test('save response should show warning when textarea is empty', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
@@ -655,7 +657,7 @@ describe('Views Module', () => {
     });
 
     test('save response should update phase and re-render', async () => {
-      const { updatePhase } = await import('../js/projects.js');
+      const { updatePhase } = await import('../../shared/js/projects.js');
       const project = await createProject({ title: 'Test Project', problemStatement: 'Test Problems', context: 'Test Context' });
 
       // Complete Phase 1 so we don't get redirected to edit form
