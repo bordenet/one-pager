@@ -8,8 +8,8 @@
 import { DOCUMENT_TEMPLATES, getTemplate, getAllTemplates } from '../../shared/js/document-specific-templates.js';
 
 describe('DOCUMENT_TEMPLATES', () => {
-  test('should have 12 templates defined', () => {
-    expect(Object.keys(DOCUMENT_TEMPLATES)).toHaveLength(12);
+  test('should have 8 templates defined', () => {
+    expect(Object.keys(DOCUMENT_TEMPLATES)).toHaveLength(8);
   });
 
   test('should have blank template', () => {
@@ -20,12 +20,7 @@ describe('DOCUMENT_TEMPLATES', () => {
     expect(DOCUMENT_TEMPLATES.blank.context).toBe('');
   });
 
-  test('should have statusUpdate template', () => {
-    expect(DOCUMENT_TEMPLATES.statusUpdate).toBeDefined();
-    expect(DOCUMENT_TEMPLATES.statusUpdate.id).toBe('statusUpdate');
-    expect(DOCUMENT_TEMPLATES.statusUpdate.name).toBe('Status Update');
-    expect(DOCUMENT_TEMPLATES.statusUpdate.icon).toBe('📊');
-  });
+
 
   test('should have featurePitch template', () => {
     expect(DOCUMENT_TEMPLATES.featurePitch).toBeDefined();
@@ -48,12 +43,7 @@ describe('DOCUMENT_TEMPLATES', () => {
     expect(DOCUMENT_TEMPLATES.techDebtPitch.icon).toBe('🔧');
   });
 
-  test('should have riskRegister template', () => {
-    expect(DOCUMENT_TEMPLATES.riskRegister).toBeDefined();
-    expect(DOCUMENT_TEMPLATES.riskRegister.id).toBe('riskRegister');
-    expect(DOCUMENT_TEMPLATES.riskRegister.name).toBe('Risk Register');
-    expect(DOCUMENT_TEMPLATES.riskRegister.icon).toBe('⚠️');
-  });
+
 
   test('should have experimentPlan template', () => {
     expect(DOCUMENT_TEMPLATES.experimentPlan).toBeDefined();
@@ -62,12 +52,7 @@ describe('DOCUMENT_TEMPLATES', () => {
     expect(DOCUMENT_TEMPLATES.experimentPlan.icon).toBe('🧪');
   });
 
-  test('should have crossTeamAlignment template', () => {
-    expect(DOCUMENT_TEMPLATES.crossTeamAlignment).toBeDefined();
-    expect(DOCUMENT_TEMPLATES.crossTeamAlignment.id).toBe('crossTeamAlignment');
-    expect(DOCUMENT_TEMPLATES.crossTeamAlignment.name).toBe('Cross-Team Alignment');
-    expect(DOCUMENT_TEMPLATES.crossTeamAlignment.icon).toBe('🤝');
-  });
+
 
   test('should have migrationPlan template', () => {
     expect(DOCUMENT_TEMPLATES.migrationPlan).toBeDefined();
@@ -90,12 +75,7 @@ describe('DOCUMENT_TEMPLATES', () => {
     expect(DOCUMENT_TEMPLATES.toolingProposal.icon).toBe('🛠️');
   });
 
-  test('should have okrAlignment template', () => {
-    expect(DOCUMENT_TEMPLATES.okrAlignment).toBeDefined();
-    expect(DOCUMENT_TEMPLATES.okrAlignment.id).toBe('okrAlignment');
-    expect(DOCUMENT_TEMPLATES.okrAlignment.name).toBe('OKR Alignment');
-    expect(DOCUMENT_TEMPLATES.okrAlignment.icon).toBe('🎯');
-  });
+
 
 
   test('all templates should have required fields', () => {
@@ -121,11 +101,6 @@ describe('getTemplate', () => {
     expect(template).toBe(DOCUMENT_TEMPLATES.blank);
   });
 
-  test('should return statusUpdate template', () => {
-    const template = getTemplate('statusUpdate');
-    expect(template.name).toBe('Status Update');
-  });
-
   test('should return featurePitch template', () => {
     const template = getTemplate('featurePitch');
     expect(template.name).toBe('Feature Pitch');
@@ -146,24 +121,20 @@ describe('getAllTemplates', () => {
   test('should return array of all templates', () => {
     const templates = getAllTemplates();
     expect(Array.isArray(templates)).toBe(true);
-    expect(templates).toHaveLength(12);
+    expect(templates).toHaveLength(8);
   });
 
   test('should include all template objects', () => {
     const templates = getAllTemplates();
     const ids = templates.map(t => t.id);
     expect(ids).toContain('blank');
-    expect(ids).toContain('statusUpdate');
     expect(ids).toContain('featurePitch');
     expect(ids).toContain('budgetAsk');
     expect(ids).toContain('techDebtPitch');
-    expect(ids).toContain('riskRegister');
     expect(ids).toContain('experimentPlan');
-    expect(ids).toContain('crossTeamAlignment');
     expect(ids).toContain('migrationPlan');
     expect(ids).toContain('vendorEvaluation');
     expect(ids).toContain('toolingProposal');
-    expect(ids).toContain('okrAlignment');
   });
 
   test('each template should have name and icon', () => {
