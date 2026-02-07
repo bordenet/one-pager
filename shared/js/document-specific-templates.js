@@ -40,22 +40,7 @@ export const DOCUMENT_TEMPLATES = {
     keyStakeholders: '',
     timelineEstimate: ''
   },
-  statusUpdate: {
-    id: 'statusUpdate',
-    name: 'Status Update',
-    icon: '📊',
-    description: 'Weekly progress snapshot',
-    problemStatement: '[Project Name] - Weekly Status Update for [Week/Date]',
-    costOfDoingNothing: 'Stakeholders lack visibility into current progress and blockers',
-    context: 'Current roadmap phase: [Phase]\nPrevious week accomplishments: [List]',
-    proposedSolution: 'Key activities this week:\n- [Activity 1]\n- [Activity 2]\n- [Activity 3]',
-    keyGoals: '- Complete [milestone]\n- Unblock [dependency]\n- Prepare for [upcoming work]',
-    scopeInScope: 'This week\'s committed deliverables',
-    scopeOutOfScope: 'Deferred items and future phases',
-    successMetrics: '- [X] tasks completed\n- [Y] blockers resolved\n- On track for [target date]',
-    keyStakeholders: 'Owner: [Name]\nReviewer: [Name]\nInformed: [Team/Group]',
-    timelineEstimate: 'Next milestone: [Date]\nTarget completion: [Date]'
-  },
+
   featurePitch: {
     id: 'featurePitch',
     name: 'Feature Pitch',
@@ -104,22 +89,7 @@ export const DOCUMENT_TEMPLATES = {
     keyStakeholders: 'Engineer: [Name]\nTech Lead: [Name]\nProduct (for prioritization): [PM]',
     timelineEstimate: 'Investigation: [X] days\nImplementation: [Y] days\nValidation: [Z] days\nTotal: [N] days'
   },
-  riskRegister: {
-    id: 'riskRegister',
-    name: 'Risk Register',
-    icon: '⚠️',
-    description: 'Flag project risks early',
-    problemStatement: '[Project name] has identified risks that could impact delivery or quality',
-    costOfDoingNothing: 'Unmitigated risks could result in:\n- [X]% probability of [outcome]\n- $[Y] potential cost\n- [Z] weeks delay',
-    context: 'Project phase: [Current stage]\nKey dependencies: [List]\nPrevious risk events: [Lessons learned]',
-    proposedSolution: 'Risk inventory:\n\n1. [Risk name] - Probability: [H/M/L], Impact: [H/M/L]\n   Mitigation: [Action]\n\n2. [Risk name] - Probability: [H/M/L], Impact: [H/M/L]\n   Mitigation: [Action]',
-    keyGoals: '- Identify all High/Medium risks\n- Assign mitigation owners\n- Establish monitoring cadence',
-    scopeInScope: 'Risks within project control\nMitigation strategies\nContingency plans',
-    scopeOutOfScope: 'Organizational risks outside project scope\nLong-term strategic risks',
-    successMetrics: '- All High risks have mitigation plans\n- Weekly risk review completed\n- No surprise blockers at launch',
-    keyStakeholders: 'Risk Owner: [PM/TPM]\nMitigation Owners: [Names]\nEscalation: [Manager]',
-    timelineEstimate: 'Initial assessment: [Date]\nWeekly review: [Day]\nRisk closure target: [Date]'
-  },
+
   experimentPlan: {
     id: 'experimentPlan',
     name: 'Experiment Plan',
@@ -136,22 +106,7 @@ export const DOCUMENT_TEMPLATES = {
     keyStakeholders: 'Experiment owner: [PM/Designer]\nAnalyst: [Name]\nEngineering: [Name]',
     timelineEstimate: 'Setup: [X] days\nRun time: [Y] days\nAnalysis: [Z] days\nDecision: [Date]'
   },
-  crossTeamAlignment: {
-    id: 'crossTeamAlignment',
-    name: 'Cross-Team Alignment',
-    icon: '🤝',
-    description: 'Coordinate dependencies',
-    problemStatement: '[Your team] needs [dependency] from [Other team] to deliver [capability] by [date]',
-    costOfDoingNothing: 'Misaligned delivery dates\nDuplicated effort\nIntegration failures at launch',
-    context: 'Your team\'s goal: [Objective]\nTheir team\'s goal: [Objective]\nShared dependency: [What]\nCurrent status: [State]',
-    proposedSolution: 'Coordination plan:\n- [Team A] delivers [X] by [date]\n- [Team B] delivers [Y] by [date]\n- Integration point: [Where/how]\n- Communication cadence: [Frequency]',
-    keyGoals: '- Synchronized delivery dates\n- Clear interface contracts\n- Shared success metrics',
-    scopeInScope: 'This project\'s dependencies\nDirect integration points\nShared milestones',
-    scopeOutOfScope: 'Future collaboration (separate discussion)\nOrganizational restructuring\nBudget/headcount',
-    successMetrics: '- All dependencies delivered on time\n- Zero integration blockers\n- Joint launch success',
-    keyStakeholders: 'Your team: [Lead]\nPartner team: [Lead]\nShared exec: [Name]\nTPM: [Name]',
-    timelineEstimate: 'Alignment meeting: [Date]\nCheckpoint 1: [Date]\nCheckpoint 2: [Date]\nJoint delivery: [Date]'
-  },
+
   migrationPlan: {
     id: 'migrationPlan',
     name: 'Migration Plan',
@@ -200,22 +155,7 @@ export const DOCUMENT_TEMPLATES = {
     keyStakeholders: 'Proposer: [Engineer]\nTeam lead: [Name]\nEngineering manager: [Name]\nDevOps: [Name]',
     timelineEstimate: 'Pilot: [X] weeks\nEvaluation: [Y] weeks\nRollout decision: [Date]\nFull adoption: [Z] weeks'
   },
-  okrAlignment: {
-    id: 'okrAlignment',
-    name: 'OKR Alignment',
-    icon: '🎯',
-    description: 'Map work to objectives',
-    problemStatement: '[Project/initiative] needs clear connection to company/team OKRs',
-    costOfDoingNothing: 'Work that doesn\'t ladder up to goals\nMisaligned priorities\nUnclear success criteria',
-    context: 'Company OKR: [Objective]\nTeam OKR: [Objective]\nCurrent project: [Name]\nAlignment gap: [What\'s unclear]',
-    proposedSolution: 'OKR mapping:\n\n**Company O**: [Objective]\n  **KR**: [Key Result] ← This project contributes [X]%\n\n**Team O**: [Objective]\n  **KR**: [Key Result] ← This project delivers [Y]',
-    keyGoals: '- Clear line from work to OKRs\n- Quantified contribution to KRs\n- Stakeholder agreement on impact',
-    scopeInScope: 'Current quarter OKRs\nThis project\'s contribution\nDirect impact measurement',
-    scopeOutOfScope: 'Future quarter planning\nOKR setting process\nOrganizational OKRs',
-    successMetrics: '- Project contributes [X]% to [KR]\n- Stakeholders agree on alignment\n- Progress tracked in OKR reviews',
-    keyStakeholders: 'Project owner: [Name]\nOKR owner: [Manager]\nExec sponsor: [Name]',
-    timelineEstimate: 'Alignment review: [Date]\nQuarterly check-in: [Dates]\nOKR close: [Quarter end]'
-  }
+
 };
 
 /**
