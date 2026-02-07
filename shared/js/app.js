@@ -8,7 +8,6 @@ import storage from './storage.js';
 import { initRouter, updateStorageInfo } from './router.js';
 import { exportAllProjects, importProjects } from './projects.js';
 import { showToast, hideLoading } from './ui.js';
-import { initMockMode, setMockMode } from './ai-mock.js';
 
 /**
  * Initialize application
@@ -20,9 +19,6 @@ async function initApp() {
 
     // Initialize database
     await storage.init();
-
-    // Initialize AI mock mode
-    initMockMode();
 
     // Setup global event listeners
     setupGlobalEventListeners();
@@ -97,15 +93,6 @@ function setupGlobalEventListeners() {
   document.getElementById('close-privacy-notice')?.addEventListener('click', () => {
     document.getElementById('privacy-notice')?.remove();
     localStorage.setItem('privacy-notice-dismissed', 'true');
-  });
-
-  // AI Mock mode toggle
-  document.getElementById('mockModeCheckbox')?.addEventListener('change', (e) => {
-    setMockMode(e.target.checked);
-    showToast(
-      e.target.checked ? 'AI Mock Mode enabled' : 'AI Mock Mode disabled',
-      'info'
-    );
   });
 
   // About link
