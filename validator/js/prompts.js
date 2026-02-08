@@ -121,7 +121,7 @@ export function generateCritiquePrompt(onePagerContent, currentResult) {
     ...(currentResult.completeness?.issues || [])
   ].slice(0, 5).map(i => `- ${i}`).join('\n');
 
-  return `You are a senior Product Manager providing detailed feedback on a One-Pager.
+  return `You are a senior Product Manager helping improve a One-Pager.
 
 ## CURRENT VALIDATION RESULTS
 Total Score: ${currentResult.totalScore}/100
@@ -141,27 +141,43 @@ ${onePagerContent}
 
 ## YOUR TASK
 
+Help the author improve this One-Pager by asking clarifying questions.
+
 First, perform the LOGICAL BRIDGE CHECK:
 > Is the solution simply the inverse of the problem? (e.g., "No dashboard" → "Build dashboard")
-> If YES, this is the primary issue to fix.
+> If YES, flag this as the primary issue.
 
-Then provide:
-1. **Executive Summary** (2-3 sentences on overall one-pager quality)
-2. **Detailed Critique** by dimension:
-   - Problem Clarity: Is the root cause clear? Cost of Doing Nothing quantified?
-   - Solution Quality: Does it address root cause? Measurable goals?
-   - Scope Discipline: In-scope AND out-of-scope defined? SMART metrics?
-   - Completeness: All sections present? Stakeholders and timeline?
-3. **Revised One-Pager** - A complete rewrite addressing all issues
+## REQUIRED OUTPUT FORMAT
+
+**Score Summary:** ${currentResult.totalScore}/100
+
+**Top 3 Issues:**
+1. [Most critical gap - be specific]
+2. [Second most critical gap]
+3. [Third most critical gap]
+
+**Questions to Improve Your One-Pager:**
+1. **[Question about missing/weak area]**
+   _Why this matters:_ [How answering this improves the score]
+
+2. **[Question about another gap]**
+   _Why this matters:_ [Score impact]
+
+3. **[Question about root cause/metrics/scope]**
+   _Why this matters:_ [Score impact]
+
+(Provide 3-5 questions total, focused on the weakest dimensions)
+
+**Quick Wins (fix these now):**
+- [Specific fix that doesn't require user input]
+- [Another immediate improvement]
 
 <output_rules>
-- Start with "## Executive Summary" (no preamble)
-- End with the revised one-pager (no sign-off)
+- Start directly with "**Score Summary:**" (no preamble)
+- Do NOT include a rewritten One-Pager
+- Only provide questions and quick wins
 - NO markdown code fences wrapping the output
-- Revised one-pager must be ready to paste
-</output_rules>
-
-Be specific. Show exact rewrites. Keep it to 450 words max. Make it ready for executive decision-making.`;
+</output_rules>`;
 }
 
 /**
