@@ -60,10 +60,12 @@ const METRICS_PATTERNS = {
   metricsLanguage: /\b(metric|kpi|measure|target|goal|achieve|reach|improve|reduce|increase)\b/gi
 };
 
-// Stakeholder patterns
+// Stakeholder patterns - expanded with C-suite from adversarial review compounding
 const STAKEHOLDER_PATTERNS = {
   stakeholderSection: /^#+\s*(stakeholder|team|owner|raci|responsible|responsible.accountable)/im,
   stakeholderLanguage: /\b(stakeholder|owner|lead|team|responsible|accountable|raci|sponsor|approver)\b/gi,
+  // Extended stakeholder concerns - includes FP&A, People Team, C-suite
+  stakeholderConcerns: /\b(finance|fp&a|fp.?&.?a|financial.planning|hr|people.?team|people.?ops|legal|compliance|equity|liability|approval|sign.?off|cfo|cto|ceo|vp|director)\b/gi,
   roleDefinition: /\b(responsible|accountable|consulted|informed|raci)\b/gi
 };
 
@@ -264,6 +266,7 @@ export function detectSections(text) {
 export function detectStakeholders(text) {
   const stakeholderMatches = text.match(STAKEHOLDER_PATTERNS.stakeholderLanguage) || [];
   const roleMatches = text.match(STAKEHOLDER_PATTERNS.roleDefinition) || [];
+  const concernMatches = text.match(STAKEHOLDER_PATTERNS.stakeholderConcerns) || [];
   const hasStakeholderSection = STAKEHOLDER_PATTERNS.stakeholderSection.test(text);
 
   return {
@@ -272,10 +275,13 @@ export function detectStakeholders(text) {
     stakeholderCount: stakeholderMatches.length,
     hasRoles: roleMatches.length > 0,
     roleCount: roleMatches.length,
+    hasConcerns: concernMatches.length > 0,
+    concernCount: concernMatches.length,
     indicators: [
       hasStakeholderSection && 'Dedicated stakeholder section',
       stakeholderMatches.length > 0 && `${stakeholderMatches.length} stakeholder references`,
-      roleMatches.length > 0 && 'Roles/responsibilities defined'
+      roleMatches.length > 0 && 'Roles/responsibilities defined',
+      concernMatches.length > 0 && `${concernMatches.length} stakeholder concerns addressed (FP&A, legal, C-suite)`
     ].filter(Boolean)
   };
 }
