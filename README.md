@@ -40,61 +40,16 @@ Write one-page documents with AI. Three phases: draft, review, refine.
 
 ## Scoring Methodology
 
-The validator scores one-pagers on a 100-point scale across four dimensions. This scoring system enforces the core principle of one-pagers: forcing clarity through constraint. A document that fits on one page but lacks substance fails; a document with great content that sprawls fails equally.
+The validator scores one-pagers on a **100-point scale** across four dimensions:
 
-### Scoring Taxonomy
+| Dimension | Points |
+|-----------|--------|
+| Problem Clarity | 30 |
+| Solution Quality | 25 |
+| Scope Discipline | 25 |
+| Completeness | 20 |
 
-| Category | Weight | Rationale |
-|----------|--------|-----------|
-| **Problem Clarity** | 30 pts | Validates that the problem is root-cause, not symptom, with quantified cost |
-| **Solution Quality** | 25 pts | Ensures solution addresses stated problem with measurable goals |
-| **Scope Discipline** | 25 pts | Enforces explicit in-scope/out-of-scope boundaries with SMART metrics |
-| **Completeness** | 20 pts | Validates required sections, stakeholders, and timeline |
-
-### Why These Weights?
-
-**Problem Clarity (30 pts)** receives the highest weight because one-pagers fail most often at problem definition. Authors jump to solutions without establishing why the problem matters. The validator requires:
-- **Problem statement** (10 pts): Dedicated problem section with clear ROOT CAUSE, not symptoms
-- **Cost of doing nothing** (10 pts): REQUIRED. Quantified impact with specific $ or % numbers
-- **Business focus** (10 pts): Problem tied to customer/business value (keywords: customer, user, revenue, market, strategic)
-
-**Solution Quality (25 pts)** ensures the solution actually addresses the stated problem. The validator checks:
-- **Solution addresses problem** (10 pts): Dedicated solution section that bridges to stated problem
-- **Measurable goals** (10 pts): Goals with `[Baseline] → [Target]` format, not vague claims
-- **High-level approach** (5 pts): Solution stays strategic—penalizes implementation details (code, API, database)
-
-**Scope Discipline (25 pts)** is what distinguishes a one-pager from a rambling proposal. The validator enforces:
-- **In-scope defined** (8 pts): Explicit "in-scope" or "we will" statements with dedicated section
-- **Out-of-scope defined** (9 pts): Explicit "out-of-scope" or "we will not" statements
-- **SMART metrics** (8 pts): Success metrics with `[Current] → [Target] by [Date]` format
-
-**Completeness (20 pts)** validates structural requirements:
-- **Required sections** (8 pts): Problem, Solution, Goals, Scope, Metrics, Stakeholders, Timeline sections present
-- **Stakeholders identified** (6 pts): Owner, approvers, RACI roles defined
-- **Timeline phased** (6 pts): Milestones with dates, phased approach
-
-### Adversarial Robustness
-
-The scoring system addresses common one-pager failures:
-
-| Gaming Attempt | Why It Fails |
-|----------------|--------------|
-| Vague problem statement | Cost of doing nothing requires specific $ or % numbers |
-| Solution without connection to problem | "Logical bridge check" validates solution-problem alignment |
-| Claiming goals without baselines | Measurable goals require `[Baseline] → [Target]` format |
-| Omitting out-of-scope | Out-of-scope section is independently scored |
-| Adding implementation details | Implementation keywords trigger deductions in Solution Quality |
-| Omitting Investment section | REQUIRED_SECTIONS now includes Investment/Resources (weight 2) |
-| Omitting Risks section | REQUIRED_SECTIONS now includes Risks/Assumptions (weight 1) |
-| Bracket-wrapped metrics `[10%] → [20%]` | Regex now catches bracket-wrapped numbers per phase1.md format |
-| Verbose 2000-word "one-pager" | Word count penalty: 5 pts per 50 words over 450 (max 15 pts) |
-| Burying "cost of inaction" in prose | REQUIRED_SECTIONS now requires dedicated Cost of Doing Nothing header |
-
-### Calibration Notes
-
-The **logical bridge check** is the most sophisticated validation. The validator doesn't just check for section presence—it analyzes whether the solution section references concepts from the problem section. A one-pager that defines Problem A but proposes Solution B will fail even if both sections are well-written.
-
-The **implementation detail penalty** reflects the strategic nature of one-pagers. Terms like "API," "database," "microservice," or code snippets signal that the author is prescribing implementation rather than defining outcomes. The solution should answer "what will change" not "how we'll build it."
+The scoring enforces the core principle of one-pagers: forcing clarity through constraint. For complete methodology details including detection patterns, adversarial robustness, and calibration notes, see **[docs/Scoring_Methods.md](./docs/Scoring_Methods.md)**.
 
 ---
 
