@@ -135,6 +135,107 @@ Many one-pagers state "Problem: we don't have X. Solution: build X." This circul
 | 20-39 | D | Weak - reframe problem with data |
 | 0-19 | F | Not a one-pager - restart with structure |
 
+## LLM Scoring
+
+The validator uses a **dual-scoring architecture**: JavaScript pattern matching provides fast, deterministic scoring, while LLM evaluation adds semantic understanding. Both systems use aligned rubrics but may diverge on edge cases.
+
+### Three LLM Prompts
+
+| Prompt | Purpose | When Used |
+|--------|---------|-----------|
+| **Scoring Prompt** | Evaluate one-pager against rubric, return dimension scores | Initial validation |
+| **Critique Prompt** | Generate clarifying questions to improve weak areas | After scoring |
+| **Rewrite Prompt** | Produce improved one-pager targeting 85+ score | User-requested rewrite |
+
+### LLM Scoring Rubric
+
+The LLM uses the same 4-dimension rubric as JavaScript, with identical point allocations:
+
+| Dimension | Points | LLM Focus |
+|-----------|--------|-----------|
+| Problem Clarity | 30 | Root cause problem statement, REQUIRED Cost of Doing Nothing with specific $ or %, business focus |
+| Solution Quality | 25 | Solution addresses root cause (not inverse of problem), [Baseline] → [Target] format, high-level approach |
+| Scope Discipline | 25 | In-scope AND out-of-scope explicitly defined, SMART metrics with baselines |
+| Completeness | 20 | All sections present, stakeholders and timeline defined |
+
+### Logical Bridge Check
+
+**Before scoring, the LLM answers:** Is the solution simply the inverse of the problem?
+
+Example: Problem: "We don't have a dashboard" → Solution: "Build a dashboard"
+
+If YES, this is **CIRCULAR LOGIC**. The LLM caps total score at 50 maximum regardless of other scores.
+
+A valid solution addresses the ROOT CAUSE:
+> Problem: "Support tickets increased 40% due to lack of visibility into order status"
+> Solution: "Provide real-time order tracking to reduce support burden by 30%"
+
+### LLM Calibration Guidance
+
+The LLM prompt includes explicit calibration signals:
+
+**Reward signals:**
+- Explicit scope boundaries (brief, not padded)
+- Quantified metrics with baselines AND targets
+- Cost of Doing Nothing with specific $ or %
+
+**Penalty signals:**
+- Every vague qualifier without [Baseline] → [Target] metrics
+- Weasel words: "should be able to", "might", "could potentially"
+- Marketing fluff: "best-in-class", "cutting-edge", "world-class"
+- Superlative adjectives: "revolutionary", "seamless", "groundbreaking"
+- Missing Cost of Doing Nothing (REQUIRED section)
+- Verbosity: one-pagers should fit on ONE PAGE (450 words max)
+
+**Calibration baseline:** "Be HARSH. Most one-pagers score 40-60. Only exceptional ones score 80+."
+
+### LLM Critique Prompt
+
+The critique prompt receives the current JS validation scores and generates improvement questions:
+
+```
+Score Summary: [totalScore]/100
+- Problem Clarity: [X]/30
+- Solution Quality: [X]/25
+- Scope Discipline: [X]/25
+- Completeness: [X]/20
+```
+
+Output includes:
+- Top 3 issues (specific gaps)
+- 3-5 clarifying questions focused on weakest dimensions
+- Quick wins (fixes that don't require user input)
+
+### LLM Rewrite Prompt
+
+The rewrite prompt targets an 85+ score with specific requirements:
+- Root cause problem statement (not symptoms)
+- Cost of Doing Nothing with specific $ or % (REQUIRED)
+- Solution addresses root cause (not inverse of problem)
+- [Baseline] → [Target] format for measurable goals
+- In-scope AND out-of-scope explicitly defined
+- All sections present with stakeholders and phased timeline
+- Maximum 450 words
+- Passes LOGICAL BRIDGE CHECK
+
+### JS vs LLM Score Divergence
+
+| Scenario | JS Score | LLM Score | Explanation |
+|----------|----------|-----------|-------------|
+| Circular logic present | May score higher | Capped at 50 | LLM catches semantic inversion |
+| Vague but syntactically correct | Higher | Lower | LLM penalizes weak phrasing |
+| Strong content, poor formatting | Lower | Higher | LLM focuses on meaning |
+| Marketing fluff with metrics | May pass patterns | Lower | LLM detects hollow claims |
+
+### LLM-Specific Adversarial Notes
+
+| Gaming Attempt | Why LLM Catches It |
+|----------------|-------------------|
+| "Problem: No X. Solution: Build X" | Logical Bridge Check fails |
+| Generic stakeholder padding | LLM evaluates role specificity |
+| Metric anchoring without context | LLM requires meaningful baselines |
+| Section headers without substance | LLM evaluates content quality |
+
 ## Related Files
 
 - `validator/js/validator.js` - Implementation of scoring functions
