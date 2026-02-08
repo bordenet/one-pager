@@ -50,8 +50,10 @@ export async function renderProjectView(projectId) {
   }
 
   // Check if project has basic details filled in
-  // If not, redirect to edit form
-  if (!project.title || !project.problems) {
+  // Skip redirect for imported projects (they have content in phases[1].response)
+  // If not imported and missing required fields, redirect to edit form
+  const hasImportedContent = project.isImported || project.importedContent || (project.phases?.[1]?.response && project.phases?.[1]?.response.length > 100);
+  if (!hasImportedContent && (!project.title || !project.problems)) {
     navigateTo('edit-project/' + projectId);
     return;
   }
