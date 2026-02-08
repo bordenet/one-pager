@@ -1,5 +1,5 @@
 /**
- * Tests for validator-inline.js - One-Pager Assistant
+ * Tests for One-Pager Validator
  *
  * Comprehensive tests for all scoring functions:
  * - Problem Clarity (30 pts)
@@ -24,7 +24,7 @@ import {
   detectSuccessMetrics,
   detectStakeholders,
   detectTimeline
-} from '../../shared/js/validator-inline.js';
+} from '../../validator/js/validator.js';
 
 describe('Inline One-Pager Validator', () => {
   describe('validateDocument', () => {
