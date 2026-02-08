@@ -24,7 +24,11 @@ const REQUIRED_SECTIONS = [
   { pattern: /^#+\s*(scope|in.scope|out.of.scope|boundary|boundaries)/im, name: 'Scope Definition', weight: 2 },
   { pattern: /^#+\s*(success|metric|kpi|measure|success.metric)/im, name: 'Success Metrics', weight: 1 },
   { pattern: /^#+\s*(stakeholder|team|owner|raci|responsible)/im, name: 'Stakeholders/Team', weight: 1 },
-  { pattern: /^#+\s*(timeline|milestone|phase|schedule|roadmap)/im, name: 'Timeline/Milestones', weight: 1 }
+  { pattern: /^#+\s*(timeline|milestone|phase|schedule|roadmap)/im, name: 'Timeline/Milestones', weight: 1 },
+  // Added from adversarial review - phase1.md requires these sections
+  { pattern: /^#+\s*(investment|effort|resource|cost|budget)/im, name: 'Investment/Resources', weight: 2 },
+  { pattern: /^#+\s*(risk|assumption|mitigation|dependency|dependencies)/im, name: 'Risks/Assumptions', weight: 1 },
+  { pattern: /^#+\s*(cost.of.doing.nothing|cost.of.inaction|why.now|urgency)/im, name: 'Cost of Doing Nothing', weight: 2 }
 ];
 
 // Problem clarity patterns
@@ -152,13 +156,16 @@ export function detectBaselineTarget(text) {
   // - currently X, target Y
   // - reduce from X to Y
   // - [Current] → [Target] format
+  // - [10%] → [20%] (bracket-wrapped numbers per phase1.md)
   const arrowPatterns = text.match(/\d+[%$]?\s*[→\->]\s*\d+[%$]?/g) || [];
   const fromToPatterns = text.match(/from\s+\d+[%$]?\s+to\s+\d+[%$]?/gi) || [];
   const currentTargetPatterns = text.match(/currently?\s+\d+[%$]?.*target\s+\d+[%$]?/gi) || [];
   const bracketPatterns = text.match(/\[(?:current|baseline)[^\]]*\]\s*[→\->]\s*\[(?:target|goal)[^\]]*\]/gi) || [];
+  // Adversarial fix: catch bracket-wrapped numbers like [10%] → [20%] per phase1.md format
+  const bracketNumberPatterns = text.match(/\[\s*\d+[%$]?[^\]]*\]\s*[→\->]\s*\[\s*\d+[%$]?[^\]]*\]/g) || [];
 
   const totalMatches = arrowPatterns.length + fromToPatterns.length +
-                       currentTargetPatterns.length + bracketPatterns.length;
+                       currentTargetPatterns.length + bracketPatterns.length + bracketNumberPatterns.length;
 
   // Check for vague metrics (keywords without numbers)
   const vaguePatterns = text.match(/\b(improve|increase|decrease|reduce|enhance|better|more|less|faster|slower)\b(?![^.]*\d)/gi) || [];
@@ -679,7 +686,17 @@ export function validateOnePager(text) {
     }
   }
 
-  let rawScore = problemClarity.score + solution.score + scope.score + completeness.score - slopDeduction;
+  // Adversarial fix: Word count enforcement per phase1.md "Maximum 450 words"
+  const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+  let wordCountDeduction = 0;
+  const wordCountIssues = [];
+  if (wordCount > 450) {
+    // Deduct 5 points for every 50 words over 450, max 15 points
+    wordCountDeduction = Math.min(15, Math.floor((wordCount - 450) / 50) * 5);
+    wordCountIssues.push(`Document is ${wordCount} words (max 450). Deducting ${wordCountDeduction} points.`);
+  }
+
+  let rawScore = problemClarity.score + solution.score + scope.score + completeness.score - slopDeduction - wordCountDeduction;
 
   // CRITICAL: Cap at 50 if circular logic detected (per prompts.js line 49)
   const isCircularCapped = circularLogic.isCircular && rawScore > 50;
@@ -710,6 +727,13 @@ export function validateOnePager(text) {
     baselineTarget: {
       ...baselineTarget,
       issues: baselineIssues
+    },
+    // Adversarial fix: Word count tracking per phase1.md "Maximum 450 words"
+    wordCount: {
+      count: wordCount,
+      limit: 450,
+      deduction: wordCountDeduction,
+      issues: wordCountIssues
     }
   };
 }
