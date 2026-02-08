@@ -84,6 +84,11 @@ The scoring system addresses common one-pager failures:
 | Claiming goals without baselines | Measurable goals require `[Baseline] → [Target]` format |
 | Omitting out-of-scope | Out-of-scope section is independently scored |
 | Adding implementation details | Implementation keywords trigger deductions in Solution Quality |
+| Omitting Investment section | REQUIRED_SECTIONS now includes Investment/Resources (weight 2) |
+| Omitting Risks section | REQUIRED_SECTIONS now includes Risks/Assumptions (weight 1) |
+| Bracket-wrapped metrics `[10%] → [20%]` | Regex now catches bracket-wrapped numbers per phase1.md format |
+| Verbose 2000-word "one-pager" | Word count penalty: 5 pts per 50 words over 450 (max 15 pts) |
+| Burying "cost of inaction" in prose | REQUIRED_SECTIONS now requires dedicated Cost of Doing Nothing header |
 
 ### Calibration Notes
 
