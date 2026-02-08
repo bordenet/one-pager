@@ -81,6 +81,100 @@ const TIMELINE_PATTERNS = {
 // ============================================================================
 
 /**
+ * Detect circular logic: solution is just the inverse of the problem
+ * Example: Problem: "We don't have a dashboard" → Solution: "Build a dashboard"
+ * This is a CRITICAL penalty - caps score at 50 per prompts.js line 49
+ * @param {string} text - Text to analyze
+ * @returns {Object} Circular logic detection results
+ */
+export function detectCircularLogic(text) {
+  // Extract problem and solution sections
+  const problemSection = text.match(/^#+\s*(problem|challenge|pain.?point|context)[^#]*/im)?.[0] || '';
+  const solutionSection = text.match(/^#+\s*(solution|proposal|approach|recommendation)[^#]*/im)?.[0] || '';
+
+  if (!problemSection || !solutionSection) {
+    return { isCircular: false, confidence: 0, reason: 'Sections not found' };
+  }
+
+  const problemLower = problemSection.toLowerCase();
+  const solutionLower = solutionSection.toLowerCase();
+
+  // Patterns that indicate circular logic (problem: no X → solution: add/build/create X)
+  const circularPatterns = [
+    // "don't have X" / "lack X" → "build/create/add X"
+    { problem: /\b(don't|do not|lack|missing|no|without)\s+(\w+)/g, solution: /\b(build|create|add|implement|develop)\s+\2/g },
+    // Simple inversion: check if solution just restates problem keywords
+    { problem: /\b(need|require|want)\s+(?:a\s+)?(\w+)/g, solution: /\b(build|create|add|implement)\s+(?:a\s+)?(\w+)/g }
+  ];
+
+  // Extract key nouns from problem (excluding common words)
+  const commonWords = new Set(['the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare', 'ought', 'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'just', 'don', 'now', 'we', 'our', 'and', 'or', 'but', 'if', 'because', 'as', 'until', 'while', 'that', 'this', 'these', 'those', 'it', 'its']);
+
+  // Check for direct keyword reuse (problem mentions X, solution says "build X")
+  const problemNouns = problemLower.match(/\b[a-z]{4,}\b/g)?.filter(w => !commonWords.has(w)) || [];
+  const actionVerbs = ['build', 'create', 'add', 'implement', 'develop', 'make', 'establish', 'introduce', 'launch'];
+
+  let circularMatches = 0;
+  for (const noun of new Set(problemNouns)) {
+    for (const verb of actionVerbs) {
+      const pattern = new RegExp(`\\b${verb}\\s+(?:a\\s+)?${noun}`, 'i');
+      if (pattern.test(solutionLower)) {
+        circularMatches++;
+      }
+    }
+  }
+
+  // High confidence if multiple circular matches found
+  const isCircular = circularMatches >= 2;
+  const confidence = Math.min(100, circularMatches * 25);
+
+  return {
+    isCircular,
+    confidence,
+    matchCount: circularMatches,
+    reason: isCircular
+      ? `Solution appears to restate the problem (${circularMatches} circular patterns)`
+      : 'Solution addresses root cause'
+  };
+}
+
+/**
+ * Detect [Baseline] → [Target] format in metrics
+ * Good: "Reduce support tickets from 100/day → 30/day"
+ * Bad: "Improve user experience" (vague, no baseline or target)
+ * @param {string} text - Text to analyze
+ * @returns {Object} Baseline/target detection results
+ */
+export function detectBaselineTarget(text) {
+  // Look for patterns like:
+  // - [100] → [30]
+  // - from X to Y
+  // - currently X, target Y
+  // - reduce from X to Y
+  // - [Current] → [Target] format
+  const arrowPatterns = text.match(/\d+[%$]?\s*[→\->]\s*\d+[%$]?/g) || [];
+  const fromToPatterns = text.match(/from\s+\d+[%$]?\s+to\s+\d+[%$]?/gi) || [];
+  const currentTargetPatterns = text.match(/currently?\s+\d+[%$]?.*target\s+\d+[%$]?/gi) || [];
+  const bracketPatterns = text.match(/\[(?:current|baseline)[^\]]*\]\s*[→\->]\s*\[(?:target|goal)[^\]]*\]/gi) || [];
+
+  const totalMatches = arrowPatterns.length + fromToPatterns.length +
+                       currentTargetPatterns.length + bracketPatterns.length;
+
+  // Check for vague metrics (keywords without numbers)
+  const vaguePatterns = text.match(/\b(improve|increase|decrease|reduce|enhance|better|more|less|faster|slower)\b(?![^.]*\d)/gi) || [];
+
+  return {
+    hasBaselineTarget: totalMatches > 0,
+    baselineTargetCount: totalMatches,
+    arrowPatterns: arrowPatterns.length,
+    fromToPatterns: fromToPatterns.length,
+    vagueMetricsCount: vaguePatterns.length,
+    hasVagueMetrics: vaguePatterns.length > totalMatches,
+    examples: [...arrowPatterns.slice(0, 2), ...fromToPatterns.slice(0, 2)]
+  };
+}
+
+/**
  * Detect problem statement in text
  * @param {string} text - Text to analyze
  * @returns {Object} Problem detection results
@@ -554,6 +648,24 @@ export function validateOnePager(text) {
   const scope = scoreScopeDiscipline(text);
   const completeness = scoreCompleteness(text);
 
+  // Circular logic detection - per prompts.js line 49, cap at 50 if detected
+  const circularLogic = detectCircularLogic(text);
+  const circularIssues = [];
+  if (circularLogic.isCircular) {
+    circularIssues.push(
+      'CIRCULAR LOGIC DETECTED: Solution is just the inverse of the problem. Address the ROOT CAUSE instead.'
+    );
+  }
+
+  // Baseline→Target format detection
+  const baselineTarget = detectBaselineTarget(text);
+  const baselineIssues = [];
+  if (baselineTarget.hasVagueMetrics && !baselineTarget.hasBaselineTarget) {
+    baselineIssues.push(
+      'Vague metrics without baselines. Use [Current] → [Target] format (e.g., "100/day → 30/day")'
+    );
+  }
+
   // AI slop detection - executive summaries should be crisp and specific
   const slopPenalty = getSlopPenalty(text);
   let slopDeduction = 0;
@@ -567,9 +679,11 @@ export function validateOnePager(text) {
     }
   }
 
-  const totalScore = Math.max(0,
-    problemClarity.score + solution.score + scope.score + completeness.score - slopDeduction
-  );
+  let rawScore = problemClarity.score + solution.score + scope.score + completeness.score - slopDeduction;
+
+  // CRITICAL: Cap at 50 if circular logic detected (per prompts.js line 49)
+  const isCircularCapped = circularLogic.isCircular && rawScore > 50;
+  const totalScore = Math.max(0, isCircularCapped ? 50 : rawScore);
 
   return {
     totalScore,
@@ -586,6 +700,16 @@ export function validateOnePager(text) {
       ...slopPenalty,
       deduction: slopDeduction,
       issues: slopIssues
+    },
+    // New detections from self-prompting experiment
+    circularLogic: {
+      ...circularLogic,
+      capped: isCircularCapped,
+      issues: circularIssues
+    },
+    baselineTarget: {
+      ...baselineTarget,
+      issues: baselineIssues
     }
   };
 }
