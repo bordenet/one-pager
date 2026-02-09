@@ -16,7 +16,9 @@ import {
   detectSuccessMetrics,
   detectSections,
   detectStakeholders,
-  detectTimeline
+  detectTimeline,
+  detectCircularLogic,
+  detectBaselineTarget
 } from '../js/validator.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -318,6 +320,71 @@ describe('detectTimeline', () => {
   test('detects phasing', () => {
     const result = detectTimeline('Phase 1: Research. Phase 2: Implementation.');
     expect(result.hasPhasing).toBe(true);
+  });
+});
+
+describe('detectCircularLogic', () => {
+  test('detects circular logic with multiple matching patterns', () => {
+    // Needs 2+ circular matches to be flagged as circular
+    const text = `# Problem
+We lack proper monitoring and lack reporting for our infrastructure.
+
+# Solution
+Build monitoring and create reporting for our infrastructure.`;
+    const result = detectCircularLogic(text);
+    expect(result.isCircular).toBe(true);
+    expect(result.confidence).toBeGreaterThanOrEqual(50);
+    expect(result.matchCount).toBeGreaterThanOrEqual(2);
+  });
+
+  test('returns false when sections not found', () => {
+    const result = detectCircularLogic('Just some text without sections');
+    expect(result.isCircular).toBe(false);
+    expect(result.reason).toBe('Sections not found');
+  });
+
+  test('returns low confidence for single pattern match', () => {
+    const text = `# Problem
+We lack a proper monitoring system.
+
+# Solution
+Build a monitoring system.`;
+    const result = detectCircularLogic(text);
+    expect(result.matchCount).toBe(1);
+    expect(result.confidence).toBe(25);
+    expect(result.isCircular).toBe(false); // Needs 2+ matches
+  });
+});
+
+describe('detectBaselineTarget', () => {
+  test('detects arrow pattern metrics', () => {
+    const result = detectBaselineTarget('Current conversion rate: 10% → 25%');
+    expect(result.hasBaselineTarget).toBe(true);
+    expect(result.arrowPatterns).toBeGreaterThan(0);
+  });
+
+  test('detects from-to pattern metrics with numbers', () => {
+    // Regex requires "from NUM to NUM" without words in between
+    const result = detectBaselineTarget('Reduce response time from 48 to 4');
+    expect(result.hasBaselineTarget).toBe(true);
+    expect(result.fromToPatterns).toBeGreaterThan(0);
+  });
+
+  test('detects bracket-wrapped number patterns', () => {
+    const result = detectBaselineTarget('[10%] → [25%]');
+    expect(result.hasBaselineTarget).toBe(true);
+    expect(result.baselineTargetCount).toBeGreaterThan(0);
+  });
+
+  test('identifies vague metrics without numbers', () => {
+    const result = detectBaselineTarget('We will improve performance and increase efficiency');
+    expect(result.hasVagueMetrics).toBe(true);
+    expect(result.vagueMetricsCount).toBeGreaterThan(0);
+  });
+
+  test('returns false when no metrics present', () => {
+    const result = detectBaselineTarget('Just some text without metrics');
+    expect(result.hasBaselineTarget).toBe(false);
   });
 });
 });
