@@ -283,7 +283,6 @@ export async function generatePromptForPhase(project, phaseNumber) {
  * Export final one-pager document
  */
 export function exportFinalOnePager(project) {
-  let content = '';
   const attribution = '\n\n---\n\n*Generated with [One-Pager Assistant](https://bordenet.github.io/one-pager/)*';
 
   // Try phases in order of preference: 3, 1, 2
@@ -291,6 +290,7 @@ export function exportFinalOnePager(project) {
   const phase1 = getPhaseData(project, 1);
   const phase2 = getPhaseData(project, 2);
 
+  let content;
   if (phase3.response) {
     content = phase3.response;
   } else if (phase1.response) {
@@ -482,7 +482,7 @@ export class Workflow {
     const phase1 = this.getPhaseOutput(1);
     const phase2 = this.getPhaseOutput(2);
 
-    let content = '';
+    let content;
     if (phase3) {
       content = phase3;
     } else if (phase1) {

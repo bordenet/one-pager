@@ -104,12 +104,14 @@ export function detectCircularLogic(text) {
   const solutionLower = solutionSection.toLowerCase();
 
   // Patterns that indicate circular logic (problem: no X → solution: add/build/create X)
-  const circularPatterns = [
+  // Reserved for future pattern-matching implementation
+  const _circularPatterns = [
     // "don't have X" / "lack X" → "build/create/add X"
     { problem: /\b(don't|do not|lack|missing|no|without)\s+(\w+)/g, solution: /\b(build|create|add|implement|develop)\s+\2/g },
     // Simple inversion: check if solution just restates problem keywords
     { problem: /\b(need|require|want)\s+(?:a\s+)?(\w+)/g, solution: /\b(build|create|add|implement)\s+(?:a\s+)?(\w+)/g }
   ];
+  void _circularPatterns; // Reserved for future use
 
   // Extract key nouns from problem (excluding common words)
   const commonWords = new Set(['the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare', 'ought', 'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'just', 'don', 'now', 'we', 'our', 'and', 'or', 'but', 'if', 'because', 'as', 'until', 'while', 'that', 'this', 'these', 'those', 'it', 'its']);
