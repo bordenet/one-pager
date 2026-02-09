@@ -167,6 +167,58 @@ describe('Smoke Test - App Initialization', () => {
     });
   });
 
+  /**
+   * API Contract Tests - Verify validateDocument returns structure project-view.js expects
+   *
+   * This catches the bug where validator returns different property names than project-view.js expects.
+   * Result: "Cannot read properties of undefined (reading 'issues')" at runtime
+   */
+  describe('API Contract - validateDocument returns structure project-view.js expects', () => {
+    let result;
+
+    beforeAll(async () => {
+      const validator = await import('../../validator/js/validator.js');
+      result = validator.validateDocument('# One Pager\n\n## Problem\nWe need to solve X.');
+    });
+
+    test('returns totalScore property (number)', () => {
+      expect(result.totalScore).toBeDefined();
+      expect(typeof result.totalScore).toBe('number');
+    });
+
+    test('returns problemClarity category breakdown with issues array', () => {
+      expect(result.problemClarity).toBeDefined();
+      expect(result.problemClarity).toHaveProperty('score');
+      expect(result.problemClarity).toHaveProperty('maxScore');
+      expect(result.problemClarity).toHaveProperty('issues');
+      expect(Array.isArray(result.problemClarity.issues)).toBe(true);
+    });
+
+    test('returns solution category breakdown with issues array', () => {
+      expect(result.solution).toBeDefined();
+      expect(result.solution).toHaveProperty('score');
+      expect(result.solution).toHaveProperty('maxScore');
+      expect(result.solution).toHaveProperty('issues');
+      expect(Array.isArray(result.solution.issues)).toBe(true);
+    });
+
+    test('returns scope category breakdown with issues array', () => {
+      expect(result.scope).toBeDefined();
+      expect(result.scope).toHaveProperty('score');
+      expect(result.scope).toHaveProperty('maxScore');
+      expect(result.scope).toHaveProperty('issues');
+      expect(Array.isArray(result.scope.issues)).toBe(true);
+    });
+
+    test('returns completeness category breakdown with issues array', () => {
+      expect(result.completeness).toBeDefined();
+      expect(result.completeness).toHaveProperty('score');
+      expect(result.completeness).toHaveProperty('maxScore');
+      expect(result.completeness).toHaveProperty('issues');
+      expect(Array.isArray(result.completeness.issues)).toBe(true);
+    });
+  });
+
   describe('Export Consistency - diff-view.js exports match project-view.js imports', () => {
     test('diff-view.js exports computeWordDiff', async () => {
       const diffView = await import('../../shared/js/diff-view.js');
