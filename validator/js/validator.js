@@ -18,22 +18,22 @@ export { calculateSlopScore };
 // ============================================================================
 
 const REQUIRED_SECTIONS = [
-  { pattern: /^#+\s*(problem|challenge|pain.?point|context)/im, name: 'Problem/Challenge', weight: 2 },
-  { pattern: /^#+\s*(solution|proposal|approach|recommendation)/im, name: 'Solution/Proposal', weight: 2 },
-  { pattern: /^#+\s*(goal|objective|benefit|outcome)/im, name: 'Goals/Benefits', weight: 2 },
-  { pattern: /^#+\s*(scope|in.scope|out.of.scope|boundary|boundaries)/im, name: 'Scope Definition', weight: 2 },
-  { pattern: /^#+\s*(success|metric|kpi|measure|success.metric)/im, name: 'Success Metrics', weight: 1 },
-  { pattern: /^#+\s*(stakeholder|team|owner|raci|responsible)/im, name: 'Stakeholders/Team', weight: 1 },
-  { pattern: /^#+\s*(timeline|milestone|phase|schedule|roadmap)/im, name: 'Timeline/Milestones', weight: 1 },
+  { pattern: /^(#+\s*)?(problem|challenge|pain.?point|context)/im, name: 'Problem/Challenge', weight: 2 },
+  { pattern: /^(#+\s*)?(solution|proposal|approach|recommendation)/im, name: 'Solution/Proposal', weight: 2 },
+  { pattern: /^(#+\s*)?(goal|objective|benefit|outcome)/im, name: 'Goals/Benefits', weight: 2 },
+  { pattern: /^(#+\s*)?(scope|in.scope|out.of.scope|boundary|boundaries)/im, name: 'Scope Definition', weight: 2 },
+  { pattern: /^(#+\s*)?(success|metric|kpi|measure|success.metric)/im, name: 'Success Metrics', weight: 1 },
+  { pattern: /^(#+\s*)?(stakeholder|team|owner|raci|responsible)/im, name: 'Stakeholders/Team', weight: 1 },
+  { pattern: /^(#+\s*)?(timeline|milestone|phase|schedule|roadmap)/im, name: 'Timeline/Milestones', weight: 1 },
   // Added from adversarial review - phase1.md requires these sections
-  { pattern: /^#+\s*(investment|effort|resource|cost|budget)/im, name: 'Investment/Resources', weight: 2 },
-  { pattern: /^#+\s*(risk|assumption|mitigation|dependency|dependencies)/im, name: 'Risks/Assumptions', weight: 1 },
-  { pattern: /^#+\s*(cost.of.doing.nothing|cost.of.inaction|why.now|urgency)/im, name: 'Cost of Doing Nothing', weight: 2 }
+  { pattern: /^(#+\s*)?(investment|effort|resource|cost|budget)/im, name: 'Investment/Resources', weight: 2 },
+  { pattern: /^(#+\s*)?(risk|assumption|mitigation|dependency|dependencies)/im, name: 'Risks/Assumptions', weight: 1 },
+  { pattern: /^(#+\s*)?(cost.of.doing.nothing|cost.of.inaction|why.now|urgency)/im, name: 'Cost of Doing Nothing', weight: 2 }
 ];
 
 // Problem clarity patterns
 const PROBLEM_PATTERNS = {
-  problemSection: /^#+\s*(problem|challenge|pain.?point|context|why)/im,
+  problemSection: /^(#+\s*)?(problem|challenge|pain.?point|context|why)/im,
   problemLanguage: /\b(problem|challenge|pain.?point|issue|struggle|difficult|frustrat|current.?state|today|existing)\b/gi,
   costOfInaction: /\b(cost|impact|consequence|risk|without|if.?not|delay|postpone|inaction|doing.?nothing|status.?quo)\b/gi,
   quantified: /\d+\s*(%|million|thousand|hour|day|week|month|year|\$|dollar|user|customer|transaction)/gi,
@@ -42,7 +42,7 @@ const PROBLEM_PATTERNS = {
 
 // Solution patterns
 const SOLUTION_PATTERNS = {
-  solutionSection: /^#+\s*(solution|proposal|approach|recommendation|how)/im,
+  solutionSection: /^(#+\s*)?(solution|proposal|approach|recommendation|how)/im,
   solutionLanguage: /\b(solution|approach|proposal|implement|build|create|develop|enable|provide|deliver)\b/gi,
   measurable: /\b(measure|metric|kpi|track|monitor|quantify|achieve|reach|target|goal)\b/gi,
   highlevel: /\b(overview|summary|high.?level|architecture|design|flow|process|workflow)\b/gi,
@@ -53,20 +53,20 @@ const SOLUTION_PATTERNS = {
 const SCOPE_PATTERNS = {
   inScope: /\b(in.scope|included|within.scope|we.will|we.are|we.provide|we.deliver)\b/gi,
   outOfScope: /\b(out.of.scope|not.included|excluded|we.will.not|won't|outside.scope|future|phase.2|post.mvp|not.in.v1)\b/gi,
-  scopeSection: /^#+\s*(scope|boundaries|in.scope|out.of.scope)/im
+  scopeSection: /^(#+\s*)?(scope|boundaries|in.scope|out.of.scope)/im
 };
 
 // Success metrics patterns
 const METRICS_PATTERNS = {
   smart: /\b(specific|measurable|achievable|relevant|time.bound|smart)\b/gi,
   quantified: /\d+\s*(%|million|thousand|hour|day|week|month|year|\$|dollar|user|customer|transaction|request|response)/gi,
-  metricsSection: /^#+\s*(success|metric|kpi|measure|success.metric)/im,
+  metricsSection: /^(#+\s*)?(success|metric|kpi|measure|success.metric)/im,
   metricsLanguage: /\b(metric|kpi|measure|target|goal|achieve|reach|improve|reduce|increase)\b/gi
 };
 
 // Stakeholder patterns - expanded with C-suite from adversarial review compounding
 const STAKEHOLDER_PATTERNS = {
-  stakeholderSection: /^#+\s*(stakeholder|team|owner|raci|responsible|responsible.accountable)/im,
+  stakeholderSection: /^(#+\s*)?(stakeholder|team|owner|raci|responsible|responsible.accountable)/im,
   stakeholderLanguage: /\b(stakeholder|owner|lead|team|responsible|accountable|raci|sponsor|approver)\b/gi,
   // Extended stakeholder concerns - includes FP&A, People Team, C-suite
   stakeholderConcerns: /\b(finance|fp&a|fp.?&.?a|financial.planning|hr|people.?team|people.?ops|legal|compliance|equity|liability|approval|sign.?off|cfo|cto|ceo|vp|director)\b/gi,
@@ -75,7 +75,7 @@ const STAKEHOLDER_PATTERNS = {
 
 // Timeline patterns
 const TIMELINE_PATTERNS = {
-  timelineSection: /^#+\s*(timeline|milestone|phase|schedule|roadmap)/im,
+  timelineSection: /^(#+\s*)?(timeline|milestone|phase|schedule|roadmap)/im,
   datePatterns: /\b(week|month|quarter|q[1-4]|phase|milestone|sprint|release|v\d+)\b/gi,
   phasing: /\b(phase|stage|wave|iteration|sprint|release)\b/gi
 };
@@ -93,8 +93,8 @@ const TIMELINE_PATTERNS = {
  */
 export function detectCircularLogic(text) {
   // Extract problem and solution sections
-  const problemSection = text.match(/^#+\s*(problem|challenge|pain.?point|context)[^#]*/im)?.[0] || '';
-  const solutionSection = text.match(/^#+\s*(solution|proposal|approach|recommendation)[^#]*/im)?.[0] || '';
+  const problemSection = text.match(/^(#+\s*)?(problem|challenge|pain.?point|context)[^#]*/im)?.[0] || '';
+  const solutionSection = text.match(/^(#+\s*)?(solution|proposal|approach|recommendation)[^#]*/im)?.[0] || '';
 
   if (!problemSection || !solutionSection) {
     return { isCircular: false, confidence: 0, reason: 'Sections not found' };
@@ -220,7 +220,7 @@ export function detectProblemStatement(text) {
 export function detectCostOfInaction(text) {
   const costMatches = text.match(PROBLEM_PATTERNS.costOfInaction) || [];
   const quantifiedMatches = text.match(PROBLEM_PATTERNS.quantified) || [];
-  const hasCostSection = /^#+\s*(cost|impact|consequence|risk|why.now|urgency)/im.test(text);
+  const hasCostSection = /^(#+\s*)?(cost|impact|consequence|risk|why.now|urgency)/im.test(text);
 
   return {
     hasCostLanguage: costMatches.length > 0,
