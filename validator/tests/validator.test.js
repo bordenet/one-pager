@@ -299,6 +299,62 @@ describe('detectSections', () => {
   });
 });
 
+describe('detectSections - Plain Text Heading Detection', () => {
+  // Tests for ^(#+\s*)? regex pattern that allows plain text headings (Word/Google Docs imports)
+
+  test('detects Problem section without markdown prefix', () => {
+    const text = 'Problem\nWe have a challenge with X.';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Problem/Challenge')).toBe(true);
+  });
+
+  test('detects Solution section without markdown prefix', () => {
+    const text = 'Solution\nOur approach is to build Y.';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Solution/Proposal')).toBe(true);
+  });
+
+  test('detects Goals section without markdown prefix', () => {
+    const text = 'Goals\n- Increase revenue by 20%';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Goals/Benefits')).toBe(true);
+  });
+
+  test('detects Scope section without markdown prefix', () => {
+    const text = 'Scope\nIn scope: feature A. Out of scope: feature B.';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Scope Definition')).toBe(true);
+  });
+
+  test('handles mixed markdown and plain text headings', () => {
+    const text = '# Problem\nSome issue.\n\nSolution\nThe fix is this.';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Problem/Challenge')).toBe(true);
+    expect(result.found.some((s) => s.name === 'Solution/Proposal')).toBe(true);
+  });
+
+  test('handles Word/Google Docs pasted content without markdown', () => {
+    const text = `Problem
+Our customers face challenges with X.
+
+Solution
+We propose building Y.
+
+Goals
+- Goal 1
+- Goal 2
+
+Scope
+In-scope: A, B, C
+Out-of-scope: D, E`;
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Problem/Challenge')).toBe(true);
+    expect(result.found.some((s) => s.name === 'Solution/Proposal')).toBe(true);
+    expect(result.found.some((s) => s.name === 'Goals/Benefits')).toBe(true);
+    expect(result.found.some((s) => s.name === 'Scope Definition')).toBe(true);
+  });
+});
+
 describe('detectStakeholders', () => {
   test('detects stakeholder section', () => {
     const result = detectStakeholders('# Stakeholders\\nOwner: Product Team.');

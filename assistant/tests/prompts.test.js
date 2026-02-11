@@ -10,7 +10,8 @@ import {
   generatePhase1Prompt,
   generatePhase2Prompt,
   generatePhase3Prompt,
-  preloadPromptTemplates
+  preloadPromptTemplates,
+  replaceTemplateVars
 } from '../../shared/js/prompts.js';
 
 describe('WORKFLOW_CONFIG', () => {
@@ -109,5 +110,91 @@ describe('prompt generation', () => {
     test('generatePhase3Prompt should reject when fetch unavailable', async () => {
       await expect(generatePhase3Prompt('phase 1', 'phase 2')).rejects.toThrow();
     });
+  });
+});
+
+describe('replaceTemplateVars - Placeholder Safety Check', () => {
+  // These tests verify the safety check that removes unsubstituted {{PLACEHOLDER}} patterns
+  // This prevents raw placeholders from reaching the LLM
+
+  test('should replace known variables', () => {
+    const template = 'Hello {{NAME}}, welcome to {{PROJECT}}';
+    const vars = { NAME: 'World', PROJECT: 'One-Pager' };
+
+    const result = replaceTemplateVars(template, vars);
+
+    expect(result).toBe('Hello World, welcome to One-Pager');
+  });
+
+  test('should remove unsubstituted UPPER_CASE placeholders', () => {
+    const template = 'Hello {{NAME}}, your {{UNKNOWN_FIELD}} is ready';
+    const vars = { NAME: 'World' };
+
+    const result = replaceTemplateVars(template, vars);
+
+    // UNKNOWN_FIELD should be removed entirely, not left as {{UNKNOWN_FIELD}}
+    expect(result).toBe('Hello World, your  is ready');
+    expect(result).not.toContain('{{UNKNOWN_FIELD}}');
+  });
+
+  test('should remove multiple unsubstituted placeholders', () => {
+    const template = '{{TITLE}} - {{MISSING_A}} and {{MISSING_B}}';
+    const vars = { TITLE: 'My Document' };
+
+    const result = replaceTemplateVars(template, vars);
+
+    expect(result).toBe('My Document -  and ');
+    expect(result).not.toContain('{{MISSING_A}}');
+    expect(result).not.toContain('{{MISSING_B}}');
+  });
+
+  test('should handle template with only unsubstituted placeholders', () => {
+    const template = '{{COMPLETELY_UNKNOWN}} {{ALSO_UNKNOWN}}';
+    const vars = {};
+
+    const result = replaceTemplateVars(template, vars);
+
+    expect(result).toBe(' ');
+    expect(result).not.toContain('{{');
+    expect(result).not.toContain('}}');
+  });
+
+  test('should preserve valid substitutions while removing unsubstituted ones', () => {
+    const template = `# {{TITLE}}
+
+## Context
+{{CONTEXT}}
+
+## Unknown Section
+{{UNKNOWN_SECTION}}`;
+
+    const vars = {
+      TITLE: 'My Project',
+      CONTEXT: 'This is the context',
+    };
+
+    const result = replaceTemplateVars(template, vars);
+
+    expect(result).toContain('# My Project');
+    expect(result).toContain('This is the context');
+    expect(result).not.toContain('{{UNKNOWN_SECTION}}');
+  });
+
+  test('should handle phase output placeholders when not provided', () => {
+    const template = `## Review the following:
+{{PHASE1_OUTPUT}}
+
+## Previous critique:
+{{PHASE2_OUTPUT}}`;
+
+    const vars = {
+      PHASE1_OUTPUT: 'Draft content here',
+      // PHASE2_OUTPUT intentionally not provided
+    };
+
+    const result = replaceTemplateVars(template, vars);
+
+    expect(result).toContain('Draft content here');
+    expect(result).not.toContain('{{PHASE2_OUTPUT}}');
   });
 });
