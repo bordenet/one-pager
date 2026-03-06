@@ -1,12 +1,14 @@
 # One-Pager Assistant
 
-> ⚠️ **Deprecation Notice**: This repository is deprecated in favor of [DocForge AI](https://github.com/bordenet/docforge-ai), which consolidates all genesis-derived assistants into a single project. This repo will be archived on **March 1, 2026**.
+> 🗄️ **ARCHIVED**: This repository has been archived. All pages now **redirect to [DocForge AI](https://bordenet.github.io/docforge-ai/)**, which consolidates all genesis-derived assistants into a single unified platform.
+>
+> **New location**: https://bordenet.github.io/docforge-ai/
 
 Write one-page documents with AI. Three phases: draft, review, refine.
 
 [![Star this repo](https://img.shields.io/github/stars/bordenet/one-pager?style=social)](https://github.com/bordenet/one-pager)
 
-**Try it**: [Assistant](https://bordenet.github.io/one-pager/) · [Validator](https://bordenet.github.io/one-pager/validator/)
+**⚠️ Redirects to DocForge AI**: [Assistant](https://bordenet.github.io/one-pager/) · [Validator](https://bordenet.github.io/one-pager/validator/)
 
 > **What is a One-Pager?** A [one-pager](https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/The_One-Pager.md) is a single-page summary that distills a complex topic into its essential points. Used for executive briefings, project proposals, and stakeholder communication, it forces clarity by imposing a strict length constraint.
 
